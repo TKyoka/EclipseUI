@@ -20,6 +20,7 @@ local EclipseUI = {
     }
 }
 
+-- Utility function for smooth component animations
 function EclipseUI:Tween(instance, info, properties)
     local tween = TweenService:Create(instance, info, properties)
     tween:Play()
@@ -116,7 +117,7 @@ function EclipseUI:CreateWindow(options)
         tabOptions = tabOptions or {}
         local tabName = tabOptions.Name or "Tab"
 
-        -- Create Tab Navigation Button in Sidebar
+        -- Tab Navigation Button in Sidebar
         local TabBtn = Instance.new("TextButton")
         TabBtn.Name = tabName .. "_Btn"
         TabBtn.Size = UDim2.new(1, 0, 0, 38)
@@ -133,7 +134,7 @@ function EclipseUI:CreateWindow(options)
         TabBtnCorner.CornerRadius = UDim.new(0, 8)
         TabBtnCorner.Parent = TabBtn
 
-        -- Create Tab Display Page in Content Area
+        -- Tab Display Page in Content Area
         local TabPage = Instance.new("ScrollingFrame")
         TabPage.Name = tabName .. "_Page"
         TabPage.Size = UDim2.new(1, 0, 1, 0)
@@ -152,7 +153,6 @@ function EclipseUI:CreateWindow(options)
             Page = TabPage
         }
 
-        -- Function to switch active tab
         local function SelectTab()
             for _, t in pairs(Window.Tabs) do
                 t.Page.Visible = false
@@ -175,7 +175,6 @@ function EclipseUI:CreateWindow(options)
 
         table.insert(Window.Tabs, TabObject)
 
-        -- Automatically select the first tab created
         if #Window.Tabs == 1 then
             SelectTab()
         end
@@ -210,7 +209,7 @@ function EclipseUI:CreateWindow(options)
 
             local SectionObject = {}
 
-            -- Helper to generate card containers inside section
+            -- Helper to create Base Card Container
             local function CreateCardContainer(title, description)
                 local Card = Instance.new("Frame")
                 Card.Name = title .. "_Card"
@@ -254,12 +253,114 @@ function EclipseUI:CreateWindow(options)
                     DescLabel.Parent = Card
                 end
 
-                -- Auto-resize section frame height as cards are added
                 SectionGroup.Size = UDim2.new(1, -10, 0, SectionLayout.AbsoluteContentSize.Y)
                 return Card
             end
 
-            SectionObject.CreateCard = CreateCardContainer
+            -- 1. Full-Card Clickable Button
+            function SectionObject:Button(btnOptions)
+                btnOptions = btnOptions or {}
+                local name = btnOptions.Name or "Button"
+                local desc = btnOptions.Description
+                local callback = btnOptions.Callback or function() end
+
+                local Card = CreateCardContainer(name, desc)
+
+                -- Invisible full-size button layer over the card
+                local ClickArea = Instance.new("TextButton")
+                ClickArea.Name = "ClickArea"
+                ClickArea.Size = UDim2.new(1, 0, 1, 0)
+                ClickArea.BackgroundTransparency = 1
+                ClickArea.Text = ""
+                ClickArea.Parent = Card
+
+                -- Hover & Active press animations on the whole Card
+                ClickArea.MouseEnter:Connect(function()
+                    EclipseUI:Tween(Card, TweenInfo.new(0.15), {
+                        BackgroundColor3 = Color3.fromRGB(34, 38, 58)
+                    })
+                end)
+
+                ClickArea.MouseLeave:Connect(function()
+                    EclipseUI:Tween(Card, TweenInfo.new(0.15), {
+                        BackgroundColor3 = selectedTheme.Card
+                    })
+                end)
+
+                ClickArea.MouseButton1Click:Connect(function()
+                    -- Subtle click feedback pulse
+                    EclipseUI:Tween(Card, TweenInfo.new(0.08), {
+                        BackgroundColor3 = selectedTheme.Accent
+                    })
+                    task.wait(0.08)
+                    EclipseUI:Tween(Card, TweenInfo.new(0.08), {
+                        BackgroundColor3 = Color3.fromRGB(34, 38, 58)
+                    })
+
+                    pcall(callback)
+                end)
+
+                return Card
+            end
+
+            -- 2. Animated Toggle Switch
+            function SectionObject:Toggle(toggleOptions)
+                toggleOptions = toggleOptions or {}
+                local name = toggleOptions.Name or "Toggle"
+                local desc = toggleOptions.Description
+                local state = toggleOptions.Default or false
+                local callback = toggleOptions.Callback or function() end
+
+                local Card = CreateCardContainer(name, desc)
+
+                -- Track
+                local Track = Instance.new("TextButton")
+                Track.Name = "ToggleTrack"
+                Track.Size = UDim2.new(0, 44, 0, 24)
+                Track.Position = UDim2.new(1, -56, 0.5, -12)
+                Track.BackgroundColor3 = state and selectedTheme.Accent or Color3.fromRGB(40, 44, 62)
+                Track.Text = ""
+                Track.AutoButtonColor = false
+                Track.Parent = Card
+
+                local TrackCorner = Instance.new("UICorner")
+                TrackCorner.CornerRadius = UDim.new(1, 0)
+                TrackCorner.Parent = Track
+
+                -- Knob
+                local Knob = Instance.new("Frame")
+                Knob.Name = "Knob"
+                Knob.Size = UDim2.new(0, 18, 0, 18)
+                Knob.Position = state and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9)
+                Knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                Knob.Parent = Track
+
+                local KnobCorner = Instance.new("UICorner")
+                KnobCorner.CornerRadius = UDim.new(1, 0)
+                KnobCorner.Parent = Knob
+
+                local function UpdateToggle()
+                    local targetColor = state and selectedTheme.Accent or Color3.fromRGB(40, 44, 62)
+                    local targetPos = state and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9)
+
+                    EclipseUI:Tween(Track, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                        BackgroundColor3 = targetColor
+                    })
+                    EclipseUI:Tween(Knob, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                        Position = targetPos
+                    })
+
+                    pcall(callback, state)
+                end
+
+                Track.MouseButton1Click:Connect(function()
+                    state = not state
+                    UpdateToggle()
+                end)
+
+                return Track
+            end
+
             return SectionObject
         end
 
