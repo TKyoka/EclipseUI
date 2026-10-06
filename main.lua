@@ -1,7 +1,6 @@
--- EclipseUI Main Library Entry Point
+-- EclipseUI Main Library Entry Point (Performance Optimized)
 
 local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 
 local LocalPlayer = Players.LocalPlayer
@@ -20,7 +19,6 @@ local EclipseUI = {
     }
 }
 
--- Utility function for smooth component animations
 function EclipseUI:Tween(instance, info, properties)
     local tween = TweenService:Create(instance, info, properties)
     tween:Play()
@@ -39,7 +37,7 @@ function EclipseUI:CreateWindow(options)
     ScreenGui.ResetOnSpawn = false
     ScreenGui.Parent = targetParent
 
-    -- Main Container Frame
+    -- Main Frame Container
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Size = UDim2.new(0, 700, 0, 480)
@@ -58,7 +56,7 @@ function EclipseUI:CreateWindow(options)
     MainStroke.Thickness = 1
     MainStroke.Parent = MainFrame
 
-    -- Top Bar Header
+    -- Header Bar
     local TopBar = Instance.new("Frame")
     TopBar.Name = "TopBar"
     TopBar.Size = UDim2.new(1, 0, 0, 45)
@@ -77,7 +75,7 @@ function EclipseUI:CreateWindow(options)
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     TitleLabel.Parent = TopBar
 
-    -- Sidebar Area
+    -- Left Sidebar
     local Sidebar = Instance.new("Frame")
     Sidebar.Name = "Sidebar"
     Sidebar.Size = UDim2.new(0, 200, 1, -45)
@@ -99,7 +97,7 @@ function EclipseUI:CreateWindow(options)
     TabNavLayout.SortOrder = Enum.SortOrder.LayoutOrder
     TabNavLayout.Parent = TabNavContainer
 
-    -- Content Area (Right Side Viewport)
+    -- Content Area Container
     local ContentArea = Instance.new("Frame")
     ContentArea.Name = "ContentArea"
     ContentArea.Size = UDim2.new(1, -220, 1, -55)
@@ -112,12 +110,10 @@ function EclipseUI:CreateWindow(options)
         CurrentTab = nil
     }
 
-    -- Window:Tab Method
     function Window:Tab(tabOptions)
         tabOptions = tabOptions or {}
         local tabName = tabOptions.Name or "Tab"
 
-        -- Tab Navigation Button in Sidebar
         local TabBtn = Instance.new("TextButton")
         TabBtn.Name = tabName .. "_Btn"
         TabBtn.Size = UDim2.new(1, 0, 0, 38)
@@ -134,13 +130,14 @@ function EclipseUI:CreateWindow(options)
         TabBtnCorner.CornerRadius = UDim.new(0, 8)
         TabBtnCorner.Parent = TabBtn
 
-        -- Tab Display Page in Content Area
         local TabPage = Instance.new("ScrollingFrame")
         TabPage.Name = tabName .. "_Page"
         TabPage.Size = UDim2.new(1, 0, 1, 0)
         TabPage.BackgroundTransparency = 1
         TabPage.Visible = false
         TabPage.ScrollBarThickness = 2
+        TabPage.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        TabPage.CanvasSize = UDim2.new(0, 0, 0, 0)
         TabPage.ScrollBarImageColor3 = selectedTheme.Border
         TabPage.Parent = ContentArea
 
@@ -149,20 +146,18 @@ function EclipseUI:CreateWindow(options)
         PageLayout.SortOrder = Enum.SortOrder.LayoutOrder
         PageLayout.Parent = TabPage
 
-        local TabObject = {
-            Page = TabPage
-        }
+        local TabObject = { Page = TabPage, NavButton = TabBtn }
 
         local function SelectTab()
             for _, t in pairs(Window.Tabs) do
                 t.Page.Visible = false
-                EclipseUI:Tween(t.NavButton, TweenInfo.new(0.2), {
+                EclipseUI:Tween(t.NavButton, TweenInfo.new(0.15), {
                     BackgroundTransparency = 1,
                     TextColor3 = selectedTheme.SubText
                 })
             end
             TabPage.Visible = true
-            EclipseUI:Tween(TabBtn, TweenInfo.new(0.2), {
+            EclipseUI:Tween(TabBtn, TweenInfo.new(0.15), {
                 BackgroundTransparency = 0,
                 BackgroundColor3 = selectedTheme.Accent,
                 TextColor3 = selectedTheme.Text
@@ -171,23 +166,20 @@ function EclipseUI:CreateWindow(options)
         end
 
         TabBtn.MouseButton1Click:Connect(SelectTab)
-        TabObject.NavButton = TabBtn
-
         table.insert(Window.Tabs, TabObject)
 
         if #Window.Tabs == 1 then
             SelectTab()
         end
 
-        -- Tab:Section Method
         function TabObject:Section(secOptions)
             secOptions = secOptions or {}
             local secName = secOptions.Name or "Section"
 
-            -- Section Header Container
             local SectionGroup = Instance.new("Frame")
             SectionGroup.Name = secName .. "_Section"
-            SectionGroup.Size = UDim2.new(1, -10, 0, 30)
+            SectionGroup.Size = UDim2.new(1, -10, 0, 0)
+            SectionGroup.AutomaticSize = Enum.AutomaticSize.Y
             SectionGroup.BackgroundTransparency = 1
             SectionGroup.Parent = TabPage
 
@@ -209,7 +201,6 @@ function EclipseUI:CreateWindow(options)
 
             local SectionObject = {}
 
-            -- Helper to create Base Card Container
             local function CreateCardContainer(title, description)
                 local Card = Instance.new("Frame")
                 Card.Name = title .. "_Card"
@@ -253,11 +244,9 @@ function EclipseUI:CreateWindow(options)
                     DescLabel.Parent = Card
                 end
 
-                SectionGroup.Size = UDim2.new(1, -10, 0, SectionLayout.AbsoluteContentSize.Y)
                 return Card
             end
 
-            -- 1. Full-Card Clickable Button
             function SectionObject:Button(btnOptions)
                 btnOptions = btnOptions or {}
                 local name = btnOptions.Name or "Button"
@@ -266,7 +255,6 @@ function EclipseUI:CreateWindow(options)
 
                 local Card = CreateCardContainer(name, desc)
 
-                -- Invisible full-size button layer over the card
                 local ClickArea = Instance.new("TextButton")
                 ClickArea.Name = "ClickArea"
                 ClickArea.Size = UDim2.new(1, 0, 1, 0)
@@ -274,36 +262,33 @@ function EclipseUI:CreateWindow(options)
                 ClickArea.Text = ""
                 ClickArea.Parent = Card
 
-                -- Hover & Active press animations on the whole Card
                 ClickArea.MouseEnter:Connect(function()
-                    EclipseUI:Tween(Card, TweenInfo.new(0.15), {
+                    EclipseUI:Tween(Card, TweenInfo.new(0.1), {
                         BackgroundColor3 = Color3.fromRGB(34, 38, 58)
                     })
                 end)
 
                 ClickArea.MouseLeave:Connect(function()
-                    EclipseUI:Tween(Card, TweenInfo.new(0.15), {
+                    EclipseUI:Tween(Card, TweenInfo.new(0.1), {
                         BackgroundColor3 = selectedTheme.Card
                     })
                 end)
 
                 ClickArea.MouseButton1Click:Connect(function()
-                    -- Subtle click feedback pulse
-                    EclipseUI:Tween(Card, TweenInfo.new(0.08), {
+                    EclipseUI:Tween(Card, TweenInfo.new(0.05), {
                         BackgroundColor3 = selectedTheme.Accent
                     })
-                    task.wait(0.08)
-                    EclipseUI:Tween(Card, TweenInfo.new(0.08), {
+                    task.wait(0.05)
+                    EclipseUI:Tween(Card, TweenInfo.new(0.05), {
                         BackgroundColor3 = Color3.fromRGB(34, 38, 58)
                     })
 
-                    pcall(callback)
+                    task.spawn(callback)
                 end)
 
                 return Card
             end
 
-            -- 2. Animated Toggle Switch
             function SectionObject:Toggle(toggleOptions)
                 toggleOptions = toggleOptions or {}
                 local name = toggleOptions.Name or "Toggle"
@@ -313,7 +298,6 @@ function EclipseUI:CreateWindow(options)
 
                 local Card = CreateCardContainer(name, desc)
 
-                -- Track
                 local Track = Instance.new("TextButton")
                 Track.Name = "ToggleTrack"
                 Track.Size = UDim2.new(0, 44, 0, 24)
@@ -327,7 +311,6 @@ function EclipseUI:CreateWindow(options)
                 TrackCorner.CornerRadius = UDim.new(1, 0)
                 TrackCorner.Parent = Track
 
-                -- Knob
                 local Knob = Instance.new("Frame")
                 Knob.Name = "Knob"
                 Knob.Size = UDim2.new(0, 18, 0, 18)
@@ -343,14 +326,14 @@ function EclipseUI:CreateWindow(options)
                     local targetColor = state and selectedTheme.Accent or Color3.fromRGB(40, 44, 62)
                     local targetPos = state and UDim2.new(1, -21, 0.5, -9) or UDim2.new(0, 3, 0.5, -9)
 
-                    EclipseUI:Tween(Track, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    EclipseUI:Tween(Track, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                         BackgroundColor3 = targetColor
                     })
-                    EclipseUI:Tween(Knob, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    EclipseUI:Tween(Knob, TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
                         Position = targetPos
                     })
 
-                    pcall(callback, state)
+                    task.spawn(callback, state)
                 end
 
                 Track.MouseButton1Click:Connect(function()
