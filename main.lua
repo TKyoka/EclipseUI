@@ -62,6 +62,7 @@ function EclipseUI:CreateWindow(options)
     TopBar.Name = "TopBar"
     TopBar.Size = UDim2.new(1, 0, 0, 45)
     TopBar.BackgroundTransparency = 1
+    TopBar.ZIndex = 2
     TopBar.Parent = MainFrame
 
     local TitleLabel = Instance.new("TextLabel")
@@ -74,24 +75,31 @@ function EclipseUI:CreateWindow(options)
     TitleLabel.TextSize = 16
     TitleLabel.Font = Enum.Font.GothamBold
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TitleLabel.ZIndex = 2
     TitleLabel.Parent = TopBar
 
-    -- Close / Destroy UI Button
+    -- Visible Header Close Button
     local CloseBtn = Instance.new("TextButton")
     CloseBtn.Name = "CloseButton"
-    CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-    CloseBtn.Position = UDim2.new(1, -38, 0.5, -15)
+    CloseBtn.Size = UDim2.new(0, 28, 0, 28)
+    CloseBtn.Position = UDim2.new(1, -38, 0.5, -14)
     CloseBtn.BackgroundColor3 = selectedTheme.Card
-    CloseBtn.BackgroundTransparency = 1
+    CloseBtn.BackgroundTransparency = 0
     CloseBtn.Text = "✕"
     CloseBtn.TextColor3 = selectedTheme.SubText
     CloseBtn.TextSize = 14
     CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.ZIndex = 3
     CloseBtn.Parent = TopBar
 
     local CloseBtnCorner = Instance.new("UICorner")
     CloseBtnCorner.CornerRadius = UDim.new(0, 6)
     CloseBtnCorner.Parent = CloseBtn
+
+    local CloseBtnStroke = Instance.new("UIStroke")
+    CloseBtnStroke.Color = selectedTheme.Border
+    CloseBtnStroke.Thickness = 1
+    CloseBtnStroke.Parent = CloseBtn
 
     -- Left Sidebar
     local Sidebar = Instance.new("Frame")
@@ -129,14 +137,12 @@ function EclipseUI:CreateWindow(options)
         ScreenGui = ScreenGui
     }
 
-    -- Destroy Functionality
     function Window:Destroy()
         ScreenGui:Destroy()
     end
 
     CloseBtn.MouseEnter:Connect(function()
         EclipseUI:Tween(CloseBtn, TweenInfo.new(0.15), {
-            BackgroundTransparency = 0,
             BackgroundColor3 = selectedTheme.CloseHover,
             TextColor3 = Color3.fromRGB(255, 255, 255)
         })
@@ -144,7 +150,6 @@ function EclipseUI:CreateWindow(options)
 
     CloseBtn.MouseLeave:Connect(function()
         EclipseUI:Tween(CloseBtn, TweenInfo.new(0.15), {
-            BackgroundTransparency = 1,
             BackgroundColor3 = selectedTheme.Card,
             TextColor3 = selectedTheme.SubText
         })
