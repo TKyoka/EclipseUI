@@ -14,7 +14,8 @@ local EclipseUI = {
             Accent = Color3.fromRGB(98, 102, 241),
             Text = Color3.fromRGB(240, 242, 254),
             SubText = Color3.fromRGB(130, 135, 160),
-            Border = Color3.fromRGB(38, 42, 65)
+            Border = Color3.fromRGB(38, 42, 65),
+            CloseHover = Color3.fromRGB(235, 65, 80)
         }
     }
 }
@@ -75,6 +76,23 @@ function EclipseUI:CreateWindow(options)
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     TitleLabel.Parent = TopBar
 
+    -- Close / Destroy UI Button
+    local CloseBtn = Instance.new("TextButton")
+    CloseBtn.Name = "CloseButton"
+    CloseBtn.Size = UDim2.new(0, 30, 0, 30)
+    CloseBtn.Position = UDim2.new(1, -38, 0.5, -15)
+    CloseBtn.BackgroundColor3 = selectedTheme.Card
+    CloseBtn.BackgroundTransparency = 1
+    CloseBtn.Text = "✕"
+    CloseBtn.TextColor3 = selectedTheme.SubText
+    CloseBtn.TextSize = 14
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.Parent = TopBar
+
+    local CloseBtnCorner = Instance.new("UICorner")
+    CloseBtnCorner.CornerRadius = UDim.new(0, 6)
+    CloseBtnCorner.Parent = CloseBtn
+
     -- Left Sidebar
     local Sidebar = Instance.new("Frame")
     Sidebar.Name = "Sidebar"
@@ -107,8 +125,34 @@ function EclipseUI:CreateWindow(options)
 
     local Window = {
         Tabs = {},
-        CurrentTab = nil
+        CurrentTab = nil,
+        ScreenGui = ScreenGui
     }
+
+    -- Destroy Functionality
+    function Window:Destroy()
+        ScreenGui:Destroy()
+    end
+
+    CloseBtn.MouseEnter:Connect(function()
+        EclipseUI:Tween(CloseBtn, TweenInfo.new(0.15), {
+            BackgroundTransparency = 0,
+            BackgroundColor3 = selectedTheme.CloseHover,
+            TextColor3 = Color3.fromRGB(255, 255, 255)
+        })
+    end)
+
+    CloseBtn.MouseLeave:Connect(function()
+        EclipseUI:Tween(CloseBtn, TweenInfo.new(0.15), {
+            BackgroundTransparency = 1,
+            BackgroundColor3 = selectedTheme.Card,
+            TextColor3 = selectedTheme.SubText
+        })
+    end)
+
+    CloseBtn.MouseButton1Click:Connect(function()
+        Window:Destroy()
+    end)
 
     function Window:Tab(tabOptions)
         tabOptions = tabOptions or {}
