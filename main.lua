@@ -1,3 +1,5 @@
+-- EclipseUI Main Library Entry Point
+
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
@@ -13,13 +15,11 @@ local EclipseUI = {
             Accent = Color3.fromRGB(98, 102, 241),
             Text = Color3.fromRGB(240, 242, 254),
             SubText = Color3.fromRGB(130, 135, 160),
-            Border = Color3.fromRGB(38, 42, 65),
-            StatusBox = Color3.fromRGB(18, 20, 30)
+            Border = Color3.fromRGB(38, 42, 65)
         }
     }
 }
 
--- Utility function for smooth component animations
 function EclipseUI:Tween(instance, info, properties)
     local tween = TweenService:Create(instance, info, properties)
     tween:Play()
@@ -28,10 +28,9 @@ end
 
 function EclipseUI:CreateWindow(options)
     options = options or {}
-    local windowTitle = options.Name or "EclipseUI Hub"
-    local versionText = options.Version or "v1.0.0"
+    local windowTitle = options.Name or "EclipseUI"
+    local selectedTheme = EclipseUI.Themes.Dark
 
-    -- Core Gui setup (Parented to LocalPlayer.PlayerGui for in-game development)
     local targetParent = LocalPlayer:WaitForChild("PlayerGui")
     
     local ScreenGui = Instance.new("ScreenGui")
@@ -39,12 +38,12 @@ function EclipseUI:CreateWindow(options)
     ScreenGui.ResetOnSpawn = false
     ScreenGui.Parent = targetParent
 
-    -- Main Window Frame
+    -- Main Container Frame
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Size = UDim2.new(0, 700, 0, 480)
     MainFrame.Position = UDim2.new(0.5, -350, 0.5, -240)
-    MainFrame.BackgroundColor3 = EclipseUI.Themes.Dark.Background
+    MainFrame.BackgroundColor3 = selectedTheme.Background
     MainFrame.BorderSizePixel = 0
     MainFrame.ClipsDescendants = true
     MainFrame.Parent = ScreenGui
@@ -54,13 +53,11 @@ function EclipseUI:CreateWindow(options)
     MainCorner.Parent = MainFrame
 
     local MainStroke = Instance.new("UIStroke")
-    MainStroke.Color = EclipseUI.Themes.Dark.Border
+    MainStroke.Color = selectedTheme.Border
     MainStroke.Thickness = 1
     MainStroke.Parent = MainFrame
 
-    --------------------------------------------------------------------
-    -- 1. Top Header Bar
-    --------------------------------------------------------------------
+    -- Top Bar Header
     local TopBar = Instance.new("Frame")
     TopBar.Name = "TopBar"
     TopBar.Size = UDim2.new(1, 0, 0, 45)
@@ -73,51 +70,201 @@ function EclipseUI:CreateWindow(options)
     TitleLabel.Position = UDim2.new(0, 15, 0, 0)
     TitleLabel.BackgroundTransparency = 1
     TitleLabel.Text = windowTitle
-    TitleLabel.TextColor3 = EclipseUI.Themes.Dark.Text
+    TitleLabel.TextColor3 = selectedTheme.Text
     TitleLabel.TextSize = 16
     TitleLabel.Font = Enum.Font.GothamBold
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     TitleLabel.Parent = TopBar
 
-    --------------------------------------------------------------------
-    -- 2. Left Sidebar Navigation
-    --------------------------------------------------------------------
+    -- Sidebar Area
     local Sidebar = Instance.new("Frame")
     Sidebar.Name = "Sidebar"
     Sidebar.Size = UDim2.new(0, 200, 1, -45)
     Sidebar.Position = UDim2.new(0, 0, 0, 45)
-    Sidebar.BackgroundColor3 = EclipseUI.Themes.Dark.Sidebar
+    Sidebar.BackgroundColor3 = selectedTheme.Sidebar
     Sidebar.BorderSizePixel = 0
     Sidebar.Parent = MainFrame
 
-    local TabContainer = Instance.new("ScrollingFrame")
-    TabContainer.Name = "TabContainer"
-    TabContainer.Size = UDim2.new(1, -20, 1, -70)
-    TabContainer.Position = UDim2.new(0, 10, 0, 10)
-    TabContainer.BackgroundTransparency = 1
-    TabContainer.ScrollBarThickness = 0
-    TabContainer.Parent = Sidebar
+    local TabNavContainer = Instance.new("ScrollingFrame")
+    TabNavContainer.Name = "TabNavContainer"
+    TabNavContainer.Size = UDim2.new(1, -20, 1, -20)
+    TabNavContainer.Position = UDim2.new(0, 10, 0, 10)
+    TabNavContainer.BackgroundTransparency = 1
+    TabNavContainer.ScrollBarThickness = 0
+    TabNavContainer.Parent = Sidebar
 
-    local TabListLayout = Instance.new("UIListLayout")
-    TabListLayout.Padding = UDim.new(0, 6)
-    TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    TabListLayout.Parent = TabContainer
+    local TabNavLayout = Instance.new("UIListLayout")
+    TabNavLayout.Padding = UDim.new(0, 6)
+    TabNavLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TabNavLayout.Parent = TabNavContainer
 
-    --------------------------------------------------------------------
-    -- 3. Content Viewport (Right Side)
-    --------------------------------------------------------------------
+    -- Content Area (Right Side Viewport)
     local ContentArea = Instance.new("Frame")
     ContentArea.Name = "ContentArea"
-    ContentArea.Size = UDim2.new(1, -210, 1, -55)
-    ContentArea.Position = UDim2.new(0, 205, 0, 50)
+    ContentArea.Size = UDim2.new(1, -220, 1, -55)
+    ContentArea.Position = UDim2.new(0, 210, 0, 50)
     ContentArea.BackgroundTransparency = 1
     ContentArea.Parent = MainFrame
 
-    -- Window interface methods
     local Window = {
         Tabs = {},
         CurrentTab = nil
     }
+
+    -- Window:Tab Method
+    function Window:Tab(tabOptions)
+        tabOptions = tabOptions or {}
+        local tabName = tabOptions.Name or "Tab"
+
+        -- Create Tab Navigation Button in Sidebar
+        local TabBtn = Instance.new("TextButton")
+        TabBtn.Name = tabName .. "_Btn"
+        TabBtn.Size = UDim2.new(1, 0, 0, 38)
+        TabBtn.BackgroundColor3 = selectedTheme.Card
+        TabBtn.BackgroundTransparency = 1
+        TabBtn.Text = "  " .. tabName
+        TabBtn.TextColor3 = selectedTheme.SubText
+        TabBtn.TextSize = 14
+        TabBtn.Font = Enum.Font.GothamMedium
+        TabBtn.TextXAlignment = Enum.TextXAlignment.Left
+        TabBtn.Parent = TabNavContainer
+
+        local TabBtnCorner = Instance.new("UICorner")
+        TabBtnCorner.CornerRadius = UDim.new(0, 8)
+        TabBtnCorner.Parent = TabBtn
+
+        -- Create Tab Display Page in Content Area
+        local TabPage = Instance.new("ScrollingFrame")
+        TabPage.Name = tabName .. "_Page"
+        TabPage.Size = UDim2.new(1, 0, 1, 0)
+        TabPage.BackgroundTransparency = 1
+        TabPage.Visible = false
+        TabPage.ScrollBarThickness = 2
+        TabPage.ScrollBarImageColor3 = selectedTheme.Border
+        TabPage.Parent = ContentArea
+
+        local PageLayout = Instance.new("UIListLayout")
+        PageLayout.Padding = UDim.new(0, 12)
+        PageLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        PageLayout.Parent = TabPage
+
+        local TabObject = {
+            Page = TabPage
+        }
+
+        -- Function to switch active tab
+        local function SelectTab()
+            for _, t in pairs(Window.Tabs) do
+                t.Page.Visible = false
+                EclipseUI:Tween(t.NavButton, TweenInfo.new(0.2), {
+                    BackgroundTransparency = 1,
+                    TextColor3 = selectedTheme.SubText
+                })
+            end
+            TabPage.Visible = true
+            EclipseUI:Tween(TabBtn, TweenInfo.new(0.2), {
+                BackgroundTransparency = 0,
+                BackgroundColor3 = selectedTheme.Accent,
+                TextColor3 = selectedTheme.Text
+            })
+            Window.CurrentTab = TabObject
+        end
+
+        TabBtn.MouseButton1Click:Connect(SelectTab)
+        TabObject.NavButton = TabBtn
+
+        table.insert(Window.Tabs, TabObject)
+
+        -- Automatically select the first tab created
+        if #Window.Tabs == 1 then
+            SelectTab()
+        end
+
+        -- Tab:Section Method
+        function TabObject:Section(secOptions)
+            secOptions = secOptions or {}
+            local secName = secOptions.Name or "Section"
+
+            -- Section Header Container
+            local SectionGroup = Instance.new("Frame")
+            SectionGroup.Name = secName .. "_Section"
+            SectionGroup.Size = UDim2.new(1, -10, 0, 30)
+            SectionGroup.BackgroundTransparency = 1
+            SectionGroup.Parent = TabPage
+
+            local SectionLayout = Instance.new("UIListLayout")
+            SectionLayout.Padding = UDim.new(0, 8)
+            SectionLayout.SortOrder = Enum.SortOrder.LayoutOrder
+            SectionLayout.Parent = SectionGroup
+
+            local HeaderLabel = Instance.new("TextLabel")
+            HeaderLabel.Name = "HeaderLabel"
+            HeaderLabel.Size = UDim2.new(1, 0, 0, 20)
+            HeaderLabel.BackgroundTransparency = 1
+            HeaderLabel.Text = string.upper(secName)
+            HeaderLabel.TextColor3 = selectedTheme.SubText
+            HeaderLabel.TextSize = 12
+            HeaderLabel.Font = Enum.Font.GothamBold
+            HeaderLabel.TextXAlignment = Enum.TextXAlignment.Left
+            HeaderLabel.Parent = SectionGroup
+
+            local SectionObject = {}
+
+            -- Helper to generate card containers inside section
+            local function CreateCardContainer(title, description)
+                local Card = Instance.new("Frame")
+                Card.Name = title .. "_Card"
+                Card.Size = UDim2.new(1, 0, 0, 52)
+                Card.BackgroundColor3 = selectedTheme.Card
+                Card.BorderSizePixel = 0
+                Card.Parent = SectionGroup
+
+                local Corner = Instance.new("UICorner")
+                Corner.CornerRadius = UDim.new(0, 8)
+                Corner.Parent = Card
+
+                local Stroke = Instance.new("UIStroke")
+                Stroke.Color = selectedTheme.Border
+                Stroke.Thickness = 1
+                Stroke.Parent = Card
+
+                local TitleLabel = Instance.new("TextLabel")
+                TitleLabel.Name = "Title"
+                TitleLabel.Size = UDim2.new(0.6, 0, 0, 20)
+                TitleLabel.Position = UDim2.new(0, 12, 0, description and 8 or 16)
+                TitleLabel.BackgroundTransparency = 1
+                TitleLabel.Text = title
+                TitleLabel.TextColor3 = selectedTheme.Text
+                TitleLabel.TextSize = 14
+                TitleLabel.Font = Enum.Font.GothamMedium
+                TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+                TitleLabel.Parent = Card
+
+                if description then
+                    local DescLabel = Instance.new("TextLabel")
+                    DescLabel.Name = "Description"
+                    DescLabel.Size = UDim2.new(0.6, 0, 0, 16)
+                    DescLabel.Position = UDim2.new(0, 12, 0, 28)
+                    DescLabel.BackgroundTransparency = 1
+                    DescLabel.Text = description
+                    DescLabel.TextColor3 = selectedTheme.SubText
+                    DescLabel.TextSize = 11
+                    DescLabel.Font = Enum.Font.Gotham
+                    DescLabel.TextXAlignment = Enum.TextXAlignment.Left
+                    DescLabel.Parent = Card
+                end
+
+                -- Auto-resize section frame height as cards are added
+                SectionGroup.Size = UDim2.new(1, -10, 0, SectionLayout.AbsoluteContentSize.Y)
+                return Card
+            end
+
+            SectionObject.CreateCard = CreateCardContainer
+            return SectionObject
+        end
+
+        return TabObject
+    end
 
     return Window
 end
