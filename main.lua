@@ -5,7 +5,6 @@ local UserInputService = game:GetService("UserInputService")
 
 local LocalPlayer = Players.LocalPlayer
 
--- Executor Client-Side Icon Fetching
 local LucideIcons = {}
 local iconsLoaded = false
 
@@ -46,7 +45,7 @@ function EclipseUI:CreateWindow(options)
 	options = options or {}
 	local windowName = options.Title or options.Name or "Eclipse UI"
 	local windowIcon = options.Icon
-	local toggleKey = options.ToggleKey or Enum.KeyCode.RightControl
+	local initialToggleKey = options.ToggleKey or Enum.KeyCode.RightControl
 	local bgName = options.BgName
 	local windowTags = options.Tags
 
@@ -58,11 +57,12 @@ function EclipseUI:CreateWindow(options)
 	screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	screenGui.Parent = playerGui
 
-	-- Original Window Dimensions
 	local defaultSize = UDim2.new(0, 480, 0, 320)
 	local defaultPos = UDim2.new(0.5, 0, 0.5, 0)
 
-	-- Main Container Frame
+	-- Window Object definition placed early so properties can be accessed dynamically
+	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = initialToggleKey, Tags = {} }
+
 	local mainGroup = Instance.new("CanvasGroup")
 	mainGroup.Name = "MainGroup"
 	mainGroup.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -78,7 +78,6 @@ function EclipseUI:CreateWindow(options)
 	uiCorner.CornerRadius = UDim.new(0, 12)
 	uiCorner.Parent = mainGroup
 
-	-- Animated Background
 	local mainBackground = Instance.new("Frame")
 	mainBackground.Name = "AnimatedBackground"
 	mainBackground.Size = UDim2.new(1, 0, 1, 0)
@@ -98,7 +97,6 @@ function EclipseUI:CreateWindow(options)
 	mainBgGradient.Offset = Vector2.new(-1, 0)
 	mainBgGradient.Parent = mainBackground
 
-	-- Glowing Outline
 	local uiStroke = Instance.new("UIStroke")
 	uiStroke.Color = Color3.fromRGB(255, 255, 255)
 	uiStroke.Thickness = 1.5
@@ -114,7 +112,6 @@ function EclipseUI:CreateWindow(options)
 	})
 	strokeGradient.Parent = uiStroke
 
-	-- Animation Loop
 	local mainTimeAcc = 0
 	local mainAnimConnection
 	mainAnimConnection = RunService.RenderStepped:Connect(function(dt)
@@ -131,11 +128,11 @@ function EclipseUI:CreateWindow(options)
 		uiStroke.Transparency = 0.35 + (pulse * 0.2)
 	end)
 
-	-- Window Visibility Keybind Listener
+	-- Window Visibility Keybind Listener (Now checks Window.ToggleKey dynamically)
 	local windowVisible = true
 	UserInputService.InputBegan:Connect(function(input, gpe)
 		if gpe then return end
-		if input.KeyCode == toggleKey then
+		if input.KeyCode == Window.ToggleKey then
 			windowVisible = not windowVisible
 			local targetTransparency = windowVisible and 0 or 1
 			local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
@@ -157,7 +154,6 @@ function EclipseUI:CreateWindow(options)
 		end
 	end)
 
-	-- Body Content Group (CanvasGroup for fast fade support)
 	local bodyGroup = Instance.new("CanvasGroup")
 	bodyGroup.Name = "BodyGroup"
 	bodyGroup.Size = UDim2.new(1, 0, 1, -46)
@@ -167,7 +163,6 @@ function EclipseUI:CreateWindow(options)
 	bodyGroup.ZIndex = 3
 	bodyGroup.Parent = mainGroup
 
-	-- Lines CanvasGroup so outlining lines fade out cleanly during dragging
 	local linesCanvasGroup = Instance.new("CanvasGroup")
 	linesCanvasGroup.Name = "LinesCanvasGroup"
 	linesCanvasGroup.Size = UDim2.new(1, 0, 1, 0)
@@ -216,7 +211,6 @@ function EclipseUI:CreateWindow(options)
 	userLine.ZIndex = 2
 	userLine.Parent = linesCanvasGroup
 
-	-- Header Frame
 	local header = Instance.new("Frame")
 	header.Name = "Header"
 	header.Size = UDim2.new(1, 0, 0, 46)
@@ -236,20 +230,9 @@ function EclipseUI:CreateWindow(options)
 		headerIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
 		headerIcon.ZIndex = 4
 		headerIcon.Parent = header
-
-		if not iconsLoaded and not string.find(tostring(windowIcon), "rbxassetid://") then
-			task.spawn(function()
-				repeat task.wait() until iconsLoaded or not headerIcon:IsDescendantOf(game)
-				if headerIcon:IsDescendantOf(game) then
-					headerIcon.Image = getIconAsset(windowIcon)
-				end
-			end)
-		end
-
 		titleOffsetLeft = 36
 	end
 
-	-- Header Title & Tags Wrapper
 	local titleWrapper = Instance.new("Frame")
 	titleWrapper.Name = "TitleWrapper"
 	titleWrapper.Size = UDim2.new(1, -(titleOffsetLeft + 104), 1, 0)
@@ -334,8 +317,8 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 	end
+	Window.Tags = TagsObj
 
-	-- Window Control Buttons Container
 	local controlsFrame = Instance.new("Frame")
 	controlsFrame.Name = "Controls"
 	controlsFrame.AnchorPoint = Vector2.new(1, 0.5)
@@ -379,15 +362,6 @@ function EclipseUI:CreateWindow(options)
 		icon.ImageColor3 = Color3.fromRGB(150, 160, 180)
 		icon.ZIndex = 11
 		icon.Parent = btnFrame
-
-		if not iconsLoaded then
-			task.spawn(function()
-				repeat task.wait() until iconsLoaded or not icon:IsDescendantOf(game)
-				if icon:IsDescendantOf(game) then
-					icon.Image = getIconAsset(iconName)
-				end
-			end)
-		end
 
 		icon.MouseEnter:Connect(function()
 			TweenService:Create(btnFrame, TweenInfo.new(0.15), { BackgroundTransparency = 0.92 }):Play()
@@ -488,7 +462,6 @@ function EclipseUI:CreateWindow(options)
 		end)
 	end)
 
-	-- Sidebar Containers
 	local tabsCanvasGroup = Instance.new("CanvasGroup")
 	tabsCanvasGroup.Name = "TabsCanvasGroup"
 	tabsCanvasGroup.Size = UDim2.new(0, 134, 1, -52)
@@ -549,7 +522,6 @@ function EclipseUI:CreateWindow(options)
 	tabsPadding.PaddingBottom = UDim.new(0, 8)
 	tabsPadding.Parent = tabs
 
-	-- User Info
 	local userInfoCanvasGroup = Instance.new("CanvasGroup")
 	userInfoCanvasGroup.Name = "UserInfoCanvasGroup"
 	userInfoCanvasGroup.AnchorPoint = Vector2.new(0, 1)
@@ -690,7 +662,6 @@ function EclipseUI:CreateWindow(options)
 		end)
 	end)
 
-	-- Contents Area (CanvasGroup)
 	local contents = Instance.new("CanvasGroup")
 	contents.Name = "Contents"
 	contents.AnchorPoint = Vector2.new(1, 1)
@@ -701,7 +672,6 @@ function EclipseUI:CreateWindow(options)
 	contents.ZIndex = 3
 	contents.Parent = bodyGroup
 
-	-- BgName Watermark: Placed dead-center of the entire MainGroup frame using the Frijole font (rbxassetid://12187375194)
 	local bgWatermark
 	if bgName then
 		bgWatermark = Instance.new("TextLabel")
@@ -712,7 +682,7 @@ function EclipseUI:CreateWindow(options)
 		bgWatermark.BackgroundTransparency = 1
 		bgWatermark.Text = bgName
 		bgWatermark.TextColor3 = Color3.fromRGB(255, 255, 255)
-		bgWatermark.TextTransparency = 1 -- Hidden initially when not dragging
+		bgWatermark.TextTransparency = 1
 		bgWatermark.TextSize = 28
 		bgWatermark.FontFace = Font.new("rbxassetid://12187375194", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
 		bgWatermark.TextXAlignment = Enum.TextXAlignment.Center
@@ -720,14 +690,13 @@ function EclipseUI:CreateWindow(options)
 		bgWatermark.Parent = mainGroup
 	end
 
-	-- Smooth Dragging with Watermark & Line Fade Trigger (Properly isolated using explicit connection variables)
 	local dragging = false
 	local dragStart = Vector2.zero
 	local startPos = UDim2.new()
 	local targetPos = mainGroup.Position
 
 	header.InputBegan:Connect(function(input)
-		if isFullscreen then return end -- Completely blocks dragging while maximized
+		if isFullscreen then return end
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			local mousePos = input.Position
 			local controlsPos = controlsFrame.AbsolutePosition
@@ -798,8 +767,6 @@ function EclipseUI:CreateWindow(options)
 			mainGroup.Position = mainGroup.Position:Lerp(targetPos, math.clamp(dt * 20, 0, 1))
 		end
 	end)
-
-	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = toggleKey, Tags = TagsObj }
 
 	local pillTweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
 	local fadeTweenInfo = TweenInfo.new(0.20, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
@@ -879,16 +846,6 @@ function EclipseUI:CreateWindow(options)
 			iconImage.ImageTransparency = 0.3
 			iconImage.ZIndex = 5
 			iconImage.Parent = tabFrame
-
-			if not iconsLoaded and not string.find(tostring(tabIcon), "rbxassetid://") then
-				task.spawn(function()
-					repeat task.wait() until iconsLoaded or not iconImage:IsDescendantOf(game)
-					if iconImage:IsDescendantOf(game) then
-						iconImage.Image = getIconAsset(tabIcon)
-					end
-				end)
-			end
-
 			textOffsetX = 34
 		end
 
@@ -1042,16 +999,6 @@ function EclipseUI:CreateWindow(options)
 				secIconImg.ImageColor3 = Color3.fromRGB(130, 140, 165)
 				secIconImg.ZIndex = 4
 				secIconImg.Parent = secHeaderContainer
-
-				if not iconsLoaded and not string.find(tostring(secIcon), "rbxassetid://") then
-					task.spawn(function()
-						repeat task.wait() until iconsLoaded or not secIconImg:IsDescendantOf(game)
-						if secIconImg:IsDescendantOf(game) then
-							secIconImg.Image = getIconAsset(secIcon)
-						end
-					end)
-				end
-
 				textOffsetX = 18
 			end
 
@@ -1131,6 +1078,7 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
+		-- Button Component with tween gradient animation
 		function TabObject:Button(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1139,6 +1087,15 @@ function EclipseUI:CreateWindow(options)
 
 			local btn, stroke = createContainer(targetParent, 38)
 			btn.Name = btnName .. "Button"
+			btn.ClipsDescendants = true
+
+			local btnGradient = Instance.new("UIGradient")
+			btnGradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(35, 42, 60)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 24, 32))
+			})
+			btnGradient.Rotation = 0
+			btnGradient.Parent = btn
 
 			local label = Instance.new("TextLabel")
 			label.Size = UDim2.new(1, -28, 1, 0)
@@ -1160,25 +1117,27 @@ function EclipseUI:CreateWindow(options)
 			clickBtn.Parent = btn
 
 			clickBtn.MouseEnter:Connect(function()
-				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.90 })
-				tween(stroke, fadeTweenInfo, { Transparency = 0.82 })
+				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.85 })
+				tween(stroke, fadeTweenInfo, { Transparency = 0.75 })
 				tween(label, fadeTweenInfo, { TextColor3 = Color3.fromRGB(255, 255, 255) })
+				TweenService:Create(btnGradient, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { Rotation = 90 }):Play()
 			end)
 
 			clickBtn.MouseLeave:Connect(function()
 				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.95 })
 				tween(stroke, fadeTweenInfo, { Transparency = 0.92 })
 				tween(label, fadeTweenInfo, { TextColor3 = Color3.fromRGB(240, 245, 255) })
+				TweenService:Create(btnGradient, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { Rotation = 0 }):Play()
 			end)
 
 			clickBtn.MouseButton1Down:Connect(function()
-				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.82 })
-				tween(stroke, fadeTweenInfo, { Transparency = 0.70 })
+				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.75 })
+				TweenService:Create(btnGradient, TweenInfo.new(0.15), { Rotation = 180 }):Play()
 			end)
 
 			clickBtn.MouseButton1Up:Connect(function()
-				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.90 })
-				tween(stroke, fadeTweenInfo, { Transparency = 0.82 })
+				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.85 })
+				TweenService:Create(btnGradient, TweenInfo.new(0.15), { Rotation = 90 }):Play()
 			end)
 
 			clickBtn.MouseButton1Click:Connect(function()
@@ -1242,14 +1201,6 @@ function EclipseUI:CreateWindow(options)
 			})
 			toggleGradient.Rotation = 45
 			toggleGradient.Parent = gradientOverlay
-
-			task.spawn(function()
-				local t = 0
-				while gradientOverlay:IsDescendantOf(game) do
-					t = t + RunService.RenderStepped:Wait()
-					toggleGradient.Rotation = 45 + (math.sin(t * 2) * 15)
-				end
-			end)
 
 			local tfStroke = Instance.new("UIStroke")
 			tfStroke.Color = Color3.fromRGB(255, 255, 255)
@@ -1398,16 +1349,7 @@ function EclipseUI:CreateWindow(options)
 				ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 210, 225)),
 				ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 160, 175))
 			})
-			fillGradient.Rotation = 0
 			fillGradient.Parent = fill
-
-			task.spawn(function()
-				local t = 0
-				while fill:IsDescendantOf(game) do
-					t = t + RunService.RenderStepped:Wait()
-					fillGradient.Rotation = math.sin(t * 1.5) * 10
-				end
-			end)
 
 			local thumb = Instance.new("Frame")
 			thumb.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -1420,14 +1362,6 @@ function EclipseUI:CreateWindow(options)
 			local thumbCorner = Instance.new("UICorner")
 			thumbCorner.CornerRadius = UDim.new(1, 0)
 			thumbCorner.Parent = thumb
-
-			local thumbGradient = Instance.new("UIGradient")
-			thumbGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 225, 235)),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(170, 180, 195))
-			})
-			thumbGradient.Rotation = 90
-			thumbGradient.Parent = thumb
 
 			local thumbStroke = Instance.new("UIStroke")
 			thumbStroke.Color = Color3.fromRGB(255, 255, 255)
@@ -1456,7 +1390,7 @@ function EclipseUI:CreateWindow(options)
 				updateSliderVal(value, true)
 			end
 
-			valBox.FocusLost:Connect(function(enterPressed)
+			valBox.FocusLost:Connect(function()
 				local num = tonumber(valBox.Text)
 				if num then
 					updateSliderVal(num, true)
@@ -1644,15 +1578,6 @@ function EclipseUI:CreateWindow(options)
 			arrowIcon.ImageColor3 = Color3.fromRGB(150, 160, 180)
 			arrowIcon.ZIndex = 7
 			arrowIcon.Parent = selBox
-
-			if not iconsLoaded then
-				task.spawn(function()
-					repeat task.wait() until iconsLoaded or not arrowIcon:IsDescendantOf(game)
-					if arrowIcon:IsDescendantOf(game) then
-						arrowIcon.Image = getIconAsset("chevron-down")
-					end
-				end)
-			end
 
 			local isOpen = false
 
