@@ -7,18 +7,6 @@ local LocalPlayer = Players.LocalPlayer
 local EclipseUI = {}
 EclipseUI.__index = EclipseUI
 
--- Dynamic HTTP fetcher compatible across all client environments
-local function fetchUrl(url)
-	local requestFunc = (syn and syn.request) or (http and http.request) or request or http_request
-	if requestFunc then
-		local response = requestFunc({ Url = url, Method = "GET" })
-		return response and response.Body
-	elseif game.HttpGet then
-		return game:HttpGet(url)
-	end
-	return nil
-end
-
 local LucideIcons = {}
 local iconsLoaded = false
 
@@ -27,21 +15,22 @@ task.spawn(function()
 	local success, response = pcall(fetchUrl, url)
 
 	if success and response then
-		local decodedSuccess, decoded = pcall(function()
-			return HttpService:JSONDecode(response)
-		end)
-
-		if decodedSuccess and type(decoded) == "table" then
-			LucideIcons = decoded
-		else
-			local loadFunc = loadstring("return " .. response)
-			if loadFunc then
-				LucideIcons = loadFunc() or {}
+		-- Execute the fetched Lua string to get the returned table
+		local loadFunc, err = loadstring(response)
+		if loadFunc then
+			local funcSuccess, resultTable = pcall(loadFunc)
+			if funcSuccess and type(resultTable) == "table" then
+				LucideIcons = resultTable
+			else
+				warn("[EclipseUI] Failed to execute icon table:", resultTable)
 			end
+		else
+			warn("[EclipseUI] Failed to parse icon table:", err)
 		end
 	else
 		warn("[EclipseUI] Failed to fetch icons from GitHub:", response)
 	end
+	
 	iconsLoaded = true
 end)
 
