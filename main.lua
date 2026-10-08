@@ -5,7 +5,6 @@ local UserInputService = game:GetService("UserInputService")
 
 local LocalPlayer = Players.LocalPlayer
 
--- Restored: Executor Client-Side Icon Fetching Task
 local LucideIcons = {}
 local iconsLoaded = false
 
@@ -1116,7 +1115,7 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
-		-- Restored & Reworked Button Component with Smooth Tween Gradient Animation
+		-- Button Component with Continuous Looping Gradient Animation
 		function TabObject:Button(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1129,11 +1128,22 @@ function EclipseUI:CreateWindow(options)
 
 			local btnGradient = Instance.new("UIGradient")
 			btnGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Color3.fromRGB(35, 42, 60)),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 24, 32))
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(45, 55, 80)),
+				ColorSequenceKeypoint.new(0.5, Color3.fromRGB(20, 24, 32)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(45, 55, 80))
 			})
 			btnGradient.Rotation = 0
 			btnGradient.Parent = btn
+
+			-- Continuous Rotation Loop for the Button Gradient
+			task.spawn(function()
+				local tAcc = 0
+				while btn:IsDescendantOf(game) do
+					local dt = RunService.RenderStepped:Wait()
+					tAcc = tAcc + dt
+					btnGradient.Rotation = (tAcc * 45) % 360
+				end
+			end)
 
 			local label = Instance.new("TextLabel")
 			label.Size = UDim2.new(1, -28, 1, 0)
@@ -1155,27 +1165,23 @@ function EclipseUI:CreateWindow(options)
 			clickBtn.Parent = btn
 
 			clickBtn.MouseEnter:Connect(function()
-				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.85 })
-				tween(stroke, fadeTweenInfo, { Transparency = 0.75 })
+				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.80 })
+				tween(stroke, fadeTweenInfo, { Transparency = 0.65 })
 				tween(label, fadeTweenInfo, { TextColor3 = Color3.fromRGB(255, 255, 255) })
-				TweenService:Create(btnGradient, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { Rotation = 90 }):Play()
 			end)
 
 			clickBtn.MouseLeave:Connect(function()
 				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.95 })
 				tween(stroke, fadeTweenInfo, { Transparency = 0.92 })
 				tween(label, fadeTweenInfo, { TextColor3 = Color3.fromRGB(240, 245, 255) })
-				TweenService:Create(btnGradient, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { Rotation = 0 }):Play()
 			end)
 
 			clickBtn.MouseButton1Down:Connect(function()
-				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.75 })
-				TweenService:Create(btnGradient, TweenInfo.new(0.15), { Rotation = 180 }):Play()
+				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.70 })
 			end)
 
 			clickBtn.MouseButton1Up:Connect(function()
-				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.85 })
-				TweenService:Create(btnGradient, TweenInfo.new(0.15), { Rotation = 90 }):Play()
+				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.80 })
 			end)
 
 			clickBtn.MouseButton1Click:Connect(function()
