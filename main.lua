@@ -5,6 +5,7 @@ local UserInputService = game:GetService("UserInputService")
 
 local LocalPlayer = Players.LocalPlayer
 
+-- Restored: Executor Client-Side Icon Fetching Task
 local LucideIcons = {}
 local iconsLoaded = false
 
@@ -60,7 +61,6 @@ function EclipseUI:CreateWindow(options)
 	local defaultSize = UDim2.new(0, 480, 0, 320)
 	local defaultPos = UDim2.new(0.5, 0, 0.5, 0)
 
-	-- Window Object definition placed early so properties can be accessed dynamically
 	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = initialToggleKey, Tags = {} }
 
 	local mainGroup = Instance.new("CanvasGroup")
@@ -128,7 +128,6 @@ function EclipseUI:CreateWindow(options)
 		uiStroke.Transparency = 0.35 + (pulse * 0.2)
 	end)
 
-	-- Window Visibility Keybind Listener (Now checks Window.ToggleKey dynamically)
 	local windowVisible = true
 	UserInputService.InputBegan:Connect(function(input, gpe)
 		if gpe then return end
@@ -230,6 +229,16 @@ function EclipseUI:CreateWindow(options)
 		headerIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
 		headerIcon.ZIndex = 4
 		headerIcon.Parent = header
+
+		if not iconsLoaded and not string.find(tostring(windowIcon), "rbxassetid://") then
+			task.spawn(function()
+				repeat task.wait() until iconsLoaded or not headerIcon:IsDescendantOf(game)
+				if headerIcon:IsDescendantOf(game) then
+					headerIcon.Image = getIconAsset(windowIcon)
+				end
+			end)
+		end
+
 		titleOffsetLeft = 36
 	end
 
@@ -362,6 +371,15 @@ function EclipseUI:CreateWindow(options)
 		icon.ImageColor3 = Color3.fromRGB(150, 160, 180)
 		icon.ZIndex = 11
 		icon.Parent = btnFrame
+
+		if not iconsLoaded then
+			task.spawn(function()
+				repeat task.wait() until iconsLoaded or not icon:IsDescendantOf(game)
+				if icon:IsDescendantOf(game) then
+					icon.Image = getIconAsset(iconName)
+				end
+			end)
+		end
 
 		icon.MouseEnter:Connect(function()
 			TweenService:Create(btnFrame, TweenInfo.new(0.15), { BackgroundTransparency = 0.92 }):Play()
@@ -846,6 +864,16 @@ function EclipseUI:CreateWindow(options)
 			iconImage.ImageTransparency = 0.3
 			iconImage.ZIndex = 5
 			iconImage.Parent = tabFrame
+
+			if not iconsLoaded and not string.find(tostring(tabIcon), "rbxassetid://") then
+				task.spawn(function()
+					repeat task.wait() until iconsLoaded or not iconImage:IsDescendantOf(game)
+					if iconImage:IsDescendantOf(game) then
+						iconImage.Image = getIconAsset(tabIcon)
+					end
+				end)
+			end
+
 			textOffsetX = 34
 		end
 
@@ -999,6 +1027,16 @@ function EclipseUI:CreateWindow(options)
 				secIconImg.ImageColor3 = Color3.fromRGB(130, 140, 165)
 				secIconImg.ZIndex = 4
 				secIconImg.Parent = secHeaderContainer
+
+				if not iconsLoaded and not string.find(tostring(secIcon), "rbxassetid://") then
+					task.spawn(function()
+						repeat task.wait() until iconsLoaded or not secIconImg:IsDescendantOf(game)
+						if secIconImg:IsDescendantOf(game) then
+							secIconImg.Image = getIconAsset(secIcon)
+						end
+					end)
+				end
+
 				textOffsetX = 18
 			end
 
@@ -1078,7 +1116,7 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
-		-- Button Component with tween gradient animation
+		-- Restored & Reworked Button Component with Smooth Tween Gradient Animation
 		function TabObject:Button(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1578,6 +1616,15 @@ function EclipseUI:CreateWindow(options)
 			arrowIcon.ImageColor3 = Color3.fromRGB(150, 160, 180)
 			arrowIcon.ZIndex = 7
 			arrowIcon.Parent = selBox
+
+			if not iconsLoaded then
+				task.spawn(function()
+					repeat task.wait() until iconsLoaded or not arrowIcon:IsDescendantOf(game)
+					if arrowIcon:IsDescendantOf(game) then
+						arrowIcon.Image = getIconAsset("chevron-down")
+					end
+				end)
+			end
 
 			local isOpen = false
 
