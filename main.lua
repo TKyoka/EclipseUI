@@ -247,7 +247,9 @@ function EclipseUI:CreateWindow(options)
 	controlsLayout.Padding = UDim.new(0, 4)
 	controlsLayout.Parent = controlsFrame
 
-	local function createControlButton(name, iconName, hoverColor, order)
+	local function createControlButton(name, iconName, hoverColor, order, iconSize)
+		iconSize = iconSize or 14
+
 		local btnFrame = Instance.new("Frame")
 		btnFrame.Name = name
 		btnFrame.Size = UDim2.new(0, 24, 0, 24)
@@ -265,7 +267,7 @@ function EclipseUI:CreateWindow(options)
 		icon.Name = "Icon"
 		icon.AnchorPoint = Vector2.new(0.5, 0.5)
 		icon.Position = UDim2.new(0.5, 0, 0.5, 0)
-		icon.Size = UDim2.new(0, 14, 0, 14)
+		icon.Size = UDim2.new(0, iconSize, 0, iconSize)
 		icon.BackgroundTransparency = 1
 		icon.Image = getIconAsset(iconName)
 		icon.ImageColor3 = Color3.fromRGB(150, 160, 180)
@@ -304,7 +306,7 @@ function EclipseUI:CreateWindow(options)
 	-- Controls: [Minus] [Fullscreen/Shrink] [Destroy]
 	local minimizeBtn = createControlButton("MinimizeBtn", "minus", Color3.fromRGB(255, 255, 255), 1)
 	local resizeBtn = createControlButton("ResizeBtn", "maximize", Color3.fromRGB(255, 255, 255), 2)
-	local destroyBtn = createControlButton("DestroyBtn", "x", Color3.fromRGB(255, 60, 60), 3)
+	local destroyBtn = createControlButton("DestroyBtn", "x", Color3.fromRGB(255, 60, 60), 3, 18) -- Set X button icon size to 18px
 
 	local isMinimized = false
 	local isMinimizing = false
