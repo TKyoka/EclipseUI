@@ -46,6 +46,7 @@ function EclipseUI:CreateWindow(options)
 	options = options or {}
 	local windowName = options.Title or options.Name or "Eclipse UI"
 	local windowIcon = options.Icon
+	local toggleKey = options.ToggleKey or Enum.KeyCode.RightControl
 
 	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -56,7 +57,7 @@ function EclipseUI:CreateWindow(options)
 	screenGui.Parent = playerGui
 
 	-- Original Window Dimensions
-	local defaultSize = UDim2.new(0, 430, 0, 275)
+	local defaultSize = UDim2.new(0, 480, 0, 320)
 	local defaultPos = UDim2.new(0.5, 0, 0.5, 0)
 
 	-- Main Container Frame
@@ -127,6 +128,32 @@ function EclipseUI:CreateWindow(options)
 		uiStroke.Transparency = 0.35 + (pulse * 0.2)
 	end)
 
+	-- Window Visibility Keybind Listener
+	local windowVisible = true
+	UserInputService.InputBegan:Connect(function(input, gpe)
+		if gpe then return end
+		if input.KeyCode == toggleKey then
+			windowVisible = not windowVisible
+			local targetTransparency = windowVisible and 0 or 1
+			local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+			
+			if windowVisible then
+				mainGroup.Visible = true
+			end
+			
+			local t = TweenService:Create(mainGroup, tweenInfo, { GroupTransparency = targetTransparency })
+			t:Play()
+			
+			if not windowVisible then
+				t.Completed:Connect(function()
+					if not windowVisible then
+						mainGroup.Visible = false
+					end
+				end)
+			end
+		end
+	end)
+
 	-- Body Content Group
 	local bodyGroup = Instance.new("CanvasGroup")
 	bodyGroup.Name = "BodyGroup"
@@ -192,7 +219,6 @@ function EclipseUI:CreateWindow(options)
 
 	local titleOffsetLeft = 16
 
-	-- Header Icon Support
 	if windowIcon then
 		local headerIcon = Instance.new("ImageLabel")
 		headerIcon.Name = "HeaderIcon"
@@ -303,7 +329,6 @@ function EclipseUI:CreateWindow(options)
 		end
 	end
 
-	-- Controls: [Minus] [Fullscreen/Shrink] [Destroy]
 	local minimizeBtn = createControlButton("MinimizeBtn", "minus", Color3.fromRGB(255, 255, 255), 1)
 	local resizeBtn = createControlButton("ResizeBtn", "maximize", Color3.fromRGB(255, 255, 255), 2)
 	local destroyBtn = createControlButton("DestroyBtn", "x", Color3.fromRGB(255, 60, 60), 3, 18)
@@ -312,7 +337,6 @@ function EclipseUI:CreateWindow(options)
 	local isMinimizing = false
 	local isFullscreen = false
 
-	-- Minimize Button (Minus)
 	minimizeBtn.MouseButton1Click:Connect(function()
 		if isMinimizing then return end
 		isMinimizing = true
@@ -325,7 +349,7 @@ function EclipseUI:CreateWindow(options)
 			TweenService:Create(headerLine1, windowTweenInfo, { BackgroundTransparency = 1 }):Play()
 			TweenService:Create(headerLine2, windowTweenInfo, { BackgroundTransparency = 1 }):Play()
 
-			local shrinkTween = TweenService:Create(mainGroup, windowTweenInfo, { Size = UDim2.new(0, 430, 0, 46) })
+			local shrinkTween = TweenService:Create(mainGroup, windowTweenInfo, { Size = UDim2.new(0, defaultSize.X.Offset, 0, 46) })
 			shrinkTween:Play()
 			shrinkTween.Completed:Connect(function()
 				bodyGroup.Visible = false
@@ -346,7 +370,6 @@ function EclipseUI:CreateWindow(options)
 		end
 	end)
 
-	-- Fullscreen / Shrink Toggle Button
 	resizeBtn.MouseButton1Click:Connect(function()
 		if isMinimized then return end
 		isFullscreen = not isFullscreen
@@ -368,7 +391,6 @@ function EclipseUI:CreateWindow(options)
 		end
 	end)
 
-	-- Destroy Button (X)
 	destroyBtn.MouseButton1Click:Connect(function()
 		if mainAnimConnection then
 			mainAnimConnection:Disconnect()
@@ -409,7 +431,7 @@ function EclipseUI:CreateWindow(options)
 
 			if not isMinimized then
 				TweenService:Create(mainGroup, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-					Size = UDim2.new(0, 422, 0, 270)
+					Size = UDim2.new(0, defaultSize.X.Offset - 8, 0, defaultSize.Y.Offset - 5)
 				}):Play()
 			end
 
@@ -444,16 +466,14 @@ function EclipseUI:CreateWindow(options)
 		end
 	end)
 
-	-- Tabs Sidebar
+	-- Sidebar Containers
 	local tabsContainer = Instance.new("Frame")
 	tabsContainer.Name = "TabsContainer"
-	tabsContainer.Position = UDim2.new(0, 0, 0, 0)
 	tabsContainer.Size = UDim2.new(0, 134, 1, -52)
 	tabsContainer.BackgroundTransparency = 1
 	tabsContainer.ZIndex = 3
 	tabsContainer.Parent = bodyGroup
 
-	-- Centered Active Pill for symmetrical shrinking from all sides
 	local activePill = Instance.new("Frame")
 	activePill.Name = "ActivePill"
 	activePill.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -506,7 +526,7 @@ function EclipseUI:CreateWindow(options)
 	tabsPadding.PaddingBottom = UDim.new(0, 8)
 	tabsPadding.Parent = tabs
 
-	-- User Info Section
+	-- User Info
 	local userInfoContainer = Instance.new("Frame")
 	userInfoContainer.Name = "UserInfoContainer"
 	userInfoContainer.AnchorPoint = Vector2.new(0, 1)
@@ -600,7 +620,6 @@ function EclipseUI:CreateWindow(options)
 	usernameLabel.ZIndex = 4
 	usernameLabel.Parent = userContentGroup
 
-	-- Premium Interactive Animations & One-Click Toggle
 	local isHiddenUser = false
 	local userHoverInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 	local userPressInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -628,9 +647,7 @@ function EclipseUI:CreateWindow(options)
 	end)
 
 	userInfo.MouseButton1Click:Connect(function()
-		-- Smooth spring transition on single click
 		isHiddenUser = not isHiddenUser
-
 		local fadeOut = TweenService:Create(userContentGroup, fadeOutInfo, { GroupTransparency = 1 })
 		fadeOut:Play()
 
@@ -659,7 +676,7 @@ function EclipseUI:CreateWindow(options)
 	contents.ZIndex = 3
 	contents.Parent = bodyGroup
 
-	local Window = { Tabs = {}, ActiveTab = nil }
+	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = toggleKey }
 
 	local pillTweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
 	local fadeTweenInfo = TweenInfo.new(0.20, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
@@ -678,7 +695,6 @@ function EclipseUI:CreateWindow(options)
 
 		activePill.Visible = true
 		local targetY = targetTab.Frame.AbsolutePosition.Y - tabsContainer.AbsolutePosition.Y
-		-- Position centered vertically relative to 32px tab height (targetY + 16)
 		tween(activePill, pillTweenInfo, { Position = UDim2.new(0.5, 0, 0, targetY + 16) })
 
 		for _, tab in ipairs(Window.Tabs) do
@@ -855,71 +871,558 @@ function EclipseUI:CreateWindow(options)
 			end)
 		end
 
-		function TabObject:Button(btnOptions)
-			btnOptions = btnOptions or {}
-			local btnName = btnOptions.Title or btnOptions.Name or "Button"
-			local callback = btnOptions.Callback or function() end
+		-- Helper component builder factory
+		local function createContainer(parent, height)
+			local frame = Instance.new("Frame")
+			frame.Size = UDim2.new(1, 0, 0, height)
+			frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			frame.BackgroundTransparency = 0.95
+			frame.ZIndex = 4
+			frame.Parent = parent
 
-			local btn = Instance.new("TextButton")
+			local corner = Instance.new("UICorner")
+			corner.CornerRadius = UDim.new(0, 8)
+			corner.Parent = frame
+
+			local stroke = Instance.new("UIStroke")
+			stroke.Color = Color3.fromRGB(255, 255, 255)
+			stroke.Thickness = 1
+			stroke.Transparency = 0.92
+			stroke.Parent = frame
+
+			return frame, stroke
+		end
+
+		-- Sections Support
+		function TabObject:Section(secOptions)
+			secOptions = secOptions or {}
+			local secTitle = typeof(secOptions) == "string" and secOptions or (secOptions.Title or secOptions.Name or "Section")
+
+			local secFrame = Instance.new("Frame")
+			secFrame.Size = UDim2.new(1, 0, 0, 0)
+			secFrame.AutomaticSize = Enum.AutomaticSize.Y
+			secFrame.BackgroundTransparency = 1
+			secFrame.ZIndex = 4
+			secFrame.Parent = page
+
+			local secLayout = Instance.new("UIListLayout")
+			secLayout.Padding = UDim.new(0, 6)
+			secLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			secLayout.Parent = secFrame
+
+			local secHeader = Instance.new("TextLabel")
+			secHeader.Size = UDim2.new(1, 0, 0, 18)
+			secHeader.BackgroundTransparency = 1
+			secHeader.Text = string.upper(secTitle)
+			secHeader.TextColor3 = Color3.fromRGB(110, 120, 140)
+			secHeader.TextSize = 10
+			secHeader.Font = Enum.Font.GothamBold
+			secHeader.TextXAlignment = Enum.TextXAlignment.Left
+			secHeader.ZIndex = 4
+			secHeader.Parent = secFrame
+
+			local SectionObj = {}
+
+			-- Allow components to be added inside Sections seamlessly
+			for k, v in pairs(TabObject) do
+				if typeof(v) == "function" and k ~= "Section" then
+					SectionObj[k] = function(self, opts)
+						return v(TabObject, opts, secFrame)
+					end
+				end
+			end
+
+			return SectionObj
+		end
+
+		-- Component: Paragraph
+		function TabObject:Paragraph(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local title = opts.Title or "Paragraph Title"
+			local content = opts.Content or opts.Text or "Paragraph content description goes here."
+
+			local pFrame, pStroke = createContainer(targetParent, 0)
+			pFrame.AutomaticSize = Enum.AutomaticSize.Y
+
+			local layout = Instance.new("UIListLayout")
+			layout.Padding = UDim.new(0, 4)
+			layout.SortOrder = Enum.SortOrder.LayoutOrder
+			layout.Parent = pFrame
+
+			local padding = Instance.new("UIPadding")
+			padding.PaddingLeft = UDim.new(0, 12)
+			padding.PaddingRight = UDim.new(0, 12)
+			padding.PaddingTop = UDim.new(0, 10)
+			padding.PaddingBottom = UDim.new(0, 10)
+			padding.Parent = pFrame
+
+			local pTitle = Instance.new("TextLabel")
+			pTitle.Size = UDim2.new(1, 0, 0, 15)
+			pTitle.BackgroundTransparency = 1
+			pTitle.Text = title
+			pTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+			pTitle.TextSize = 12
+			pTitle.Font = Enum.Font.GothamBold
+			pTitle.TextXAlignment = Enum.TextXAlignment.Left
+			pTitle.ZIndex = 5
+			pTitle.Parent = pFrame
+
+			local pText = Instance.new("TextLabel")
+			pText.Size = UDim2.new(1, 0, 0, 0)
+			pText.AutomaticSize = Enum.AutomaticSize.Y
+			pText.BackgroundTransparency = 1
+			pText.Text = content
+			pText.TextColor3 = Color3.fromRGB(150, 160, 180)
+			pText.TextSize = 11
+			pText.Font = Enum.Font.Gotham
+			pText.TextXAlignment = Enum.TextXAlignment.Left
+			pText.TextWrapped = true
+			pText.ZIndex = 5
+			pText.Parent = pFrame
+
+			return {
+				SetTitle = function(_, newTitle) pTitle.Text = newTitle end,
+				SetContent = function(_, newContent) pText.Text = newContent end
+			}
+		end
+
+		-- Component: Button
+		function TabObject:Button(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local btnName = opts.Title or opts.Name or "Button"
+			local callback = opts.Callback or function() end
+
+			local btn, stroke = createContainer(targetParent, 38)
 			btn.Name = btnName .. "Button"
-			btn.Size = UDim2.new(1, 0, 0, 42)
-			btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-			btn.BackgroundTransparency = 0.95
-			btn.AutoButtonColor = false
-			btn.Text = ""
-			btn.ZIndex = 4
-			btn.Parent = page
-
-			local cardCorner = Instance.new("UICorner")
-			cardCorner.CornerRadius = UDim.new(0, 8)
-			cardCorner.Parent = btn
-
-			local cardStroke = Instance.new("UIStroke")
-			cardStroke.Color = Color3.fromRGB(255, 255, 255)
-			cardStroke.Thickness = 1
-			cardStroke.Transparency = 0.92
-			cardStroke.Parent = btn
 
 			local label = Instance.new("TextLabel")
 			label.Size = UDim2.new(1, -28, 1, 0)
 			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = btnName
-			label.TextColor3 = Color3.fromRGB(255, 255, 255)
-			label.TextSize = 13
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
+			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
-			label.Active = false
 			label.ZIndex = 5
 			label.Parent = btn
 
-			btn.MouseEnter:Connect(function()
+			local clickBtn = Instance.new("TextButton")
+			clickBtn.Size = UDim2.new(1, 0, 1, 0)
+			clickBtn.BackgroundTransparency = 1
+			clickBtn.Text = ""
+			clickBtn.ZIndex = 6
+			clickBtn.Parent = btn
+
+			clickBtn.MouseEnter:Connect(function()
 				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.90 })
-				tween(cardStroke, fadeTweenInfo, { Transparency = 0.82 })
+				tween(stroke, fadeTweenInfo, { Transparency = 0.82 })
 				tween(label, fadeTweenInfo, { TextColor3 = Color3.fromRGB(255, 255, 255) })
 			end)
 
-			btn.MouseLeave:Connect(function()
+			clickBtn.MouseLeave:Connect(function()
 				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.95 })
-				tween(cardStroke, fadeTweenInfo, { Transparency = 0.92 })
+				tween(stroke, fadeTweenInfo, { Transparency = 0.92 })
 				tween(label, fadeTweenInfo, { TextColor3 = Color3.fromRGB(240, 245, 255) })
 			end)
 
-			btn.MouseButton1Down:Connect(function()
+			clickBtn.MouseButton1Down:Connect(function()
 				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.82 })
-				tween(cardStroke, fadeTweenInfo, { Transparency = 0.70 })
+				tween(stroke, fadeTweenInfo, { Transparency = 0.70 })
 			end)
 
-			btn.MouseButton1Up:Connect(function()
+			clickBtn.MouseButton1Up:Connect(function()
 				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.90 })
-				tween(cardStroke, fadeTweenInfo, { Transparency = 0.82 })
+				tween(stroke, fadeTweenInfo, { Transparency = 0.82 })
 			end)
 
-			btn.MouseButton1Click:Connect(function()
+			clickBtn.MouseButton1Click:Connect(function()
 				callback()
 			end)
 
 			return btn
+		end
+
+		-- Component: Toggle
+		function TabObject:Toggle(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local title = opts.Title or opts.Name or "Toggle"
+			local state = opts.Default or false
+			local callback = opts.Callback or function() end
+
+			local toggleFrame, stroke = createContainer(targetParent, 38)
+
+			local label = Instance.new("TextLabel")
+			label.Size = UDim2.new(1, -60, 1, 0)
+			label.Position = UDim2.new(0, 14, 0, 0)
+			label.BackgroundTransparency = 1
+			label.Text = title
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
+			label.TextSize = 12
+			label.Font = Enum.Font.GothamBold
+			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.ZIndex = 5
+			label.Parent = toggleFrame
+
+			local switchTrack = Instance.new("Frame")
+			switchTrack.AnchorPoint = Vector2.new(1, 0.5)
+			switchTrack.Position = UDim2.new(1, -12, 0.5, 0)
+			switchTrack.Size = UDim2.new(0, 36, 0, 18)
+			switchTrack.BackgroundColor3 = state and Color3.fromRGB(75, 120, 240) or Color3.fromRGB(35, 40, 50)
+			switchTrack.ZIndex = 5
+			switchTrack.Parent = toggleFrame
+
+			local trackCorner = Instance.new("UICorner")
+			trackCorner.CornerRadius = UDim.new(1, 0)
+			trackCorner.Parent = switchTrack
+
+			local switchThumb = Instance.new("Frame")
+			switchThumb.AnchorPoint = Vector2.new(0, 0.5)
+			switchThumb.Position = state and UDim2.new(1, -16, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
+			switchThumb.Size = UDim2.new(0, 14, 0, 14)
+			switchThumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			switchThumb.ZIndex = 6
+			switchThumb.Parent = switchTrack
+
+			local thumbCorner = Instance.new("UICorner")
+			thumbCorner.CornerRadius = UDim.new(1, 0)
+			thumbCorner.Parent = switchThumb
+
+			local clickBtn = Instance.new("TextButton")
+			clickBtn.Size = UDim2.new(1, 0, 1, 0)
+			clickBtn.BackgroundTransparency = 1
+			clickBtn.Text = ""
+			clickBtn.ZIndex = 7
+			clickBtn.Parent = toggleFrame
+
+			local function updateState(newState)
+				state = newState
+				local trackColor = state and Color3.fromRGB(75, 120, 240) or Color3.fromRGB(35, 40, 50)
+				local thumbPos = state and UDim2.new(1, -16, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
+
+				tween(switchTrack, fadeTweenInfo, { BackgroundColor3 = trackColor })
+				tween(switchThumb, fadeTweenInfo, { Position = thumbPos })
+
+				pcall(callback, state)
+			end
+
+			clickBtn.MouseButton1Click:Connect(function()
+				updateState(not state)
+			end)
+
+			return {
+				Set = function(_, val) updateState(val) end,
+				Value = state
+			}
+		end
+
+		-- Component: Slider
+		function TabObject:Slider(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local title = opts.Title or opts.Name or "Slider"
+			local min = opts.Min or 0
+			local max = opts.Max or 100
+			local default = math.clamp(opts.Default or min, min, max)
+			local callback = opts.Callback or function() end
+
+			local sliderFrame, stroke = createContainer(targetParent, 46)
+
+			local label = Instance.new("TextLabel")
+			label.Size = UDim2.new(1, -60, 0, 20)
+			label.Position = UDim2.new(0, 14, 0, 6)
+			label.BackgroundTransparency = 1
+			label.Text = title
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
+			label.TextSize = 12
+			label.Font = Enum.Font.GothamBold
+			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.ZIndex = 5
+			label.Parent = sliderFrame
+
+			local valLabel = Instance.new("TextLabel")
+			valLabel.Size = UDim2.new(0, 40, 0, 20)
+			valLabel.Position = UDim2.new(1, -54, 0, 6)
+			valLabel.BackgroundTransparency = 1
+			valLabel.Text = tostring(default)
+			valLabel.TextColor3 = Color3.fromRGB(150, 160, 180)
+			valLabel.TextSize = 11
+			valLabel.Font = Enum.Font.GothamBold
+			valLabel.TextXAlignment = Enum.TextXAlignment.Right
+			valLabel.ZIndex = 5
+			valLabel.Parent = sliderFrame
+
+			local track = Instance.new("Frame")
+			track.Position = UDim2.new(0, 14, 0, 30)
+			track.Size = UDim2.new(1, -28, 0, 6)
+			track.BackgroundColor3 = Color3.fromRGB(35, 40, 50)
+			track.ZIndex = 5
+			track.Parent = sliderFrame
+
+			local trackCorner = Instance.new("UICorner")
+			trackCorner.CornerRadius = UDim.new(1, 0)
+			trackCorner.Parent = track
+
+			local fill = Instance.new("Frame")
+			fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+			fill.BackgroundColor3 = Color3.fromRGB(75, 120, 240)
+			fill.ZIndex = 6
+			fill.Parent = track
+
+			local fillCorner = Instance.new("UICorner")
+			fillCorner.CornerRadius = UDim.new(1, 0)
+			fillCorner.Parent = fill
+
+			local isDragging = false
+
+			local function updateSlider(input)
+				local percentage = math.clamp((input.Position.X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
+				local value = math.floor(min + (max - min) * percentage)
+				valLabel.Text = tostring(value)
+				tween(fill, TweenInfo.new(0.05), { Size = UDim2.new(percentage, 0, 1, 0) })
+				pcall(callback, value)
+			end
+
+			sliderFrame.InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+					isDragging = true
+					updateSlider(input)
+				end
+			end)
+
+			UserInputService.InputChanged:Connect(function(input)
+				if isDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+					updateSlider(input)
+				end
+			end)
+
+			UserInputService.InputEnded:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+					isDragging = false
+				end
+			end)
+
+			return {
+				Set = function(_, val)
+					val = math.clamp(val, min, max)
+					local percentage = (val - min) / (max - min)
+					valLabel.Text = tostring(val)
+					tween(fill, fadeTweenInfo, { Size = UDim2.new(percentage, 0, 1, 0) })
+					pcall(callback, val)
+				end
+			}
+		end
+
+		-- Component: Textbox / Input
+		function TabObject:Textbox(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local title = opts.Title or opts.Name or "Input"
+			local placeholder = opts.Placeholder or "Enter text..."
+			local callback = opts.Callback or function() end
+
+			local tbFrame, stroke = createContainer(targetParent, 38)
+
+			local label = Instance.new("TextLabel")
+			label.Size = UDim2.new(1, -140, 1, 0)
+			label.Position = UDim2.new(0, 14, 0, 0)
+			label.BackgroundTransparency = 1
+			label.Text = title
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
+			label.TextSize = 12
+			label.Font = Enum.Font.GothamBold
+			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.ZIndex = 5
+			label.Parent = tbFrame
+
+			local boxContainer = Instance.new("Frame")
+			boxContainer.AnchorPoint = Vector2.new(1, 0.5)
+			boxContainer.Position = UDim2.new(1, -10, 0.5, 0)
+			boxContainer.Size = UDim2.new(0, 120, 0, 24)
+			boxContainer.BackgroundColor3 = Color3.fromRGB(25, 28, 35)
+			boxContainer.ZIndex = 5
+			boxContainer.Parent = tbFrame
+
+			local boxCorner = Instance.new("UICorner")
+			boxCorner.CornerRadius = UDim.new(0, 6)
+			boxCorner.Parent = boxContainer
+
+			local textBox = Instance.new("TextBox")
+			textBox.Size = UDim2.new(1, -12, 1, 0)
+			textBox.Position = UDim2.new(0, 6, 0, 0)
+			textBox.BackgroundTransparency = 1
+			textBox.PlaceholderText = placeholder
+			textBox.PlaceholderColor3 = Color3.fromRGB(100, 110, 130)
+			textBox.Text = ""
+			textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+			textBox.TextSize = 11
+			textBox.Font = Enum.Font.Gotham
+			textBox.TextXAlignment = Enum.TextXAlignment.Left
+			textBox.ClearTextOnFocus = false
+			textBox.ZIndex = 6
+			textBox.Parent = boxContainer
+
+			textBox.FocusLost:Connect(function(enterPressed)
+				pcall(callback, textBox.Text, enterPressed)
+			end)
+
+			return {
+				GetText = function() return textBox.Text end,
+				SetText = function(_, text) textBox.Text = text end
+			}
+		end
+
+		-- Component: Keybind Selector
+		function TabObject:Keybind(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local title = opts.Title or opts.Name or "Keybind"
+			local currentKey = opts.Default or Enum.KeyCode.E
+			local callback = opts.Callback or function() end
+
+			local kbFrame, stroke = createContainer(targetParent, 38)
+
+			local label = Instance.new("TextLabel")
+			label.Size = UDim2.new(1, -100, 1, 0)
+			label.Position = UDim2.new(0, 14, 0, 0)
+			label.BackgroundTransparency = 1
+			label.Text = title
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
+			label.TextSize = 12
+			label.Font = Enum.Font.GothamBold
+			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.ZIndex = 5
+			label.Parent = kbFrame
+
+			local keyBtn = Instance.new("TextButton")
+			keyBtn.AnchorPoint = Vector2.new(1, 0.5)
+			keyBtn.Position = UDim2.new(1, -10, 0.5, 0)
+			keyBtn.Size = UDim2.new(0, 80, 0, 24)
+			keyBtn.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
+			keyBtn.Text = currentKey.Name
+			keyBtn.TextColor3 = Color3.fromRGB(180, 190, 210)
+			keyBtn.TextSize = 11
+			keyBtn.Font = Enum.Font.GothamBold
+			keyBtn.ZIndex = 6
+			keyBtn.Parent = kbFrame
+
+			local keyCorner = Instance.new("UICorner")
+			keyCorner.CornerRadius = UDim.new(0, 6)
+			keyCorner.Parent = keyBtn
+
+			local listening = false
+
+			keyBtn.MouseButton1Click:Connect(function()
+				listening = true
+				keyBtn.Text = "..."
+				keyBtn.TextColor3 = Color3.fromRGB(255, 220, 100)
+			end)
+
+			UserInputService.InputBegan:Connect(function(input, gpe)
+				if listening and not gpe and input.UserInputType == Enum.UserInputType.Keyboard then
+					listening = false
+					currentKey = input.KeyCode
+					keyBtn.Text = currentKey.Name
+					keyBtn.TextColor3 = Color3.fromRGB(180, 190, 210)
+					pcall(callback, currentKey)
+				end
+			end)
+
+			return {
+				GetKey = function() return currentKey end
+			}
+		end
+
+		-- Component: Dropdown
+		function TabObject:Dropdown(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local title = opts.Title or opts.Name or "Dropdown"
+			local items = opts.Items or {}
+			local selected = opts.Default or items[1] or "Select..."
+			local callback = opts.Callback or function() end
+
+			local ddFrame, stroke = createContainer(targetParent, 38)
+			ddFrame.ClipsDescendants = true
+
+			local label = Instance.new("TextLabel")
+			label.Size = UDim2.new(1, -120, 0, 38)
+			label.Position = UDim2.new(0, 14, 0, 0)
+			label.BackgroundTransparency = 1
+			label.Text = title
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
+			label.TextSize = 12
+			label.Font = Enum.Font.GothamBold
+			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.ZIndex = 5
+			label.Parent = ddFrame
+
+			local selLabel = Instance.new("TextLabel")
+			selLabel.AnchorPoint = Vector2.new(1, 0)
+			selLabel.Position = UDim2.new(1, -14, 0, 0)
+			selLabel.Size = UDim2.new(0, 100, 0, 38)
+			selLabel.BackgroundTransparency = 1
+			selLabel.Text = tostring(selected) .. " v"
+			selLabel.TextColor3 = Color3.fromRGB(150, 160, 180)
+			selLabel.TextSize = 11
+			selLabel.Font = Enum.Font.GothamBold
+			selLabel.TextXAlignment = Enum.TextXAlignment.Right
+			selLabel.ZIndex = 5
+			selLabel.Parent = ddFrame
+
+			local openBtn = Instance.new("TextButton")
+			openBtn.Size = UDim2.new(1, 0, 0, 38)
+			openBtn.BackgroundTransparency = 1
+			openBtn.Text = ""
+			openBtn.ZIndex = 6
+			openBtn.Parent = ddFrame
+
+			local isOpen = false
+
+			local itemsList = Instance.new("Frame")
+			itemsList.Position = UDim2.new(0, 0, 0, 38)
+			itemsList.Size = UDim2.new(1, 0, 0, #items * 28)
+			itemsList.BackgroundTransparency = 1
+			itemsList.ZIndex = 5
+			itemsList.Parent = ddFrame
+
+			local listLayout = Instance.new("UIListLayout")
+			listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			listLayout.Parent = itemsList
+
+			for _, item in ipairs(items) do
+				local itemBtn = Instance.new("TextButton")
+				itemBtn.Size = UDim2.new(1, 0, 0, 28)
+				itemBtn.BackgroundTransparency = 1
+				itemBtn.Text = "  " .. tostring(item)
+				itemBtn.TextColor3 = Color3.fromRGB(180, 190, 210)
+				itemBtn.TextSize = 11
+				itemBtn.Font = Enum.Font.Gotham
+				itemBtn.TextXAlignment = Enum.TextXAlignment.Left
+				itemBtn.ZIndex = 6
+				itemBtn.Parent = itemsList
+
+				itemBtn.MouseButton1Click:Connect(function()
+					selected = item
+					selLabel.Text = tostring(selected) .. " v"
+					isOpen = false
+					tween(ddFrame, fadeTweenInfo, { Size = UDim2.new(1, 0, 0, 38) })
+					pcall(callback, selected)
+				end)
+			end
+
+			openBtn.MouseButton1Click:Connect(function()
+				isOpen = not isOpen
+				local targetHeight = isOpen and (38 + #items * 28) or 38
+				tween(ddFrame, fadeTweenInfo, { Size = UDim2.new(1, 0, 0, targetHeight) })
+			end)
+
+			return {
+				GetSelected = function() return selected end
+			}
 		end
 
 		return TabObject
