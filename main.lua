@@ -299,7 +299,7 @@ function EclipseUI:CreateWindow(options)
 		end
 	end
 
-	-- Reversed creation order so Right-Aligned UIListLayout renders: [Minus] [Fullscreen/Shrink] [Destroy]
+	-- Controls: [Minus] [Fullscreen/Shrink] [Destroy]
 	local destroyBtn = createControlButton("DestroyBtn", "x", Color3.fromRGB(255, 60, 60))
 	local resizeBtn = createControlButton("ResizeBtn", "maximize", Color3.fromRGB(255, 255, 255))
 	local minimizeBtn = createControlButton("MinimizeBtn", "minus", Color3.fromRGB(255, 255, 255))
@@ -613,7 +613,7 @@ function EclipseUI:CreateWindow(options)
 				if previousTab == tab then
 					tween(tab.PageGroup, fadeTweenInfo, { GroupTransparency = 1, Position = UDim2.new(0, 0, 0, -8) })
 					task.delay(0.20, function()
-						if Window.ActiveTab ~= tab me then
+						if Window.ActiveTab ~= tab then
 							tab.PageGroup.Visible = false
 						end
 					end)
