@@ -306,7 +306,7 @@ function EclipseUI:CreateWindow(options)
 	-- Controls: [Minus] [Fullscreen/Shrink] [Destroy]
 	local minimizeBtn = createControlButton("MinimizeBtn", "minus", Color3.fromRGB(255, 255, 255), 1)
 	local resizeBtn = createControlButton("ResizeBtn", "maximize", Color3.fromRGB(255, 255, 255), 2)
-	local destroyBtn = createControlButton("DestroyBtn", "x", Color3.fromRGB(255, 60, 60), 3, 18) -- Set X button icon size to 18px
+	local destroyBtn = createControlButton("DestroyBtn", "x", Color3.fromRGB(255, 60, 60), 3, 18)
 
 	local isMinimized = false
 	local isMinimizing = false
@@ -453,10 +453,12 @@ function EclipseUI:CreateWindow(options)
 	tabsContainer.ZIndex = 3
 	tabsContainer.Parent = bodyGroup
 
+	-- Centered Active Pill for symmetrical shrinking from all sides
 	local activePill = Instance.new("Frame")
 	activePill.Name = "ActivePill"
+	activePill.AnchorPoint = Vector2.new(0.5, 0.5)
 	activePill.Size = UDim2.new(1, -20, 0, 32)
-	activePill.Position = UDim2.new(0, 10, 0, 8)
+	activePill.Position = UDim2.new(0.5, 0, 0, 24)
 	activePill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	activePill.BackgroundTransparency = 0.82
 	activePill.Visible = false
@@ -595,7 +597,8 @@ function EclipseUI:CreateWindow(options)
 
 		activePill.Visible = true
 		local targetY = targetTab.Frame.AbsolutePosition.Y - tabsContainer.AbsolutePosition.Y
-		tween(activePill, pillTweenInfo, { Position = UDim2.new(0, 10, 0, targetY) })
+		-- Position centered vertically relative to 32px tab height (targetY + 16)
+		tween(activePill, pillTweenInfo, { Position = UDim2.new(0.5, 0, 0, targetY + 16) })
 
 		for _, tab in ipairs(Window.Tabs) do
 			if tab == targetTab then
@@ -751,7 +754,8 @@ function EclipseUI:CreateWindow(options)
 
 		clickBtn.MouseButton1Down:Connect(function()
 			if Window.ActiveTab == TabObject then
-				tween(activePill, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.new(1, -24, 0, 30) })
+				-- Shrinks uniformly from all sides
+				tween(activePill, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.new(1, -26, 0, 28) })
 			end
 		end)
 
