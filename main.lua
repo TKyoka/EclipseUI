@@ -180,7 +180,7 @@ function EclipseUI:CreateWindow(options)
 	local lineTransparency = 0.92
 
 	local headerLine1 = Instance.new("Frame")
-	headerLine1.Position = UDim2.new(0, 134, 0, 46) -- Fixed intersection cross-hair line alignment
+	headerLine1.Position = UDim2.new(0, 134, 0, 46)
 	headerLine1.Size = UDim2.new(1, -134, 0, 1)
 	headerLine1.BackgroundColor3 = lineDarkColor
 	headerLine1.BackgroundTransparency = lineTransparency
@@ -197,9 +197,10 @@ function EclipseUI:CreateWindow(options)
 	headerLine2.ZIndex = 2
 	headerLine2.Parent = linesCanvasGroup
 
+	-- Fixed vertical line: Starts below the header (Y = 46) so it doesn't cross-hair through the title bar
 	local verticalLine = Instance.new("Frame")
-	verticalLine.Position = UDim2.new(0, 134, 0, 0)
-	verticalLine.Size = UDim2.new(0, 1, 1, 0)
+	verticalLine.Position = UDim2.new(0, 134, 0, 46)
+	verticalLine.Size = UDim2.new(0, 1, 1, -46)
 	verticalLine.BackgroundColor3 = lineDarkColor
 	verticalLine.BackgroundTransparency = lineTransparency
 	verticalLine.BorderSizePixel = 0
@@ -720,14 +721,14 @@ function EclipseUI:CreateWindow(options)
 		bgWatermark.Parent = mainGroup
 	end
 
-	-- Smooth Dragging with Watermark & Line Fade Trigger (Disabled completely in Fullscreen mode)
+	-- Smooth Dragging with Watermark & Line Fade Trigger (Strictly blocked if isFullscreen is true)
 	local dragging = false
 	local dragStart = Vector2.zero
 	local startPos = UDim2.new()
 	local targetPos = mainGroup.Position
 
 	header.InputBegan:Connect(function(input)
-		if isFullscreen then return end -- Prevent dragging or shrinking triggers when maximized in fullscreen
+		if isFullscreen then return end -- Completely blocks dragging and header-click interactions while maximized
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			local mousePos = input.Position
 			local controlsPos = controlsFrame.AbsolutePosition
