@@ -1131,7 +1131,7 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
-        -- Redesigned Premium Slider Component
+        -- Redesigned Inline Glass Slider Component
 		function TabObject:Slider(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1141,11 +1141,11 @@ function EclipseUI:CreateWindow(options)
 			local default = math.clamp(opts.Default or min, min, max)
 			local callback = opts.Callback or function() end
 
-			local sliderFrame, stroke = createContainer(targetParent, 48)
+			local sliderFrame, stroke = createContainer(targetParent, 42)
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, -70, 0, 20)
-			label.Position = UDim2.new(0, 14, 0, 7)
+			label.Size = UDim2.new(0, 130, 1, 0)
+			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
@@ -1155,22 +1155,25 @@ function EclipseUI:CreateWindow(options)
 			label.ZIndex = 5
 			label.Parent = sliderFrame
 
-			local valLabel = Instance.new("TextLabel")
-			valLabel.Size = UDim2.new(0, 50, 0, 20)
-			valLabel.Position = UDim2.new(1, -64, 0, 7)
-			valLabel.BackgroundTransparency = 1
-			valLabel.Text = tostring(default)
-			valLabel.TextColor3 = Color3.fromRGB(147, 197, 253)
-			valLabel.TextSize = 11
-			valLabel.Font = Enum.Font.GothamBold
-			valLabel.TextXAlignment = Enum.TextXAlignment.Right
-			valLabel.ZIndex = 5
-			valLabel.Parent = sliderFrame
+			-- Minimum Number Label
+			local minLabel = Instance.new("TextLabel")
+			minLabel.Size = UDim2.new(0, 28, 1, 0)
+			minLabel.Position = UDim2.new(1, -215, 0, 0)
+			minLabel.BackgroundTransparency = 1
+			minLabel.Text = tostring(min)
+			minLabel.TextColor3 = Color3.fromRGB(160, 170, 190)
+			minLabel.TextSize = 11
+			minLabel.Font = Enum.Font.GothamBold
+			minLabel.TextXAlignment = Enum.TextXAlignment.Right
+			minLabel.ZIndex = 5
+			minLabel.Parent = sliderFrame
 
+			-- Slider Track
 			local track = Instance.new("Frame")
-			track.Position = UDim2.new(0, 14, 0, 33)
-			track.Size = UDim2.new(1, -28, 0, 6)
-			track.BackgroundColor3 = Color3.fromRGB(18, 21, 28)
+			track.AnchorPoint = Vector2.new(0, 0.5)
+			track.Position = UDim2.new(1, -180, 0.5, 0)
+			track.Size = UDim2.new(0, 100, 0, 6)
+			track.BackgroundColor3 = Color3.fromRGB(22, 26, 35)
 			track.ZIndex = 5
 			track.Parent = sliderFrame
 
@@ -1179,14 +1182,15 @@ function EclipseUI:CreateWindow(options)
 			trackCorner.Parent = track
 
 			local trackStroke = Instance.new("UIStroke")
-			trackStroke.Color = Color3.fromRGB(255, 255, 255)
+			trackStroke.Color = Color3.fromRGB(190, 200, 215)
 			trackStroke.Thickness = 1
-			trackStroke.Transparency = 0.90
+			trackStroke.Transparency = 0.85
 			trackStroke.Parent = track
 
+			-- Silver/Platinum Fill Line
 			local fill = Instance.new("Frame")
 			fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
-			fill.BackgroundColor3 = Color3.fromRGB(59, 130, 246)
+			fill.BackgroundColor3 = Color3.fromRGB(205, 215, 230)
 			fill.ZIndex = 6
 			fill.Parent = track
 
@@ -1196,34 +1200,70 @@ function EclipseUI:CreateWindow(options)
 
 			local fillGradient = Instance.new("UIGradient")
 			fillGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Color3.fromRGB(96, 165, 250)),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(37, 99, 235))
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 230, 245)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 165, 190))
 			})
 			fillGradient.Parent = fill
 
-			-- Sleek draggable thumb handle
+			-- Maximum Number Label
+			local maxLabel = Instance.new("TextLabel")
+			maxLabel.Size = UDim2.new(0, 28, 1, 0)
+			maxLabel.Position = UDim2.new(1, -74, 0, 0)
+			maxLabel.BackgroundTransparency = 1
+			maxLabel.Text = tostring(max)
+			maxLabel.TextColor3 = Color3.fromRGB(160, 170, 190)
+			maxLabel.TextSize = 11
+			maxLabel.Font = Enum.Font.GothamBold
+			maxLabel.TextXAlignment = Enum.TextXAlignment.Left
+			maxLabel.ZIndex = 5
+			maxLabel.Parent = sliderFrame
+
+			-- Glass 32px Rectangle Thumb Handle
 			local thumb = Instance.new("Frame")
 			thumb.AnchorPoint = Vector2.new(0.5, 0.5)
 			thumb.Position = UDim2.new(1, 0, 0.5, 0)
-			thumb.Size = UDim2.new(0, 14, 0, 14)
+			thumb.Size = UDim2.new(0, 32, 0, 16)
 			thumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			thumb.BackgroundTransparency = 0.75
 			thumb.ZIndex = 7
 			thumb.Parent = fill
 
 			local thumbCorner = Instance.new("UICorner")
-			thumbCorner.CornerRadius = UDim.new(1, 0)
+			thumbCorner.CornerRadius = UDim.new(0, 5)
 			thumbCorner.Parent = thumb
 
 			local thumbStroke = Instance.new("UIStroke")
-			thumbStroke.Color = Color3.fromRGB(59, 130, 246)
-			thumbStroke.Thickness = 2
+			thumbStroke.Color = Color3.fromRGB(255, 255, 255)
+			thumbStroke.Thickness = 1
+			thumbStroke.Transparency = 0.4
 			thumbStroke.Parent = thumb
+
+			local thumbGradient = Instance.new("UIGradient")
+			thumbGradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 210, 230))
+			})
+			thumbGradient.Rotation = 90
+			thumbGradient.Parent = thumb
+
+			-- Current Value Indicator Popup/Text
+			local valLabel = Instance.new("TextLabel")
+			valLabel.Size = UDim2.new(0, 35, 1, 0)
+			valLabel.Position = UDim2.new(1, -40, 0, 0)
+			valLabel.BackgroundTransparency = 1
+			valLabel.Text = tostring(default)
+			valLabel.TextColor3 = Color3.fromRGB(240, 245, 255)
+			valLabel.TextSize = 11
+			valLabel.Font = Enum.Font.GothamBold
+			valLabel.TextXAlignment = Enum.TextXAlignment.Right
+			valLabel.ZIndex = 5
+			valLabel.Parent = sliderFrame
 
 			local isDragging = false
 
 			local function updateSlider(input)
 				local percentage = math.clamp((input.Position.X - track.AbsolutePosition.X) / track.AbsoluteSize.X, 0, 1)
-				local value = math.floor(min + (max - min) * percentage)
+				local value = math.floor(min + (max - min) * percentage + 0.5)
 				valLabel.Text = tostring(value)
 				tween(fill, TweenInfo.new(0.05), { Size = UDim2.new(percentage, 0, 1, 0) })
 				pcall(callback, value)
