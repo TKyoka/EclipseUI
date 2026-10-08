@@ -48,6 +48,7 @@ function EclipseUI:CreateWindow(options)
 	local windowIcon = options.Icon
 	local toggleKey = options.ToggleKey or Enum.KeyCode.RightControl
 	local bgName = options.BgName
+	local windowTags = options.Tags
 
 	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -244,18 +245,84 @@ function EclipseUI:CreateWindow(options)
 		titleOffsetLeft = 36
 	end
 
+	-- Header Title & Tags Wrapper
+	local titleWrapper = Instance.new("Frame")
+	titleWrapper.Name = "TitleWrapper"
+	titleWrapper.Size = UDim2.new(1, -(titleOffsetLeft + 104), 1, 0)
+	titleWrapper.Position = UDim2.new(0, titleOffsetLeft, 0, 0)
+	titleWrapper.BackgroundTransparency = 1
+	titleWrapper.ZIndex = 4
+	titleWrapper.Parent = header
+
+	local titleLayout = Instance.new("UIListLayout")
+	titleLayout.FillDirection = Enum.FillDirection.Horizontal
+	titleLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+	titleLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	titleLayout.Padding = UDim.new(0, 8)
+	titleLayout.Parent = titleWrapper
+
 	local titleLabel = Instance.new("TextLabel")
-	titleLabel.Size = UDim2.new(1, -(titleOffsetLeft + 104), 1, 0)
-	titleLabel.Position = UDim2.new(0, titleOffsetLeft, 0, 0)
+	titleLabel.Name = "Title"
+	titleLabel.Size = UDim2.new(0, 0, 1, 0)
+	titleLabel.AutomaticSize = Enum.AutomaticSize.X
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Text = windowName
 	titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 	titleLabel.TextSize = 14
 	titleLabel.Font = Enum.Font.GothamBold
 	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-	titleLabel.TextTruncate = Enum.TextTruncate.AtEnd
+	titleLabel.LayoutOrder = 1
 	titleLabel.ZIndex = 4
-	titleLabel.Parent = header
+	titleLabel.Parent = titleWrapper
+
+	if windowTags and typeof(windowTags) == "table" then
+		local tagsList = Instance.new("Frame")
+		tagsList.Name = "TagsList"
+		tagsList.Size = UDim2.new(0, 200, 1, 0)
+		tagsList.AutomaticSize = Enum.AutomaticSize.X
+		tagsList.BackgroundTransparency = 1
+		tagsList.LayoutOrder = 2
+		tagsList.ZIndex = 4
+		tagsList.Parent = titleWrapper
+
+		local tagsLayout = Instance.new("UIListLayout")
+		tagsLayout.FillDirection = Enum.FillDirection.Horizontal
+		tagsLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+		tagsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+		tagsLayout.Padding = UDim.new(0, 4)
+		tagsLayout.Parent = tagsList
+
+		for _, tagName in ipairs(windowTags) do
+			local tagPill = Instance.new("Frame")
+			tagPill.Size = UDim2.new(0, 0, 0, 18)
+			tagPill.AutomaticSize = Enum.AutomaticSize.X
+			tagPill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			tagPill.BackgroundTransparency = 0.90
+			tagPill.ZIndex = 4
+			tagPill.Parent = tagsList
+
+			local tagCorner = Instance.new("UICorner")
+			tagCorner.CornerRadius = UDim.new(1, 0)
+			tagCorner.Parent = tagPill
+
+			local tagPadding = Instance.new("UIPadding")
+			tagPadding.PaddingLeft = UDim.new(0, 6)
+			tagPadding.PaddingRight = UDim.new(0, 6)
+			tagPadding.Parent = tagPill
+
+			local tagText = Instance.new("TextLabel")
+			tagText.Size = UDim2.new(0, 0, 1, 0)
+			tagText.AutomaticSize = Enum.AutomaticSize.X
+			tagText.BackgroundTransparency = 1
+			tagText.Text = tostring(tagName)
+			tagText.TextColor3 = Color3.fromRGB(180, 190, 210)
+			tagText.TextSize = 10
+			tagText.Font = Enum.Font.GothamBold
+			tagText.TextXAlignment = Enum.TextXAlignment.Left
+			tagText.ZIndex = 4
+			tagText.Parent = tagPill
+		end
+	end
 
 	-- Window Control Buttons Container
 	local controlsFrame = Instance.new("Frame")
@@ -928,10 +995,11 @@ function EclipseUI:CreateWindow(options)
 			return frame, stroke
 		end
 
-		-- Reworked Section Component: Clean pill badge/pill header style
+		-- Original Section Component with Optional Icon Support
 		function TabObject:Section(secOptions)
 			secOptions = secOptions or {}
 			local secTitle = typeof(secOptions) == "string" and secOptions or (secOptions.Title or secOptions.Name or "Section")
+			local secIcon = typeof(secOptions) == "table" and secOptions.Icon or nil
 
 			local secFrame = Instance.new("Frame")
 			secFrame.Size = UDim2.new(1, 0, 0, 0)
@@ -945,35 +1013,46 @@ function EclipseUI:CreateWindow(options)
 			secLayout.SortOrder = Enum.SortOrder.LayoutOrder
 			secLayout.Parent = secFrame
 
-			local headerContainer = Instance.new("Frame")
-			headerContainer.Size = UDim2.new(1, 0, 0, 22)
-			headerContainer.BackgroundTransparency = 1
-			headerContainer.ZIndex = 4
-			headerContainer.Parent = secFrame
+			local secHeaderContainer = Instance.new("Frame")
+			secHeaderContainer.Size = UDim2.new(1, 0, 0, 20)
+			secHeaderContainer.BackgroundTransparency = 1
+			secHeaderContainer.ZIndex = 4
+			secHeaderContainer.Parent = secFrame
 
-			local accentBar = Instance.new("Frame")
-			accentBar.Size = UDim2.new(0, 3, 0, 11)
-			accentBar.Position = UDim2.new(0, 0, 0.5, -5)
-			accentBar.BackgroundColor3 = Color3.fromRGB(150, 170, 210)
-			accentBar.BorderSizePixel = 0
-			accentBar.ZIndex = 4
-			accentBar.Parent = headerContainer
+			local textOffsetX = 0
+			if secIcon then
+				local secIconImg = Instance.new("ImageLabel")
+				secIconImg.Size = UDim2.new(0, 14, 0, 14)
+				secIconImg.Position = UDim2.new(0, 0, 0.5, -7)
+				secIconImg.BackgroundTransparency = 1
+				secIconImg.Image = getIconAsset(secIcon)
+				secIconImg.ImageColor3 = Color3.fromRGB(130, 140, 165)
+				secIconImg.ZIndex = 4
+				secIconImg.Parent = secHeaderContainer
 
-			local accentBarCorner = Instance.new("UICorner")
-			accentBarCorner.CornerRadius = UDim.new(1, 0)
-			accentBarCorner.Parent = accentBar
+				if not iconsLoaded and not string.find(tostring(secIcon), "rbxassetid://") then
+					task.spawn(function()
+						repeat task.wait() until iconsLoaded or not secIconImg:IsDescendantOf(game)
+						if secIconImg:IsDescendantOf(game) then
+							secIconImg.Image = getIconAsset(secIcon)
+						end
+					end)
+				end
+
+				textOffsetX = 18
+			end
 
 			local secHeader = Instance.new("TextLabel")
-			secHeader.Size = UDim2.new(1, -12, 1, 0)
-			secHeader.Position = UDim2.new(0, 10, 0, 0)
+			secHeader.Size = UDim2.new(1, -textOffsetX, 1, 0)
+			secHeader.Position = UDim2.new(0, textOffsetX, 0, 0)
 			secHeader.BackgroundTransparency = 1
 			secHeader.Text = string.upper(secTitle)
-			secHeader.TextColor3 = Color3.fromRGB(160, 172, 198)
+			secHeader.TextColor3 = Color3.fromRGB(130, 140, 165)
 			secHeader.TextSize = 10
 			secHeader.Font = Enum.Font.GothamBold
 			secHeader.TextXAlignment = Enum.TextXAlignment.Left
 			secHeader.ZIndex = 4
-			secHeader.Parent = headerContainer
+			secHeader.Parent = secHeaderContainer
 
 			local SectionObj = {}
 
