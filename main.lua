@@ -11,7 +11,7 @@ local iconsLoaded = false
 
 task.spawn(function()
 	local success, result = pcall(function()
-		return game:HttpGet("https://raw.githubusercontent.com/TKyoka/EclipseUI/refs/heads/main/lucideicons")
+		return game:HttpGet("https://raw.githubusercontent.com/TKyoka/EclipseUI/refs/heads/main/lucideicons.lua")
 	end)
 
 	if success and result then
@@ -243,15 +243,17 @@ function EclipseUI:CreateWindow(options)
 	controlsLayout.FillDirection = Enum.FillDirection.Horizontal
 	controlsLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
 	controlsLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+	controlsLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	controlsLayout.Padding = UDim.new(0, 4)
 	controlsLayout.Parent = controlsFrame
 
-	local function createControlButton(name, iconName, hoverColor)
+	local function createControlButton(name, iconName, hoverColor, order)
 		local btnFrame = Instance.new("Frame")
 		btnFrame.Name = name
 		btnFrame.Size = UDim2.new(0, 24, 0, 24)
 		btnFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 		btnFrame.BackgroundTransparency = 1
+		btnFrame.LayoutOrder = order
 		btnFrame.ZIndex = 10
 		btnFrame.Parent = controlsFrame
 
@@ -300,14 +302,10 @@ function EclipseUI:CreateWindow(options)
 	end
 
 	-- Controls: [Minus] [Fullscreen/Shrink] [Destroy]
-	local destroyBtn = createControlButton("DestroyBtn", "x", Color3.fromRGB(255, 60, 60))
-	local resizeBtn = createControlButton("ResizeBtn", "maximize", Color3.fromRGB(255, 255, 255))
-	local minimizeBtn = createControlButton("MinimizeBtn", "minus", Color3.fromRGB(255, 255, 255))
-	
-	-- Force the exact order left-to-right: Minus (1), Maximize (2), Close (3)
-	minimizeBtn.Parent.LayoutOrder = 1
-	resizeBtn.Parent.LayoutOrder = 2
-	destroyBtn.Parent.LayoutOrder = 3
+	local minimizeBtn = createControlButton("MinimizeBtn", "minus", Color3.fromRGB(255, 255, 255), 1)
+	local resizeBtn = createControlButton("ResizeBtn", "maximize", Color3.fromRGB(255, 255, 255), 2)
+	local destroyBtn = createControlButton("DestroyBtn", "x", Color3.fromRGB(255, 60, 60), 3)
+
 	local isMinimized = false
 	local isMinimizing = false
 	local isFullscreen = false
