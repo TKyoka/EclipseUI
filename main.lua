@@ -78,23 +78,52 @@ function EclipseUI:CreateWindow(options)
 	uiCorner.Parent = mainGroup
 
 	local mainBackground = Instance.new("Frame")
-	mainBackground.Name = "AnimatedBackground"
+	mainBackground.Name = "SpaceBackground"
 	mainBackground.Size = UDim2.new(1, 0, 1, 0)
-	mainBackground.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	mainBackground.BackgroundTransparency = 0.92
+	mainBackground.BackgroundColor3 = Color3.fromRGB(8, 9, 14) -- Deep space cosmic tone
+	mainBackground.BackgroundTransparency = 0.1
 	mainBackground.BorderSizePixel = 0
+	mainBackground.ClipsDescendants = true
 	mainBackground.ZIndex = 0
 	mainBackground.Parent = mainGroup
 
-	local mainBgGradient = Instance.new("UIGradient")
-	mainBgGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(15, 16, 22)),
-		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(45, 55, 80)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 16, 22))
+	-- Cosmic Nebula Gradient Overlay
+	local nebulaGradient = Instance.new("UIGradient")
+	nebulaGradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(15, 12, 30)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(25, 18, 45)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(8, 9, 14))
 	})
-	mainBgGradient.Rotation = 45
-	mainBgGradient.Offset = Vector2.new(-1, 0)
-	mainBgGradient.Parent = mainBackground
+	nebulaGradient.Rotation = 45
+	nebulaGradient.Parent = mainBackground
+
+	-- Generate Stars
+	local starContainer = Instance.new("Folder")
+	starContainer.Name = "Starfield"
+	starContainer.Parent = mainBackground
+
+	local stars = {}
+	math.randomseed(tick())
+	for i = 1, 30 do
+		local star = Instance.new("Frame")
+		star.Size = UDim2.new(0, math.random(2, 4), 0, math.random(2, 4))
+		star.Position = UDim2.new(math.random(), 0, math.random(), 0)
+		star.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		star.BorderSizePixel = 0
+		star.ZIndex = 1
+		star.Parent = starContainer
+
+		local starCorner = Instance.new("UICorner")
+		starCorner.CornerRadius = UDim.new(1, 0)
+		starCorner.Parent = star
+
+		table.insert(stars, {
+			Instance = star,
+			Speed = math.random(4, 12) / 10,
+			BaseTrans = math.random(20, 60) / 100,
+			Offset = math.random() * 10
+		})
+	end
 
 	local uiStroke = Instance.new("UIStroke")
 	uiStroke.Color = Color3.fromRGB(255, 255, 255)
@@ -105,9 +134,9 @@ function EclipseUI:CreateWindow(options)
 
 	local strokeGradient = Instance.new("UIGradient")
 	strokeGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 90, 120)),
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 110, 160)),
 		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 90, 120))
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 110, 160))
 	})
 	strokeGradient.Parent = uiStroke
 
@@ -120,9 +149,26 @@ function EclipseUI:CreateWindow(options)
 		end
 
 		mainTimeAcc = mainTimeAcc + dt
-		strokeGradient.Rotation = (mainTimeAcc * 60) % 360
-		local sheenProgress = (mainTimeAcc * 0.4) % 2 - 1
-		mainBgGradient.Offset = Vector2.new(sheenProgress, 0)
+		strokeGradient.Rotation = (mainTimeAcc * 40) % 360
+
+		-- Animate floating & twinkling stars
+		for _, starData in ipairs(stars) do
+			local s = starData.Instance
+			local timeVal = mainTimeAcc * starData.Speed + starData.Offset
+			
+			-- Twinkle effect by modulating transparency
+			s.BackgroundTransparency = math.clamp(starData.BaseTrans + math.sin(timeVal * 4) * 0.4, 0.1, 0.95)
+			
+			-- Slow upward drifting motion
+			local newY = s.Position.Y.Scale - (0.00012 * starData.Speed)
+			if newY < -0.05 then
+				newY = 1.05
+				s.Position = UDim2.new(math.random(), 0, newY, 0)
+			else
+				s.Position = UDim2.new(s.Position.X.Scale, s.Position.X.Offset, newY, 0)
+			end
+		end
+
 		local pulse = (math.sin(mainTimeAcc * 2) + 1) / 2
 		uiStroke.Transparency = 0.35 + (pulse * 0.2)
 	end)
