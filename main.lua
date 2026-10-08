@@ -7,30 +7,46 @@ local LocalPlayer = Players.LocalPlayer
 local EclipseUI = {}
 EclipseUI.__index = EclipseUI
 
+-- Cross-environment HTTP fetcher
+local function fetchUrl(url)
+	local requestFunc = (syn and syn.request) or (http and http.request) or request or http_request
+	if requestFunc then
+		local response = requestFunc({ Url = url, Method = "GET" })
+		return response and response.Body
+	elseif game.HttpGet then
+		return game:HttpGet(url)
+	end
+	return nil
+end
+
 local LucideIcons = {}
 local iconsLoaded = false
 
+-- Asynchronously load Lucide icons from GitHub
 task.spawn(function()
 	local url = "https://raw.githubusercontent.com/TKyoka/EclipseUI/refs/heads/main/lucideicons"
 	local success, response = pcall(fetchUrl, url)
 
 	if success and response then
-		-- Execute the fetched Lua string to get the returned table
 		local loadFunc, err = loadstring(response)
 		if loadFunc then
-			local funcSuccess, resultTable = pcall(loadFunc)
-			if funcSuccess and type(resultTable) == "table" then
+			local execSuccess, resultTable = pcall(loadFunc)
+			if execSuccess and type(resultTable) == "table" then
 				LucideIcons = resultTable
+
+				local count = 0
+				for _ in pairs(LucideIcons) do count += 1 end
+				print(string.format("[EclipseUI Debug] Successfully loaded %d icons!", count))
 			else
-				warn("[EclipseUI] Failed to execute icon table:", resultTable)
+				warn("[EclipseUI Debug] Execution error in icon table:", resultTable)
 			end
 		else
-			warn("[EclipseUI] Failed to parse icon table:", err)
+			warn("[EclipseUI Debug] Parse error in icon table:", err)
 		end
 	else
-		warn("[EclipseUI] Failed to fetch icons from GitHub:", response)
+		warn("[EclipseUI Debug] HTTP fetch failed:", response)
 	end
-	
+
 	iconsLoaded = true
 end)
 
@@ -289,11 +305,11 @@ function EclipseUI:CreateWindow(options)
 		if rawIcon then
 			iconImg = Instance.new("ImageLabel")
 			iconImg.Name = "Icon"
-			iconImg.Size = UDim2.new(0, 15, 0, 15)
-			iconImg.Position = UDim2.new(0, 10, 0.5, -7)
+			iconImg.Size = UDim2.new(0, 16, 0, 16)
+			iconImg.Position = UDim2.new(0, 10, 0.5, -8)
 			iconImg.BackgroundTransparency = 1
 			iconImg.ImageColor3 = Color3.fromRGB(160, 168, 184)
-			iconImg.ZIndex = 2
+			iconImg.ZIndex = 5
 			iconImg.Parent = tabFrame
 			textOffset = 32
 
@@ -301,9 +317,14 @@ function EclipseUI:CreateWindow(options)
 				while not iconsLoaded do
 					task.wait(0.05)
 				end
-				local asset = LucideIcons[string.lower(rawIcon)] or rawIcon
-				if asset then
-					iconImg.Image = asset
+
+				local iconKey = string.lower(rawIcon):gsub("%s+", "-")
+				local assetId = LucideIcons[iconKey] or LucideIcons[string.lower(rawIcon)] or rawIcon
+
+				print(string.format("[EclipseUI Debug] Tab: '%s' | Key: '%s' | Asset ID: '%s'", tostring(rawIcon), iconKey, tostring(assetId)))
+
+				if assetId and assetId ~= "" then
+					iconImg.Image = assetId
 				end
 			end)
 		end
