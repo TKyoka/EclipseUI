@@ -1131,7 +1131,7 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
-        -- Redesigned Inline Glass Slider Component
+-- Redesigned Inline Glass Slider with Value Inside Thumb
 		function TabObject:Slider(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1144,7 +1144,7 @@ function EclipseUI:CreateWindow(options)
 			local sliderFrame, stroke = createContainer(targetParent, 42)
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(0, 130, 1, 0)
+			label.Size = UDim2.new(0, 120, 1, 0)
 			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = title
@@ -1157,12 +1157,12 @@ function EclipseUI:CreateWindow(options)
 
 			-- Minimum Number Label
 			local minLabel = Instance.new("TextLabel")
-			minLabel.Size = UDim2.new(0, 28, 1, 0)
-			minLabel.Position = UDim2.new(1, -215, 0, 0)
+			minLabel.Size = UDim2.new(0, 24, 1, 0)
+			minLabel.Position = UDim2.new(1, -170, 0, 0)
 			minLabel.BackgroundTransparency = 1
 			minLabel.Text = tostring(min)
-			minLabel.TextColor3 = Color3.fromRGB(160, 170, 190)
-			minLabel.TextSize = 11
+			minLabel.TextColor3 = Color3.fromRGB(150, 160, 180)
+			minLabel.TextSize = 10
 			minLabel.Font = Enum.Font.GothamBold
 			minLabel.TextXAlignment = Enum.TextXAlignment.Right
 			minLabel.ZIndex = 5
@@ -1171,8 +1171,8 @@ function EclipseUI:CreateWindow(options)
 			-- Slider Track
 			local track = Instance.new("Frame")
 			track.AnchorPoint = Vector2.new(0, 0.5)
-			track.Position = UDim2.new(1, -180, 0.5, 0)
-			track.Size = UDim2.new(0, 100, 0, 6)
+			track.Position = UDim2.new(1, -142, 0.5, 0)
+			track.Size = UDim2.new(0, 90, 0, 6)
 			track.BackgroundColor3 = Color3.fromRGB(22, 26, 35)
 			track.ZIndex = 5
 			track.Parent = sliderFrame
@@ -1187,7 +1187,7 @@ function EclipseUI:CreateWindow(options)
 			trackStroke.Transparency = 0.85
 			trackStroke.Parent = track
 
-			-- Silver/Platinum Fill Line
+			-- Silver Fill Line
 			local fill = Instance.new("Frame")
 			fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
 			fill.BackgroundColor3 = Color3.fromRGB(205, 215, 230)
@@ -1208,17 +1208,17 @@ function EclipseUI:CreateWindow(options)
 			-- Maximum Number Label
 			local maxLabel = Instance.new("TextLabel")
 			maxLabel.Size = UDim2.new(0, 28, 1, 0)
-			maxLabel.Position = UDim2.new(1, -74, 0, 0)
+			maxLabel.Position = UDim2.new(1, -44, 0, 0)
 			maxLabel.BackgroundTransparency = 1
 			maxLabel.Text = tostring(max)
-			maxLabel.TextColor3 = Color3.fromRGB(160, 170, 190)
-			maxLabel.TextSize = 11
+			maxLabel.TextColor3 = Color3.fromRGB(150, 160, 180)
+			maxLabel.TextSize = 10
 			maxLabel.Font = Enum.Font.GothamBold
 			maxLabel.TextXAlignment = Enum.TextXAlignment.Left
 			maxLabel.ZIndex = 5
 			maxLabel.Parent = sliderFrame
 
-			-- Glass 32px Rectangle Thumb Handle
+			-- Glass 32px Rectangle Thumb Handle with Value Inside
 			local thumb = Instance.new("Frame")
 			thumb.AnchorPoint = Vector2.new(0.5, 0.5)
 			thumb.Position = UDim2.new(1, 0, 0.5, 0)
@@ -1246,18 +1246,18 @@ function EclipseUI:CreateWindow(options)
 			thumbGradient.Rotation = 90
 			thumbGradient.Parent = thumb
 
-			-- Current Value Indicator Popup/Text
+			-- Value Text Centered Inside the Thumb
 			local valLabel = Instance.new("TextLabel")
-			valLabel.Size = UDim2.new(0, 35, 1, 0)
-			valLabel.Position = UDim2.new(1, -40, 0, 0)
+			valLabel.Size = UDim2.new(1, 0, 1, 0)
 			valLabel.BackgroundTransparency = 1
 			valLabel.Text = tostring(default)
-			valLabel.TextColor3 = Color3.fromRGB(240, 245, 255)
-			valLabel.TextSize = 11
+			valLabel.TextColor3 = Color3.fromRGB(15, 18, 25)
+			valLabel.TextSize = 10
 			valLabel.Font = Enum.Font.GothamBold
-			valLabel.TextXAlignment = Enum.TextXAlignment.Right
-			valLabel.ZIndex = 5
-			valLabel.Parent = sliderFrame
+			valLabel.TextXAlignment = Enum.TextXAlignment.Center
+			valLabel.TextYAlignment = Enum.TextYAlignment.Center
+			valLabel.ZIndex = 8
+			valLabel.Parent = thumb
 
 			local isDragging = false
 
@@ -1299,7 +1299,7 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
-		-- Component: Textbox / Input
+		-- Redesigned Sleek Textbox Component
 		function TabObject:Textbox(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1307,10 +1307,10 @@ function EclipseUI:CreateWindow(options)
 			local placeholder = opts.Placeholder or "Enter text..."
 			local callback = opts.Callback or function() end
 
-			local tbFrame, stroke = createContainer(targetParent, 38)
+			local tbFrame, stroke = createContainer(targetParent, 40)
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, -140, 1, 0)
+			label.Size = UDim2.new(0.4, 0, 1, 0)
 			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = title
@@ -1324,8 +1324,8 @@ function EclipseUI:CreateWindow(options)
 			local boxContainer = Instance.new("Frame")
 			boxContainer.AnchorPoint = Vector2.new(1, 0.5)
 			boxContainer.Position = UDim2.new(1, -10, 0.5, 0)
-			boxContainer.Size = UDim2.new(0, 120, 0, 24)
-			boxContainer.BackgroundColor3 = Color3.fromRGB(25, 28, 35)
+			boxContainer.Size = UDim2.new(0.55, 0, 0, 26)
+			boxContainer.BackgroundColor3 = Color3.fromRGB(15, 18, 25)
 			boxContainer.ZIndex = 5
 			boxContainer.Parent = tbFrame
 
@@ -1333,12 +1333,18 @@ function EclipseUI:CreateWindow(options)
 			boxCorner.CornerRadius = UDim.new(0, 6)
 			boxCorner.Parent = boxContainer
 
+			local boxStroke = Instance.new("UIStroke")
+			boxStroke.Color = Color3.fromRGB(50, 60, 80)
+			boxStroke.Thickness = 1
+			boxStroke.Transparency = 0.5
+			boxStroke.Parent = boxContainer
+
 			local textBox = Instance.new("TextBox")
-			textBox.Size = UDim2.new(1, -12, 1, 0)
-			textBox.Position = UDim2.new(0, 6, 0, 0)
+			textBox.Size = UDim2.new(1, -16, 1, 0)
+			textBox.Position = UDim2.new(0, 8, 0, 0)
 			textBox.BackgroundTransparency = 1
 			textBox.PlaceholderText = placeholder
-			textBox.PlaceholderColor3 = Color3.fromRGB(100, 110, 130)
+			textBox.PlaceholderColor3 = Color3.fromRGB(100, 115, 140)
 			textBox.Text = ""
 			textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 			textBox.TextSize = 11
@@ -1348,7 +1354,12 @@ function EclipseUI:CreateWindow(options)
 			textBox.ZIndex = 6
 			textBox.Parent = boxContainer
 
+			textBox.Focused:Connect(function()
+				tween(boxStroke, fadeTweenInfo, { Color = Color3.fromRGB(190, 205, 230), Transparency = 0.1 })
+			end)
+
 			textBox.FocusLost:Connect(function(enterPressed)
+				tween(boxStroke, fadeTweenInfo, { Color = Color3.fromRGB(50, 60, 80), Transparency = 0.5 })
 				pcall(callback, textBox.Text, enterPressed)
 			end)
 
