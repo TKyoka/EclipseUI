@@ -264,6 +264,13 @@ function EclipseUI:CreateWindow(options)
 		return icon, btnFrame
 	end
 
+	local function setButtonIcon(btnInstance, iconName)
+		local iconChild = btnInstance:FindFirstChild("Icon") or btnInstance
+		if iconChild:IsA("ImageLabel") or iconChild:IsA("ImageButton") then
+			iconChild.Image = getIconAsset(iconName)
+		end
+	end
+
 	-- Control Buttons Order: Minus, Fullscreen/Shrink, Destroy
 	local minimizeBtn = createControlButton("MinimizeBtn", "minus", Color3.fromRGB(255, 255, 255))
 	local resizeBtn = createControlButton("ResizeBtn", "maximize", Color3.fromRGB(255, 255, 255))
@@ -315,13 +322,13 @@ function EclipseUI:CreateWindow(options)
 		local resizeTweenInfo = TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 
 		if isFullscreen then
-			resizeBtn.Image = getIconAsset("shrink")
+			setButtonIcon(resizeBtn, "shrink")
 			TweenService:Create(mainGroup, resizeTweenInfo, {
 				Size = UDim2.new(0.95, 0, 0.95, 0),
 				Position = UDim2.new(0.5, 0, 0.5, 0)
 			}):Play()
 		else
-			resizeBtn.Image = getIconAsset("maximize")
+			setButtonIcon(resizeBtn, "maximize")
 			TweenService:Create(mainGroup, resizeTweenInfo, {
 				Size = defaultSize,
 				Position = defaultPos
