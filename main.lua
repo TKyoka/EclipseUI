@@ -1124,13 +1124,16 @@ function EclipseUI:CreateWindow(options)
 
 			local btn, stroke = createContainer(targetParent, 38)
 			btn.Name = btnName .. "Button"
+			btn.BackgroundTransparency = 0.75 -- Much more visible background
 			btn.ClipsDescendants = true
+
+			stroke.Transparency = 0.5 -- Clearer, brighter outline
 
 			local btnGradient = Instance.new("UIGradient")
 			btnGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Color3.fromRGB(45, 55, 80)),
-				ColorSequenceKeypoint.new(0.5, Color3.fromRGB(20, 24, 32)),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(45, 55, 80))
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(65, 85, 130)),
+				ColorSequenceKeypoint.new(0.5, Color3.fromRGB(35, 45, 65)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(65, 85, 130))
 			})
 			btnGradient.Rotation = 0
 			btnGradient.Parent = btn
@@ -1141,7 +1144,7 @@ function EclipseUI:CreateWindow(options)
 				while btn:IsDescendantOf(game) do
 					local dt = RunService.RenderStepped:Wait()
 					tAcc = tAcc + dt
-					btnGradient.Rotation = (tAcc * 45) % 360
+					btnGradient.Rotation = (tAcc * 50) % 360
 				end
 			end)
 
@@ -1150,7 +1153,7 @@ function EclipseUI:CreateWindow(options)
 			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = btnName
-			label.TextColor3 = Color3.fromRGB(240, 245, 255)
+			label.TextColor3 = Color3.fromRGB(255, 255, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
@@ -1165,23 +1168,21 @@ function EclipseUI:CreateWindow(options)
 			clickBtn.Parent = btn
 
 			clickBtn.MouseEnter:Connect(function()
-				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.80 })
-				tween(stroke, fadeTweenInfo, { Transparency = 0.65 })
-				tween(label, fadeTweenInfo, { TextColor3 = Color3.fromRGB(255, 255, 255) })
+				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.60 })
+				tween(stroke, fadeTweenInfo, { Transparency = 0.30 })
 			end)
 
 			clickBtn.MouseLeave:Connect(function()
-				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.95 })
-				tween(stroke, fadeTweenInfo, { Transparency = 0.92 })
-				tween(label, fadeTweenInfo, { TextColor3 = Color3.fromRGB(240, 245, 255) })
+				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.75 })
+				tween(stroke, fadeTweenInfo, { Transparency = 0.5 })
 			end)
 
 			clickBtn.MouseButton1Down:Connect(function()
-				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.70 })
+				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.50 })
 			end)
 
 			clickBtn.MouseButton1Up:Connect(function()
-				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.80 })
+				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.60 })
 			end)
 
 			clickBtn.MouseButton1Click:Connect(function()
