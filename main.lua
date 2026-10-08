@@ -167,10 +167,14 @@ function EclipseUI:CreateWindow(options)
 	bodyGroup.ZIndex = 3
 	bodyGroup.Parent = mainGroup
 
-	-- Separators
-	local lines = Instance.new("Folder")
-	lines.Name = "Lines"
-	lines.Parent = mainGroup
+	-- Lines CanvasGroup so outlining lines fade out cleanly during dragging
+	local linesCanvasGroup = Instance.new("CanvasGroup")
+	linesCanvasGroup.Name = "LinesCanvasGroup"
+	linesCanvasGroup.Size = UDim2.new(1, 0, 1, 0)
+	linesCanvasGroup.BackgroundTransparency = 1
+	linesCanvasGroup.GroupTransparency = 0
+	linesCanvasGroup.ZIndex = 2
+	linesCanvasGroup.Parent = mainGroup
 
 	local lineDarkColor = Color3.fromRGB(255, 255, 255)
 	local lineTransparency = 0.92
@@ -182,7 +186,7 @@ function EclipseUI:CreateWindow(options)
 	headerLine1.BackgroundTransparency = lineTransparency
 	headerLine1.BorderSizePixel = 0
 	headerLine1.ZIndex = 2
-	headerLine1.Parent = lines
+	headerLine1.Parent = linesCanvasGroup
 
 	local headerLine2 = Instance.new("Frame")
 	headerLine2.Position = UDim2.new(0, 0, 0, 46)
@@ -191,7 +195,7 @@ function EclipseUI:CreateWindow(options)
 	headerLine2.BackgroundTransparency = lineTransparency
 	headerLine2.BorderSizePixel = 0
 	headerLine2.ZIndex = 2
-	headerLine2.Parent = lines
+	headerLine2.Parent = linesCanvasGroup
 
 	local verticalLine = Instance.new("Frame")
 	verticalLine.Position = UDim2.new(0, 134, 0, 0)
@@ -200,7 +204,7 @@ function EclipseUI:CreateWindow(options)
 	verticalLine.BackgroundTransparency = lineTransparency
 	verticalLine.BorderSizePixel = 0
 	verticalLine.ZIndex = 2
-	verticalLine.Parent = bodyGroup
+	verticalLine.Parent = linesCanvasGroup
 
 	local userLine = Instance.new("Frame")
 	userLine.AnchorPoint = Vector2.new(0, 1)
@@ -210,7 +214,7 @@ function EclipseUI:CreateWindow(options)
 	userLine.BackgroundTransparency = lineTransparency
 	userLine.BorderSizePixel = 0
 	userLine.ZIndex = 2
-	userLine.Parent = bodyGroup
+	userLine.Parent = linesCanvasGroup
 
 	-- Header Frame
 	local header = Instance.new("Frame")
@@ -275,6 +279,7 @@ function EclipseUI:CreateWindow(options)
 	titleLabel.ZIndex = 4
 	titleLabel.Parent = titleWrapper
 
+	local TagsObj = {}
 	if windowTags and typeof(windowTags) == "table" then
 		local tagsList = Instance.new("Frame")
 		tagsList.Name = "TagsList"
@@ -292,7 +297,7 @@ function EclipseUI:CreateWindow(options)
 		tagsLayout.Padding = UDim.new(0, 4)
 		tagsLayout.Parent = tagsList
 
-		for _, tagName in ipairs(windowTags) do
+		for index, tagName in ipairs(windowTags) do
 			local tagPill = Instance.new("Frame")
 			tagPill.Size = UDim2.new(0, 0, 0, 18)
 			tagPill.AutomaticSize = Enum.AutomaticSize.X
@@ -321,6 +326,12 @@ function EclipseUI:CreateWindow(options)
 			tagText.TextXAlignment = Enum.TextXAlignment.Left
 			tagText.ZIndex = 4
 			tagText.Parent = tagPill
+
+			TagsObj[index] = {
+				SetText = function(_, newText)
+					tagText.Text = tostring(newText)
+				end
+			}
 		end
 	end
 
@@ -416,8 +427,7 @@ function EclipseUI:CreateWindow(options)
 
 		if isMinimized then
 			TweenService:Create(bodyGroup, fastFadeInfo, { GroupTransparency = 1 }):Play()
-			TweenService:Create(headerLine1, fastFadeInfo, { BackgroundTransparency = 1 }):Play()
-			TweenService:Create(headerLine2, fastFadeInfo, { BackgroundTransparency = 1 }):Play()
+			TweenService:Create(linesCanvasGroup, fastFadeInfo, { GroupTransparency = 1 }):Play()
 
 			task.wait(0.08)
 			bodyGroup.Visible = false
@@ -430,8 +440,7 @@ function EclipseUI:CreateWindow(options)
 		else
 			bodyGroup.Visible = true
 			TweenService:Create(bodyGroup, fastFadeInfo, { GroupTransparency = 0 }):Play()
-			TweenService:Create(headerLine1, windowTweenInfo, { BackgroundTransparency = lineTransparency }):Play()
-			TweenService:Create(headerLine2, windowTweenInfo, { BackgroundTransparency = lineTransparency }):Play()
+			TweenService:Create(linesCanvasGroup, windowTweenInfo, { GroupTransparency = 0 }):Play()
 
 			local targetSize = isFullscreen and UDim2.new(0.95, 0, 0.95, 0) or defaultSize
 			local expandTween = TweenService:Create(mainGroup, windowTweenInfo, { Size = targetSize })
@@ -479,7 +488,7 @@ function EclipseUI:CreateWindow(options)
 		end)
 	end)
 
-	-- Sidebar Containers (Wrapped in CanvasGroups for dragging watermark fade effect)
+	-- Sidebar Containers
 	local tabsCanvasGroup = Instance.new("CanvasGroup")
 	tabsCanvasGroup.Name = "TabsCanvasGroup"
 	tabsCanvasGroup.Size = UDim2.new(0, 134, 1, -52)
@@ -692,7 +701,7 @@ function EclipseUI:CreateWindow(options)
 	contents.ZIndex = 3
 	contents.Parent = bodyGroup
 
-	-- Optional BgName Watermark implementation during dragging
+	-- BgName Watermark: Placed dead-center of the entire MainGroup frame and hidden by default
 	local bgWatermark
 	if bgName then
 		bgWatermark = Instance.new("TextLabel")
@@ -703,14 +712,15 @@ function EclipseUI:CreateWindow(options)
 		bgWatermark.BackgroundTransparency = 1
 		bgWatermark.Text = bgName
 		bgWatermark.TextColor3 = Color3.fromRGB(255, 255, 255)
-		bgWatermark.TextTransparency = 0.25
-		bgWatermark.TextSize = 26
+		bgWatermark.TextTransparency = 1 -- Hidden initially when not dragging
+		bgWatermark.TextSize = 28
 		bgWatermark.Font = Enum.Font.GothamBold
-		bgWatermark.ZIndex = 2
-		bgWatermark.Parent = bodyGroup
+		bgWatermark.TextXAlignment = Enum.TextXAlignment.Center
+		bgWatermark.ZIndex = 1
+		bgWatermark.Parent = mainGroup
 	end
 
-	-- Smooth Dragging with BgName Watermark Fade Trigger
+	-- Smooth Dragging with Watermark & Line Fade Trigger
 	local dragging = false
 	local dragStart = Vector2.zero
 	local startPos = UDim2.new()
@@ -738,11 +748,13 @@ function EclipseUI:CreateWindow(options)
 				}):Play()
 			end
 
-			if bgName then
-				local dragFadeInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-				TweenService:Create(tabsCanvasGroup, dragFadeInfo, { GroupTransparency = 1 }):Play()
-				TweenService:Create(userInfoCanvasGroup, dragFadeInfo, { GroupTransparency = 1 }):Play()
-				TweenService:Create(contents, dragFadeInfo, { GroupTransparency = 1 }):Play()
+			local dragFadeInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+			TweenService:Create(tabsCanvasGroup, dragFadeInfo, { GroupTransparency = 1 }):Play()
+			TweenService:Create(userInfoCanvasGroup, dragFadeInfo, { GroupTransparency = 1 }):Play()
+			TweenService:Create(contents, dragFadeInfo, { GroupTransparency = 1 }):Play()
+			TweenService:Create(linesCanvasGroup, dragFadeInfo, { GroupTransparency = 1 }):Play()
+			if bgWatermark then
+				TweenService:Create(bgWatermark, dragFadeInfo, { TextTransparency = 0.25 }):Play()
 			end
 
 			input.Changed:Connect(function()
@@ -754,11 +766,13 @@ function EclipseUI:CreateWindow(options)
 						}):Play()
 					end
 
-					if bgName then
-						local dragEndInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-						TweenService:Create(tabsCanvasGroup, dragEndInfo, { GroupTransparency = 0 }):Play()
-						TweenService:Create(userInfoCanvasGroup, dragEndInfo, { GroupTransparency = 0 }):Play()
-						TweenService:Create(contents, dragEndInfo, { GroupTransparency = 0 }):Play()
+					local dragEndInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+					TweenService:Create(tabsCanvasGroup, dragEndInfo, { GroupTransparency = 0 }):Play()
+					TweenService:Create(userInfoCanvasGroup, dragEndInfo, { GroupTransparency = 0 }):Play()
+					TweenService:Create(contents, dragEndInfo, { GroupTransparency = 0 }):Play()
+					TweenService:Create(linesCanvasGroup, dragEndInfo, { GroupTransparency = 0 }):Play()
+					if bgWatermark then
+						TweenService:Create(bgWatermark, dragEndInfo, { TextTransparency = 1 }):Play()
 					end
 				end
 			end)
@@ -783,7 +797,7 @@ function EclipseUI:CreateWindow(options)
 		end
 	end)
 
-	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = toggleKey }
+	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = toggleKey, Tags = TagsObj }
 
 	local pillTweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
 	local fadeTweenInfo = TweenInfo.new(0.20, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
@@ -797,7 +811,6 @@ function EclipseUI:CreateWindow(options)
 	function Window:SelectTab(targetTab)
 		if Window.ActiveTab == targetTab then return end
 
-		local previousTab = Window.ActiveTab
 		Window.ActiveTab = targetTab
 
 		activePill.Visible = true
@@ -890,7 +903,6 @@ function EclipseUI:CreateWindow(options)
 		tabText.ZIndex = 5
 		tabText.Parent = tabFrame
 
-		-- PageGroup as CanvasGroup for smooth tab transition animations
 		local pageGroup = Instance.new("CanvasGroup")
 		pageGroup.Name = tabTitle .. "PageGroup"
 		pageGroup.Size = UDim2.new(1, 0, 1, 0)
@@ -995,7 +1007,6 @@ function EclipseUI:CreateWindow(options)
 			return frame, stroke
 		end
 
-		-- Original Section Component with Optional Icon Support
 		function TabObject:Section(secOptions)
 			secOptions = secOptions or {}
 			local secTitle = typeof(secOptions) == "string" and secOptions or (secOptions.Title or secOptions.Name or "Section")
@@ -1175,7 +1186,6 @@ function EclipseUI:CreateWindow(options)
 			return btn
 		end
 
-		-- Component: Toggle (Animated Gradient & Pill Knob)
 		function TabObject:Toggle(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1309,7 +1319,6 @@ function EclipseUI:CreateWindow(options)
 			return ToggleObj
 		end
 
-		-- Component: Slider (Animated Silver Gradient, Pill Thumb, Centered Code TextBox)
 		function TabObject:Slider(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1492,7 +1501,6 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
-		-- Component: Keybind Selector (Centered Code Font)
 		function TabObject:Keybind(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1561,7 +1569,6 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
-		-- Component: Dropdown (Centered Code Font Selection Badge)
 		function TabObject:Dropdown(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
