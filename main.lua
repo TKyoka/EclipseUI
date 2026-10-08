@@ -197,7 +197,6 @@ function EclipseUI:CreateWindow(options)
 	headerLine2.ZIndex = 2
 	headerLine2.Parent = linesCanvasGroup
 
-	-- Fixed vertical line: Starts below the header (Y = 46) so it doesn't cross-hair through the title bar
 	local verticalLine = Instance.new("Frame")
 	verticalLine.Position = UDim2.new(0, 134, 0, 46)
 	verticalLine.Size = UDim2.new(0, 1, 1, -46)
@@ -721,14 +720,14 @@ function EclipseUI:CreateWindow(options)
 		bgWatermark.Parent = mainGroup
 	end
 
-	-- Smooth Dragging with Watermark & Line Fade Trigger (Strictly blocked if isFullscreen is true)
+	-- Smooth Dragging with Watermark & Line Fade Trigger (Properly isolated using explicit connection variables)
 	local dragging = false
 	local dragStart = Vector2.zero
 	local startPos = UDim2.new()
 	local targetPos = mainGroup.Position
 
 	header.InputBegan:Connect(function(input)
-		if isFullscreen then return end -- Completely blocks dragging and header-click interactions while maximized
+		if isFullscreen then return end -- Completely blocks dragging while maximized
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			local mousePos = input.Position
 			local controlsPos = controlsFrame.AbsolutePosition
@@ -758,8 +757,10 @@ function EclipseUI:CreateWindow(options)
 				TweenService:Create(bgWatermark, dragFadeInfo, { TextTransparency = 0.25 }):Play()
 			end
 
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
+			local endConn
+			endConn = UserInputService.InputEnded:Connect(function(endInput)
+				if endInput.UserInputType == input.UserInputType then
+					endConn:Disconnect()
 					dragging = false
 					if not isMinimized then
 						TweenService:Create(mainGroup, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
