@@ -1,54 +1,10 @@
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 
 local EclipseUI = {}
 EclipseUI.__index = EclipseUI
-
--- Cross-environment HTTP fetcher
-local function fetchUrl(url)
-	local requestFunc = (syn and syn.request) or (http and http.request) or request or http_request
-	if requestFunc then
-		local response = requestFunc({ Url = url, Method = "GET" })
-		return response and response.Body
-	elseif game.HttpGet then
-		return game:HttpGet(url)
-	end
-	return nil
-end
-
-local LucideIcons = {}
-local iconsLoaded = false
-
--- Asynchronously load Lucide icons from GitHub
-task.spawn(function()
-	local url = "https://raw.githubusercontent.com/TKyoka/EclipseUI/refs/heads/main/lucideicons"
-	local success, response = pcall(fetchUrl, url)
-
-	if success and response then
-		local loadFunc, err = loadstring(response)
-		if loadFunc then
-			local execSuccess, resultTable = pcall(loadFunc)
-			if execSuccess and type(resultTable) == "table" then
-				LucideIcons = resultTable
-
-				local count = 0
-				for _ in pairs(LucideIcons) do count += 1 end
-				print(string.format("[EclipseUI Debug] Successfully loaded %d icons!", count))
-			else
-				warn("[EclipseUI Debug] Execution error in icon table:", resultTable)
-			end
-		else
-			warn("[EclipseUI Debug] Parse error in icon table:", err)
-		end
-	else
-		warn("[EclipseUI Debug] HTTP fetch failed:", response)
-	end
-
-	iconsLoaded = true
-end)
 
 function EclipseUI:CreateWindow(options)
 	options = options or {}
@@ -253,17 +209,11 @@ function EclipseUI:CreateWindow(options)
 				tween(tab.Background, { BackgroundTransparency = 0.86 })
 				tween(tab.Stroke, { Transparency = 0.88 })
 				tween(tab.Label, { TextColor3 = Color3.fromRGB(255, 255, 255) })
-				if tab.IconImage then
-					tween(tab.IconImage, { ImageColor3 = Color3.fromRGB(255, 255, 255) })
-				end
 			else
 				tab.Page.Visible = false
 				tween(tab.Background, { BackgroundTransparency = 0.96 })
 				tween(tab.Stroke, { Transparency = 0.95 })
 				tween(tab.Label, { TextColor3 = Color3.fromRGB(160, 168, 184) })
-				if tab.IconImage then
-					tween(tab.IconImage, { ImageColor3 = Color3.fromRGB(160, 168, 184) })
-				end
 			end
 		end
 	end
@@ -271,7 +221,6 @@ function EclipseUI:CreateWindow(options)
 	function Window:Tab(tabOptions)
 		tabOptions = tabOptions or {}
 		local tabTitle = tabOptions.Title or tabOptions.Name or "Tab"
-		local rawIcon = tabOptions.Icon
 
 		local tabFrame = Instance.new("Frame")
 		tabFrame.Name = tabTitle .. "TabFrame"
@@ -299,40 +248,10 @@ function EclipseUI:CreateWindow(options)
 		clickBtn.ZIndex = 3
 		clickBtn.Parent = tabFrame
 
-		local iconImg = nil
-		local textOffset = 12
-
-		if rawIcon then
-			iconImg = Instance.new("ImageLabel")
-			iconImg.Name = "Icon"
-			iconImg.Size = UDim2.new(0, 16, 0, 16)
-			iconImg.Position = UDim2.new(0, 10, 0.5, -8)
-			iconImg.BackgroundTransparency = 1
-			iconImg.ImageColor3 = Color3.fromRGB(160, 168, 184)
-			iconImg.ZIndex = 5
-			iconImg.Parent = tabFrame
-			textOffset = 32
-
-			task.spawn(function()
-				while not iconsLoaded do
-					task.wait(0.05)
-				end
-
-				local iconKey = string.lower(rawIcon):gsub("%s+", "-")
-				local assetId = LucideIcons[iconKey] or LucideIcons[string.lower(rawIcon)] or rawIcon
-
-				print(string.format("[EclipseUI Debug] Tab: '%s' | Key: '%s' | Asset ID: '%s'", tostring(rawIcon), iconKey, tostring(assetId)))
-
-				if assetId and assetId ~= "" then
-					iconImg.Image = assetId
-				end
-			end)
-		end
-
 		local tabText = Instance.new("TextLabel")
 		tabText.Name = "Text"
-		tabText.Size = UDim2.new(1, -(textOffset + 4), 1, 0)
-		tabText.Position = UDim2.new(0, textOffset, 0, 0)
+		tabText.Size = UDim2.new(1, -16, 1, 0)
+		tabText.Position = UDim2.new(0, 12, 0, 0)
 		tabText.BackgroundTransparency = 1
 		tabText.Text = tabTitle
 		tabText.TextColor3 = Color3.fromRGB(160, 168, 184)
@@ -371,8 +290,7 @@ function EclipseUI:CreateWindow(options)
 			Background = tabFrame,
 			Stroke = tabStroke,
 			Button = clickBtn,
-			Label = tabText,
-			IconImage = iconImg
+			Label = tabText
 		}
 
 		clickBtn.MouseEnter:Connect(function()
@@ -380,9 +298,6 @@ function EclipseUI:CreateWindow(options)
 				tween(tabFrame, { BackgroundTransparency = 0.91 })
 				tween(tabStroke, { Transparency = 0.90 })
 				tween(tabText, { TextColor3 = Color3.fromRGB(220, 225, 235) })
-				if iconImg then
-					tween(iconImg, { ImageColor3 = Color3.fromRGB(220, 225, 235) })
-				end
 			end
 		end)
 
@@ -391,9 +306,6 @@ function EclipseUI:CreateWindow(options)
 				tween(tabFrame, { BackgroundTransparency = 0.96 })
 				tween(tabStroke, { Transparency = 0.95 })
 				tween(tabText, { TextColor3 = Color3.fromRGB(160, 168, 184) })
-				if iconImg then
-					tween(iconImg, { ImageColor3 = Color3.fromRGB(160, 168, 184) })
-				end
 			end
 		end)
 
