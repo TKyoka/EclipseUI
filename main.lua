@@ -47,6 +47,7 @@ function EclipseUI:CreateWindow(options)
 	local windowName = options.Title or options.Name or "Eclipse UI"
 	local windowIcon = options.Icon
 	local toggleKey = options.ToggleKey or Enum.KeyCode.RightControl
+	local bgName = options.BgName
 
 	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -347,7 +348,6 @@ function EclipseUI:CreateWindow(options)
 		local fastFadeInfo = TweenInfo.new(0.08, Enum.EasingStyle.Linear)
 
 		if isMinimized then
-			-- Fast fade out everything except the header
 			TweenService:Create(bodyGroup, fastFadeInfo, { GroupTransparency = 1 }):Play()
 			TweenService:Create(headerLine1, fastFadeInfo, { BackgroundTransparency = 1 }):Play()
 			TweenService:Create(headerLine2, fastFadeInfo, { BackgroundTransparency = 1 }):Play()
@@ -471,13 +471,14 @@ function EclipseUI:CreateWindow(options)
 		end
 	end)
 
-	-- Sidebar Containers
-	local tabsContainer = Instance.new("Frame")
-	tabsContainer.Name = "TabsContainer"
-	tabsContainer.Size = UDim2.new(0, 134, 1, -52)
-	tabsContainer.BackgroundTransparency = 1
-	tabsContainer.ZIndex = 3
-	tabsContainer.Parent = bodyGroup
+	-- Sidebar Containers (Wrapped in CanvasGroups for BgName fade effect)
+	local tabsCanvasGroup = Instance.new("CanvasGroup")
+	tabsCanvasGroup.Name = "TabsCanvasGroup"
+	tabsCanvasGroup.Size = UDim2.new(0, 134, 1, -52)
+	tabsCanvasGroup.BackgroundTransparency = 1
+	tabsCanvasGroup.GroupTransparency = 0
+	tabsCanvasGroup.ZIndex = 3
+	tabsCanvasGroup.Parent = bodyGroup
 
 	local activePill = Instance.new("Frame")
 	activePill.Name = "ActivePill"
@@ -488,7 +489,7 @@ function EclipseUI:CreateWindow(options)
 	activePill.BackgroundTransparency = 0.82
 	activePill.Visible = false
 	activePill.ZIndex = 3
-	activePill.Parent = tabsContainer
+	activePill.Parent = tabsCanvasGroup
 
 	local pillCorner = Instance.new("UICorner")
 	pillCorner.CornerRadius = UDim.new(0, 7)
@@ -517,7 +518,7 @@ function EclipseUI:CreateWindow(options)
 	tabs.AutomaticCanvasSize = Enum.AutomaticSize.Y
 	tabs.CanvasSize = UDim2.new(0, 0, 0, 0)
 	tabs.ZIndex = 4
-	tabs.Parent = tabsContainer
+	tabs.Parent = tabsCanvasGroup
 
 	local tabsLayout = Instance.new("UIListLayout")
 	tabsLayout.Padding = UDim.new(0, 4)
@@ -532,14 +533,15 @@ function EclipseUI:CreateWindow(options)
 	tabsPadding.Parent = tabs
 
 	-- User Info
-	local userInfoContainer = Instance.new("Frame")
-	userInfoContainer.Name = "UserInfoContainer"
-	userInfoContainer.AnchorPoint = Vector2.new(0, 1)
-	userInfoContainer.Position = UDim2.new(0, 0, 1, 0)
-	userInfoContainer.Size = UDim2.new(0, 134, 0, 52)
-	userInfoContainer.BackgroundTransparency = 1
-	userInfoContainer.ZIndex = 3
-	userInfoContainer.Parent = bodyGroup
+	local userInfoCanvasGroup = Instance.new("CanvasGroup")
+	userInfoCanvasGroup.Name = "UserInfoCanvasGroup"
+	userInfoCanvasGroup.AnchorPoint = Vector2.new(0, 1)
+	userInfoCanvasGroup.Position = UDim2.new(0, 0, 1, 0)
+	userInfoCanvasGroup.Size = UDim2.new(0, 134, 0, 52)
+	userInfoCanvasGroup.BackgroundTransparency = 1
+	userInfoCanvasGroup.GroupTransparency = 0
+	userInfoCanvasGroup.ZIndex = 3
+	userInfoCanvasGroup.Parent = bodyGroup
 
 	local userInfo = Instance.new("TextButton")
 	userInfo.Name = "UserInfo"
@@ -551,7 +553,7 @@ function EclipseUI:CreateWindow(options)
 	userInfo.Text = ""
 	userInfo.AutoButtonColor = false
 	userInfo.ZIndex = 3
-	userInfo.Parent = userInfoContainer
+	userInfo.Parent = userInfoCanvasGroup
 
 	local userCorner = Instance.new("UICorner")
 	userCorner.CornerRadius = UDim.new(0, 8)
@@ -671,15 +673,41 @@ function EclipseUI:CreateWindow(options)
 		end)
 	end)
 
-	-- Contents Area
-	local contents = Instance.new("Frame")
+	-- Contents Area (CanvasGroup)
+	local contents = Instance.new("CanvasGroup")
 	contents.Name = "Contents"
 	contents.AnchorPoint = Vector2.new(1, 1)
 	contents.Position = UDim2.new(1, 0, 1, 0)
 	contents.Size = UDim2.new(1, -135, 1, 0)
 	contents.BackgroundTransparency = 1
+	contents.GroupTransparency = 0
 	contents.ZIndex = 3
 	contents.Parent = bodyGroup
+
+	-- Optional BgName Watermark implementation
+	if bgName then
+		local bgWatermark = Instance.new("TextLabel")
+		bgWatermark.Name = "BgWatermark"
+		bgWatermark.AnchorPoint = Vector2.new(0.5, 0.5)
+		bgWatermark.Position = UDim2.new(0.5, 0, 0.5, 0)
+		bgWatermark.Size = UDim2.new(1, 0, 0, 50)
+		bgWatermark.BackgroundTransparency = 1
+		bgWatermark.Text = bgName
+		bgWatermark.TextColor3 = Color3.fromRGB(255, 255, 255)
+		bgWatermark.TextTransparency = 0.25
+		bgWatermark.TextSize = 28
+		bgWatermark.Font = Enum.Font.GothamBold
+		bgWatermark.ZIndex = 2
+		bgWatermark.Parent = bodyGroup
+
+		task.defer(function()
+			task.wait(0.05)
+			local bgFadeInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+			TweenService:Create(tabsCanvasGroup, bgFadeInfo, { GroupTransparency = 1 }):Play()
+			TweenService:Create(userInfoCanvasGroup, bgFadeInfo, { GroupTransparency = 1 }):Play()
+			TweenService:Create(contents, bgFadeInfo, { GroupTransparency = 1 }):Play()
+		end)
+	end
 
 	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = toggleKey }
 
@@ -699,7 +727,7 @@ function EclipseUI:CreateWindow(options)
 		Window.ActiveTab = targetTab
 
 		activePill.Visible = true
-		local targetY = targetTab.Frame.AbsolutePosition.Y - tabsContainer.AbsolutePosition.Y
+		local targetY = targetTab.Frame.AbsolutePosition.Y - tabsCanvasGroup.AbsolutePosition.Y
 		tween(activePill, pillTweenInfo, { Position = UDim2.new(0.5, 0, 0, targetY + 16) })
 
 		for _, tab in ipairs(Window.Tabs) do
