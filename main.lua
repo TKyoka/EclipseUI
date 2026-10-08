@@ -507,25 +507,53 @@ function EclipseUI:CreateWindow(options)
 	tabsPadding.Parent = tabs
 
 	-- User Info Section
+	local userInfoContainer = Instance.new("Frame")
+	userInfoContainer.Name = "UserInfoContainer"
+	userInfoContainer.AnchorPoint = Vector2.new(0, 1)
+	userInfoContainer.Position = UDim2.new(0, 0, 1, 0)
+	userInfoContainer.Size = UDim2.new(0, 134, 0, 52)
+	userInfoContainer.BackgroundTransparency = 1
+	userInfoContainer.ZIndex = 3
+	userInfoContainer.Parent = bodyGroup
+
 	local userInfo = Instance.new("TextButton")
 	userInfo.Name = "UserInfo"
-	userInfo.AnchorPoint = Vector2.new(0, 1)
-	userInfo.Position = UDim2.new(0, 0, 1, 0)
-	userInfo.Size = UDim2.new(0, 134, 0, 52)
+	userInfo.AnchorPoint = Vector2.new(0.5, 0.5)
+	userInfo.Position = UDim2.new(0.5, 0, 0.5, 0)
+	userInfo.Size = UDim2.new(1, -8, 1, -8)
+	userInfo.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	userInfo.BackgroundTransparency = 1
 	userInfo.Text = ""
 	userInfo.AutoButtonColor = false
 	userInfo.ZIndex = 3
-	userInfo.Parent = bodyGroup
+	userInfo.Parent = userInfoContainer
+
+	local userCorner = Instance.new("UICorner")
+	userCorner.CornerRadius = UDim.new(0, 8)
+	userCorner.Parent = userInfo
+
+	local userStroke = Instance.new("UIStroke")
+	userStroke.Color = Color3.fromRGB(255, 255, 255)
+	userStroke.Thickness = 1
+	userStroke.Transparency = 1
+	userStroke.Parent = userInfo
+
+	local userContentGroup = Instance.new("CanvasGroup")
+	userContentGroup.Name = "UserContentGroup"
+	userContentGroup.Size = UDim2.new(1, 0, 1, 0)
+	userContentGroup.BackgroundTransparency = 1
+	userContentGroup.GroupTransparency = 0
+	userContentGroup.ZIndex = 3
+	userContentGroup.Parent = userInfo
 
 	local avatarImage = Instance.new("ImageLabel")
 	avatarImage.Name = "Avatar"
-	avatarImage.Size = UDim2.new(0, 32, 0, 32)
-	avatarImage.Position = UDim2.new(0, 12, 0.5, -16)
+	avatarImage.Size = UDim2.new(0, 30, 0, 30)
+	avatarImage.Position = UDim2.new(0, 8, 0.5, -15)
 	avatarImage.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 	avatarImage.BackgroundTransparency = 0.94
-	avatarImage.ZIndex = 3
-	avatarImage.Parent = userInfo
+	avatarImage.ZIndex = 4
+	avatarImage.Parent = userContentGroup
 
 	local avatarCorner = Instance.new("UICorner")
 	avatarCorner.CornerRadius = UDim.new(1, 0)
@@ -546,8 +574,8 @@ function EclipseUI:CreateWindow(options)
 
 	local displayNameLabel = Instance.new("TextLabel")
 	displayNameLabel.Name = "DisplayName"
-	displayNameLabel.Size = UDim2.new(1, -52, 0, 15)
-	displayNameLabel.Position = UDim2.new(0, 50, 0, 10)
+	displayNameLabel.Size = UDim2.new(1, -48, 0, 15)
+	displayNameLabel.Position = UDim2.new(0, 44, 0, 8)
 	displayNameLabel.BackgroundTransparency = 1
 	displayNameLabel.Text = LocalPlayer.DisplayName
 	displayNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -555,13 +583,13 @@ function EclipseUI:CreateWindow(options)
 	displayNameLabel.Font = Enum.Font.GothamBold
 	displayNameLabel.TextXAlignment = Enum.TextXAlignment.Left
 	displayNameLabel.TextTruncate = Enum.TextTruncate.AtEnd
-	displayNameLabel.ZIndex = 3
-	displayNameLabel.Parent = userInfo
+	displayNameLabel.ZIndex = 4
+	displayNameLabel.Parent = userContentGroup
 
 	local usernameLabel = Instance.new("TextLabel")
 	usernameLabel.Name = "Username"
-	usernameLabel.Size = UDim2.new(1, -52, 0, 13)
-	usernameLabel.Position = UDim2.new(0, 50, 0, 26)
+	usernameLabel.Size = UDim2.new(1, -48, 0, 13)
+	usernameLabel.Position = UDim2.new(0, 44, 0, 23)
 	usernameLabel.BackgroundTransparency = 1
 	usernameLabel.Text = "@" .. LocalPlayer.Name
 	usernameLabel.TextColor3 = Color3.fromRGB(150, 158, 175)
@@ -569,17 +597,44 @@ function EclipseUI:CreateWindow(options)
 	usernameLabel.Font = Enum.Font.GothamBold
 	usernameLabel.TextXAlignment = Enum.TextXAlignment.Left
 	usernameLabel.TextTruncate = Enum.TextTruncate.AtEnd
-	usernameLabel.ZIndex = 3
-	usernameLabel.Parent = userInfo
+	usernameLabel.ZIndex = 4
+	usernameLabel.Parent = userContentGroup
 
-	-- Double Click User Info Toggle Functionality
+	-- Premium Interactive Animations & One-Click Toggle
 	local isHiddenUser = false
-	local lastUserClick = 0
+	local userHoverInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+	local userPressInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	local fadeOutInfo = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+	local fadeInInfo = TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+
+	userInfo.MouseEnter:Connect(function()
+		TweenService:Create(userInfo, userHoverInfo, { BackgroundTransparency = 0.94 }):Play()
+		TweenService:Create(userStroke, userHoverInfo, { Transparency = 0.90 }):Play()
+		TweenService:Create(displayNameLabel, userHoverInfo, { TextColor3 = Color3.fromRGB(255, 255, 255) }):Play()
+	end)
+
+	userInfo.MouseLeave:Connect(function()
+		TweenService:Create(userInfo, userHoverInfo, { BackgroundTransparency = 1 }):Play()
+		TweenService:Create(userStroke, userHoverInfo, { Transparency = 1 }):Play()
+		TweenService:Create(displayNameLabel, userHoverInfo, { TextColor3 = Color3.fromRGB(240, 245, 255) }):Play()
+	end)
+
+	userInfo.MouseButton1Down:Connect(function()
+		TweenService:Create(userInfo, userPressInfo, { Size = UDim2.new(1, -12, 1, -12) }):Play()
+	end)
+
+	userInfo.MouseButton1Up:Connect(function()
+		TweenService:Create(userInfo, userHoverInfo, { Size = UDim2.new(1, -8, 1, -8) }):Play()
+	end)
 
 	userInfo.MouseButton1Click:Connect(function()
-		local now = tick()
-		if now - lastUserClick < 0.3 then
-			isHiddenUser = not isHiddenUser
+		-- Smooth spring transition on single click
+		isHiddenUser = not isHiddenUser
+
+		local fadeOut = TweenService:Create(userContentGroup, fadeOutInfo, { GroupTransparency = 1 })
+		fadeOut:Play()
+
+		fadeOut.Completed:Connect(function()
 			if isHiddenUser then
 				displayNameLabel.Text = "Eclipse"
 				usernameLabel.Text = "@EclipseUI"
@@ -589,10 +644,9 @@ function EclipseUI:CreateWindow(options)
 				usernameLabel.Text = "@" .. LocalPlayer.Name
 				avatarImage.Image = userThumbnail
 			end
-			lastUserClick = 0
-		else
-			lastUserClick = now
-		end
+
+			TweenService:Create(userContentGroup, fadeInInfo, { GroupTransparency = 0 }):Play()
+		end)
 	end)
 
 	-- Contents Area
@@ -781,7 +835,6 @@ function EclipseUI:CreateWindow(options)
 
 		clickBtn.MouseButton1Down:Connect(function()
 			if Window.ActiveTab == TabObject then
-				-- Shrinks uniformly from all sides
 				tween(activePill, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.new(1, -26, 0, 28) })
 			end
 		end)
