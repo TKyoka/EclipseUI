@@ -54,12 +54,16 @@ function EclipseUI:CreateWindow(options)
 	screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	screenGui.Parent = playerGui
 
+	-- Original Window Dimensions
+	local defaultSize = UDim2.new(0, 430, 0, 275)
+	local defaultPos = UDim2.new(0.5, 0, 0.5, 0)
+
 	-- Main Container Frame
 	local mainGroup = Instance.new("CanvasGroup")
 	mainGroup.Name = "MainGroup"
 	mainGroup.AnchorPoint = Vector2.new(0.5, 0.5)
-	mainGroup.Position = UDim2.new(0.5, 0, 0.5, 0)
-	mainGroup.Size = UDim2.new(0, 430, 0, 275)
+	mainGroup.Position = defaultPos
+	mainGroup.Size = defaultSize
 	mainGroup.BackgroundColor3 = Color3.fromRGB(15, 16, 20)
 	mainGroup.BackgroundTransparency = 0.2
 	mainGroup.BorderSizePixel = 0
@@ -186,7 +190,7 @@ function EclipseUI:CreateWindow(options)
 	header.Parent = mainGroup
 
 	local titleLabel = Instance.new("TextLabel")
-	titleLabel.Size = UDim2.new(1, -90, 1, 0)
+	titleLabel.Size = UDim2.new(1, -120, 1, 0)
 	titleLabel.Position = UDim2.new(0, 16, 0, 0)
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Text = windowName
@@ -197,12 +201,12 @@ function EclipseUI:CreateWindow(options)
 	titleLabel.ZIndex = 3
 	titleLabel.Parent = header
 
-	-- Window Control Buttons
+	-- Window Control Buttons Container
 	local controlsFrame = Instance.new("Frame")
 	controlsFrame.Name = "Controls"
 	controlsFrame.AnchorPoint = Vector2.new(1, 0.5)
 	controlsFrame.Position = UDim2.new(1, -12, 0.5, 0)
-	controlsFrame.Size = UDim2.new(0, 56, 0, 24)
+	controlsFrame.Size = UDim2.new(0, 84, 0, 24)
 	controlsFrame.BackgroundTransparency = 1
 	controlsFrame.ZIndex = 10
 	controlsFrame.Parent = header
@@ -214,7 +218,7 @@ function EclipseUI:CreateWindow(options)
 	controlsLayout.Padding = UDim.new(0, 4)
 	controlsLayout.Parent = controlsFrame
 
-	local function createControlButton(name, iconAsset, hoverColor)
+	local function createControlButton(name, iconName, hoverColor)
 		local btnFrame = Instance.new("Frame")
 		btnFrame.Name = name
 		btnFrame.Size = UDim2.new(0, 24, 0, 24)
@@ -233,10 +237,19 @@ function EclipseUI:CreateWindow(options)
 		icon.Position = UDim2.new(0.5, 0, 0.5, 0)
 		icon.Size = UDim2.new(0, 14, 0, 14)
 		icon.BackgroundTransparency = 1
-		icon.Image = iconAsset
+		icon.Image = getIconAsset(iconName)
 		icon.ImageColor3 = Color3.fromRGB(150, 160, 180)
 		icon.ZIndex = 11
 		icon.Parent = btnFrame
+
+		if not iconsLoaded then
+			task.spawn(function()
+				repeat task.wait() until iconsLoaded or not icon:IsDescendantOf(game)
+				if icon:IsDescendantOf(game) then
+					icon.Image = getIconAsset(iconName)
+				end
+			end)
+		end
 
 		icon.MouseEnter:Connect(function()
 			TweenService:Create(btnFrame, TweenInfo.new(0.15), { BackgroundTransparency = 0.92 }):Play()
@@ -248,15 +261,19 @@ function EclipseUI:CreateWindow(options)
 			TweenService:Create(icon, TweenInfo.new(0.15), { ImageColor3 = Color3.fromRGB(150, 160, 180) }):Play()
 		end)
 
-		return icon
+		return icon, btnFrame
 	end
 
-	local minimizeBtn = createControlButton("MinimizeBtn", "rbxassetid://10747373176", Color3.fromRGB(255, 255, 255))
-	local destroyBtn = createControlButton("DestroyBtn", "rbxassetid://10747384394", Color3.fromRGB(255, 255, 255))
+	-- Control Buttons Order: Minus, Fullscreen/Shrink, Destroy
+	local minimizeBtn = createControlButton("MinimizeBtn", "minus", Color3.fromRGB(255, 255, 255))
+	local resizeBtn = createControlButton("ResizeBtn", "maximize", Color3.fromRGB(255, 255, 255))
+	local destroyBtn = createControlButton("DestroyBtn", "x", Color3.fromRGB(255, 60, 60))
 
 	local isMinimized = false
 	local isMinimizing = false
+	local isFullscreen = false
 
+	-- Minimize Button (Minus)
 	minimizeBtn.MouseButton1Click:Connect(function()
 		if isMinimizing then return end
 		isMinimizing = true
@@ -281,7 +298,8 @@ function EclipseUI:CreateWindow(options)
 			TweenService:Create(headerLine1, windowTweenInfo, { BackgroundTransparency = lineTransparency }):Play()
 			TweenService:Create(headerLine2, windowTweenInfo, { BackgroundTransparency = lineTransparency }):Play()
 
-			local expandTween = TweenService:Create(mainGroup, windowTweenInfo, { Size = UDim2.new(0, 430, 0, 275) })
+			local targetSize = isFullscreen and UDim2.new(0.95, 0, 0.95, 0) or defaultSize
+			local expandTween = TweenService:Create(mainGroup, windowTweenInfo, { Size = targetSize })
 			expandTween:Play()
 			expandTween.Completed:Connect(function()
 				isMinimizing = false
@@ -289,6 +307,29 @@ function EclipseUI:CreateWindow(options)
 		end
 	end)
 
+	-- Fullscreen / Shrink Toggle Button
+	resizeBtn.MouseButton1Click:Connect(function()
+		if isMinimized then return end
+		isFullscreen = not isFullscreen
+
+		local resizeTweenInfo = TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+
+		if isFullscreen then
+			resizeBtn.Image = getIconAsset("shrink")
+			TweenService:Create(mainGroup, resizeTweenInfo, {
+				Size = UDim2.new(0.95, 0, 0.95, 0),
+				Position = UDim2.new(0.5, 0, 0.5, 0)
+			}):Play()
+		else
+			resizeBtn.Image = getIconAsset("maximize")
+			TweenService:Create(mainGroup, resizeTweenInfo, {
+				Size = defaultSize,
+				Position = defaultPos
+			}):Play()
+		end
+	end)
+
+	-- Destroy Button (X)
 	destroyBtn.MouseButton1Click:Connect(function()
 		if mainAnimConnection then
 			mainAnimConnection:Disconnect()
@@ -312,6 +353,7 @@ function EclipseUI:CreateWindow(options)
 	local targetPos = mainGroup.Position
 
 	header.InputBegan:Connect(function(input)
+		if isFullscreen then return end
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			local mousePos = input.Position
 			local controlsPos = controlsFrame.AbsolutePosition
@@ -337,7 +379,7 @@ function EclipseUI:CreateWindow(options)
 					dragging = false
 					if not isMinimized then
 						TweenService:Create(mainGroup, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-							Size = UDim2.new(0, 430, 0, 275)
+							Size = defaultSize
 						}):Play()
 					end
 				end
@@ -358,7 +400,7 @@ function EclipseUI:CreateWindow(options)
 	end)
 
 	RunService.RenderStepped:Connect(function(dt)
-		if dragging then
+		if dragging and not isFullscreen then
 			mainGroup.Position = mainGroup.Position:Lerp(targetPos, math.clamp(dt * 20, 0, 1))
 		end
 	end)
@@ -583,7 +625,6 @@ function EclipseUI:CreateWindow(options)
 			iconImage.ZIndex = 5
 			iconImage.Parent = tabFrame
 
-			-- Auto-update tab icon once HttpGet finishes downloading
 			if not iconsLoaded and not string.find(tostring(tabIcon), "rbxassetid://") then
 				task.spawn(function()
 					repeat task.wait() until iconsLoaded or not iconImage:IsDescendantOf(game)
