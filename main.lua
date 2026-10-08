@@ -56,6 +56,16 @@ function EclipseUI:CreateWindow(options)
 	screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	screenGui.Parent = playerGui
 
+	-- Fullscreen Click-to-Shrink Backdrop Overlay
+	local fullscreenBackdrop = Instance.new("TextButton")
+	fullscreenBackdrop.Name = "FullscreenBackdrop"
+	fullscreenBackdrop.Size = UDim2.new(1, 0, 1, 0)
+	fullscreenBackdrop.BackgroundTransparency = 1
+	fullscreenBackdrop.Text = ""
+	fullscreenBackdrop.Visible = false
+	fullscreenBackdrop.ZIndex = 1
+	fullscreenBackdrop.Parent = screenGui
+
 	-- Original Window Dimensions
 	local defaultSize = UDim2.new(0, 480, 0, 320)
 	local defaultPos = UDim2.new(0.5, 0, 0.5, 0)
@@ -69,6 +79,7 @@ function EclipseUI:CreateWindow(options)
 	mainGroup.BackgroundColor3 = Color3.fromRGB(15, 16, 20)
 	mainGroup.BackgroundTransparency = 0.2
 	mainGroup.BorderSizePixel = 0
+	mainGroup.ZIndex = 2
 	mainGroup.Parent = screenGui
 
 	local uiCorner = Instance.new("UICorner")
@@ -154,13 +165,14 @@ function EclipseUI:CreateWindow(options)
 		end
 	end)
 
-	-- Body Content Group
-	local bodyGroup = Instance.new("Frame")
+	-- Body Content Group (CanvasGroup for fast fade support)
+	local bodyGroup = Instance.new("CanvasGroup")
 	bodyGroup.Name = "BodyGroup"
 	bodyGroup.Size = UDim2.new(1, 0, 1, -46)
 	bodyGroup.Position = UDim2.new(0, 0, 0, 46)
 	bodyGroup.BackgroundTransparency = 1
-	bodyGroup.ZIndex = 2
+	bodyGroup.GroupTransparency = 0
+	bodyGroup.ZIndex = 3
 	bodyGroup.Parent = mainGroup
 
 	-- Separators
@@ -213,7 +225,7 @@ function EclipseUI:CreateWindow(options)
 	header.Name = "Header"
 	header.Size = UDim2.new(1, 0, 0, 46)
 	header.BackgroundTransparency = 1
-	header.ZIndex = 3
+	header.ZIndex = 4
 	header.Parent = mainGroup
 
 	local titleOffsetLeft = 16
@@ -226,7 +238,7 @@ function EclipseUI:CreateWindow(options)
 		headerIcon.BackgroundTransparency = 1
 		headerIcon.Image = getIconAsset(windowIcon)
 		headerIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
-		headerIcon.ZIndex = 3
+		headerIcon.ZIndex = 4
 		headerIcon.Parent = header
 
 		if not iconsLoaded and not string.find(tostring(windowIcon), "rbxassetid://") then
@@ -251,7 +263,7 @@ function EclipseUI:CreateWindow(options)
 	titleLabel.Font = Enum.Font.GothamBold
 	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 	titleLabel.TextTruncate = Enum.TextTruncate.AtEnd
-	titleLabel.ZIndex = 3
+	titleLabel.ZIndex = 4
 	titleLabel.Parent = header
 
 	-- Window Control Buttons Container
@@ -342,19 +354,25 @@ function EclipseUI:CreateWindow(options)
 		isMinimized = not isMinimized
 
 		local windowTweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+		local fastFadeInfo = TweenInfo.new(0.08, Enum.EasingStyle.Linear)
 
 		if isMinimized then
-			TweenService:Create(headerLine1, windowTweenInfo, { BackgroundTransparency = 1 }):Play()
-			TweenService:Create(headerLine2, windowTweenInfo, { BackgroundTransparency = 1 }):Play()
+			-- Fast fade out everything except the header
+			TweenService:Create(bodyGroup, fastFadeInfo, { GroupTransparency = 1 }):Play()
+			TweenService:Create(headerLine1, fastFadeInfo, { BackgroundTransparency = 1 }):Play()
+			TweenService:Create(headerLine2, fastFadeInfo, { BackgroundTransparency = 1 }):Play()
+
+			task.wait(0.08)
+			bodyGroup.Visible = false
 
 			local shrinkTween = TweenService:Create(mainGroup, windowTweenInfo, { Size = UDim2.new(0, defaultSize.X.Offset, 0, 46) })
 			shrinkTween:Play()
 			shrinkTween.Completed:Connect(function()
-				bodyGroup.Visible = false
 				isMinimizing = false
 			end)
 		else
 			bodyGroup.Visible = true
+			TweenService:Create(bodyGroup, fastFadeInfo, { GroupTransparency = 0 }):Play()
 			TweenService:Create(headerLine1, windowTweenInfo, { BackgroundTransparency = lineTransparency }):Play()
 			TweenService:Create(headerLine2, windowTweenInfo, { BackgroundTransparency = lineTransparency }):Play()
 
@@ -370,6 +388,7 @@ function EclipseUI:CreateWindow(options)
 	resizeBtn.MouseButton1Click:Connect(function()
 		if isMinimized then return end
 		isFullscreen = not isFullscreen
+		fullscreenBackdrop.Visible = isFullscreen
 
 		local resizeTweenInfo = TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 
@@ -386,6 +405,17 @@ function EclipseUI:CreateWindow(options)
 				Position = defaultPos
 			}):Play()
 		end
+	end)
+
+	fullscreenBackdrop.MouseButton1Click:Connect(function()
+		if not isFullscreen then return end
+		isFullscreen = false
+		fullscreenBackdrop.Visible = false
+		setButtonIcon(resizeBtn, "maximize")
+		TweenService:Create(mainGroup, TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+			Size = defaultSize,
+			Position = defaultPos
+		}):Play()
 	end)
 
 	destroyBtn.MouseButton1Click:Connect(function()
@@ -702,6 +732,12 @@ function EclipseUI:CreateWindow(options)
 				end
 
 				tab.PageGroup.Visible = true
+				tab.PageGroup.Position = UDim2.new(0, 0, 0, 8)
+				tab.PageGroup.GroupTransparency = 1
+				tween(tab.PageGroup, TweenInfo.new(0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+					Position = UDim2.new(0, 0, 0, 0),
+					GroupTransparency = 0
+				})
 			else
 				tween(tab.Label, fadeTweenInfo, { TextColor3 = Color3.fromRGB(140, 148, 165) })
 				if tab.Icon then
@@ -774,10 +810,12 @@ function EclipseUI:CreateWindow(options)
 		tabText.ZIndex = 5
 		tabText.Parent = tabFrame
 
-		local pageGroup = Instance.new("Frame")
+		-- PageGroup as CanvasGroup for smooth tab transition animations
+		local pageGroup = Instance.new("CanvasGroup")
 		pageGroup.Name = tabTitle .. "PageGroup"
 		pageGroup.Size = UDim2.new(1, 0, 1, 0)
 		pageGroup.BackgroundTransparency = 1
+		pageGroup.GroupTransparency = 0
 		pageGroup.Visible = false
 		pageGroup.ZIndex = 3
 		pageGroup.Parent = contents
@@ -1025,7 +1063,7 @@ function EclipseUI:CreateWindow(options)
 			return btn
 		end
 
-		-- Component: Toggle (Simple Animated Gradient & Pill Knob)
+		-- Component: Toggle (Animated Gradient & Pill Knob)
 		function TabObject:Toggle(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1159,7 +1197,7 @@ function EclipseUI:CreateWindow(options)
 			return ToggleObj
 		end
 
-		-- Component: Slider (Two-row layout: Title/TextBox on top, track at bottom)
+		-- Component: Slider (Animated Silver Gradient, Pill Thumb, Centered Code TextBox)
 		function TabObject:Slider(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1193,6 +1231,7 @@ function EclipseUI:CreateWindow(options)
 			valBox.TextColor3 = Color3.fromRGB(200, 210, 225)
 			valBox.TextSize = 11
 			valBox.Font = Enum.Font.Code
+			valBox.TextYAlignment = Enum.TextYAlignment.Center
 			valBox.ClearTextOnFocus = false
 			valBox.ZIndex = 6
 			valBox.Parent = sliderContainer
@@ -1341,7 +1380,7 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
-		-- Component: Keybind Selector
+		-- Component: Keybind Selector (Centered Code Font)
 		function TabObject:Keybind(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1373,6 +1412,7 @@ function EclipseUI:CreateWindow(options)
 			keyBtn.TextColor3 = Color3.fromRGB(200, 210, 225)
 			keyBtn.TextSize = 11
 			keyBtn.Font = Enum.Font.Code
+			keyBtn.TextYAlignment = Enum.TextYAlignment.Center
 			keyBtn.ZIndex = 6
 			keyBtn.Parent = kbFrame
 
@@ -1409,7 +1449,7 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
-		-- Component: Dropdown (Reworked with matching code-box style and clean selection badge)
+		-- Component: Dropdown (Centered Code Font Selection Badge)
 		function TabObject:Dropdown(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1467,6 +1507,7 @@ function EclipseUI:CreateWindow(options)
 			selLabel.TextColor3 = Color3.fromRGB(200, 210, 225)
 			selLabel.TextSize = 11
 			selLabel.Font = Enum.Font.Code
+			selLabel.TextYAlignment = Enum.TextYAlignment.Center
 			selLabel.TextXAlignment = Enum.TextXAlignment.Left
 			selLabel.TextTruncate = Enum.TextTruncate.AtEnd
 			selLabel.ZIndex = 7
@@ -1544,6 +1585,7 @@ function EclipseUI:CreateWindow(options)
 				itemText.TextColor3 = Color3.fromRGB(160, 170, 190)
 				itemText.TextSize = 11
 				itemText.Font = Enum.Font.Gotham
+				itemText.TextYAlignment = Enum.TextYAlignment.Center
 				itemText.TextXAlignment = Enum.TextXAlignment.Left
 				itemText.ZIndex = 7
 				itemText.Parent = itemBtn
