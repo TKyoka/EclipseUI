@@ -1029,7 +1029,8 @@ function EclipseUI:CreateWindow(options)
 			return btn
 		end
 
-		-- Redesigned Sleek Toggle Matching Theme Accent
+		-- Component: Toggle
+-- Redesigned Premium Toggle Component
 		function TabObject:Toggle(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1054,8 +1055,8 @@ function EclipseUI:CreateWindow(options)
 			local switchTrack = Instance.new("Frame")
 			switchTrack.AnchorPoint = Vector2.new(1, 0.5)
 			switchTrack.Position = UDim2.new(1, -12, 0.5, 0)
-			switchTrack.Size = UDim2.new(0, 40, 0, 20)
-			switchTrack.BackgroundColor3 = state and Color3.fromRGB(65, 95, 160) or Color3.fromRGB(22, 25, 33)
+			switchTrack.Size = UDim2.new(0, 42, 0, 22)
+			switchTrack.BackgroundColor3 = state and Color3.fromRGB(59, 130, 246) or Color3.fromRGB(18, 21, 28)
 			switchTrack.ZIndex = 5
 			switchTrack.Parent = toggleFrame
 
@@ -1064,15 +1065,28 @@ function EclipseUI:CreateWindow(options)
 			trackCorner.Parent = switchTrack
 
 			local trackStroke = Instance.new("UIStroke")
-			trackStroke.Color = state and Color3.fromRGB(110, 145, 220) or Color3.fromRGB(255, 255, 255)
+			trackStroke.Color = state and Color3.fromRGB(147, 197, 253) or Color3.fromRGB(255, 255, 255)
 			trackStroke.Thickness = 1
-			trackStroke.Transparency = state and 0.4 or 0.88
+			trackStroke.Transparency = state and 0.3 or 0.90
 			trackStroke.Parent = switchTrack
+
+			-- Soft background inner shadow/gradient for depth when active
+			local trackGradient = Instance.new("UIGradient")
+			trackGradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 180, 180))
+			})
+			trackGradient.Rotation = 90
+			trackGradient.Transparency = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, state and 0.2 or 0.9),
+				NumberSequenceKeypoint.new(1, state and 0.5 or 1)
+			})
+			trackGradient.Parent = switchTrack
 
 			local switchThumb = Instance.new("Frame")
 			switchThumb.AnchorPoint = Vector2.new(0, 0.5)
-			switchThumb.Position = state and UDim2.new(1, -17, 0.5, 0) or UDim2.new(0, 3, 0.5, 0)
-			switchThumb.Size = UDim2.new(0, 14, 0, 14)
+			switchThumb.Position = state and UDim2.new(1, -18, 0.5, 0) or UDim2.new(0, 3, 0.5, 0)
+			switchThumb.Size = UDim2.new(0, 16, 0, 16)
 			switchThumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 			switchThumb.ZIndex = 6
 			switchThumb.Parent = switchTrack
@@ -1090,10 +1104,15 @@ function EclipseUI:CreateWindow(options)
 
 			local function updateState(newState)
 				state = newState
-				local trackColor = state and Color3.fromRGB(65, 95, 160) or Color3.fromRGB(22, 25, 33)
-				local strokeColor = state and Color3.fromRGB(110, 145, 220) or Color3.fromRGB(255, 255, 255)
-				local strokeTrans = state and 0.4 or 0.88
-				local thumbPos = state and UDim2.new(1, -17, 0.5, 0) or UDim2.new(0, 3, 0.5, 0)
+				local trackColor = state and Color3.fromRGB(59, 130, 246) or Color3.fromRGB(18, 21, 28)
+				local strokeColor = state and Color3.fromRGB(147, 197, 253) or Color3.fromRGB(255, 255, 255)
+				local strokeTrans = state and 0.3 or 0.90
+				local thumbPos = state and UDim2.new(1, -18, 0.5, 0) or UDim2.new(0, 3, 0.5, 0)
+
+				trackGradient.Transparency = NumberSequence.new({
+					NumberSequenceKeypoint.new(0, state and 0.2 or 0.9),
+					NumberSequenceKeypoint.new(1, state and 0.5 or 1)
+				})
 
 				tween(switchTrack, fadeTweenInfo, { BackgroundColor3 = trackColor })
 				tween(trackStroke, fadeTweenInfo, { Color = strokeColor, Transparency = strokeTrans })
