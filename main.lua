@@ -292,10 +292,10 @@ function EclipseUI:CreateWindow(options)
 
 		for index, tagName in ipairs(windowTags) do
 			local tagPill = Instance.new("Frame")
-			tagPill.Size = UDim2.new(0, 0, 0, 18)
+			tagPill.Size = UDim2.new(0, 0, 0, 20)
 			tagPill.AutomaticSize = Enum.AutomaticSize.X
-			tagPill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-			tagPill.BackgroundTransparency = 0.90
+			tagPill.BackgroundColor3 = Color3.fromRGB(25, 30, 42)
+			tagPill.BackgroundTransparency = 0.4
 			tagPill.ZIndex = 4
 			tagPill.Parent = tagsList
 
@@ -303,9 +303,23 @@ function EclipseUI:CreateWindow(options)
 			tagCorner.CornerRadius = UDim.new(1, 0)
 			tagCorner.Parent = tagPill
 
+			local tagStroke = Instance.new("UIStroke")
+			tagStroke.Color = Color3.fromRGB(255, 255, 255)
+			tagStroke.Thickness = 1
+			tagStroke.Transparency = 0.82
+			tagStroke.Parent = tagPill
+
+			local tagGradient = Instance.new("UIGradient")
+			tagGradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 190, 210))
+			})
+			tagGradient.Rotation = 90
+			tagGradient.Parent = tagPill
+
 			local tagPadding = Instance.new("UIPadding")
-			tagPadding.PaddingLeft = UDim.new(0, 6)
-			tagPadding.PaddingRight = UDim.new(0, 6)
+			tagPadding.PaddingLeft = UDim.new(0, 8)
+			tagPadding.PaddingRight = UDim.new(0, 8)
 			tagPadding.Parent = tagPill
 
 			local tagText = Instance.new("TextLabel")
@@ -313,7 +327,7 @@ function EclipseUI:CreateWindow(options)
 			tagText.AutomaticSize = Enum.AutomaticSize.X
 			tagText.BackgroundTransparency = 1
 			tagText.Text = tostring(tagName)
-			tagText.TextColor3 = Color3.fromRGB(180, 190, 210)
+			tagText.TextColor3 = Color3.fromRGB(220, 228, 240)
 			tagText.TextSize = 10
 			tagText.Font = Enum.Font.GothamBold
 			tagText.TextXAlignment = Enum.TextXAlignment.Left
