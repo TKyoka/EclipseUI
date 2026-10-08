@@ -507,12 +507,14 @@ function EclipseUI:CreateWindow(options)
 	tabsPadding.Parent = tabs
 
 	-- User Info Section
-	local userInfo = Instance.new("Frame")
+	local userInfo = Instance.new("TextButton")
 	userInfo.Name = "UserInfo"
 	userInfo.AnchorPoint = Vector2.new(0, 1)
 	userInfo.Position = UDim2.new(0, 0, 1, 0)
 	userInfo.Size = UDim2.new(0, 134, 0, 52)
 	userInfo.BackgroundTransparency = 1
+	userInfo.Text = ""
+	userInfo.AutoButtonColor = false
 	userInfo.ZIndex = 3
 	userInfo.Parent = bodyGroup
 
@@ -529,6 +531,7 @@ function EclipseUI:CreateWindow(options)
 	avatarCorner.CornerRadius = UDim.new(1, 0)
 	avatarCorner.Parent = avatarImage
 
+	local userThumbnail = ""
 	task.spawn(function()
 		local content, isReady = Players:GetUserThumbnailAsync(
 			LocalPlayer.UserId,
@@ -536,6 +539,7 @@ function EclipseUI:CreateWindow(options)
 			Enum.ThumbnailSize.Size420x420
 		)
 		if isReady then
+			userThumbnail = content
 			avatarImage.Image = content
 		end
 	end)
@@ -567,6 +571,29 @@ function EclipseUI:CreateWindow(options)
 	usernameLabel.TextTruncate = Enum.TextTruncate.AtEnd
 	usernameLabel.ZIndex = 3
 	usernameLabel.Parent = userInfo
+
+	-- Double Click User Info Toggle Functionality
+	local isHiddenUser = false
+	local lastUserClick = 0
+
+	userInfo.MouseButton1Click:Connect(function()
+		local now = tick()
+		if now - lastUserClick < 0.3 then
+			isHiddenUser = not isHiddenUser
+			if isHiddenUser then
+				displayNameLabel.Text = "Eclipse"
+				usernameLabel.Text = "@EclipseUI"
+				avatarImage.Image = "rbxassetid://11984980776"
+			else
+				displayNameLabel.Text = LocalPlayer.DisplayName
+				usernameLabel.Text = "@" .. LocalPlayer.Name
+				avatarImage.Image = userThumbnail
+			end
+			lastUserClick = 0
+		else
+			lastUserClick = now
+		end
+	end)
 
 	-- Contents Area
 	local contents = Instance.new("Frame")
