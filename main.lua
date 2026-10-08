@@ -1131,7 +1131,7 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
-		-- Component: Slider
+        -- Redesigned Premium Slider Component
 		function TabObject:Slider(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1141,11 +1141,11 @@ function EclipseUI:CreateWindow(options)
 			local default = math.clamp(opts.Default or min, min, max)
 			local callback = opts.Callback or function() end
 
-			local sliderFrame, stroke = createContainer(targetParent, 46)
+			local sliderFrame, stroke = createContainer(targetParent, 48)
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, -60, 0, 20)
-			label.Position = UDim2.new(0, 14, 0, 6)
+			label.Size = UDim2.new(1, -70, 0, 20)
+			label.Position = UDim2.new(0, 14, 0, 7)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
@@ -1156,11 +1156,11 @@ function EclipseUI:CreateWindow(options)
 			label.Parent = sliderFrame
 
 			local valLabel = Instance.new("TextLabel")
-			valLabel.Size = UDim2.new(0, 40, 0, 20)
-			valLabel.Position = UDim2.new(1, -54, 0, 6)
+			valLabel.Size = UDim2.new(0, 50, 0, 20)
+			valLabel.Position = UDim2.new(1, -64, 0, 7)
 			valLabel.BackgroundTransparency = 1
 			valLabel.Text = tostring(default)
-			valLabel.TextColor3 = Color3.fromRGB(150, 160, 180)
+			valLabel.TextColor3 = Color3.fromRGB(147, 197, 253)
 			valLabel.TextSize = 11
 			valLabel.Font = Enum.Font.GothamBold
 			valLabel.TextXAlignment = Enum.TextXAlignment.Right
@@ -1168,9 +1168,9 @@ function EclipseUI:CreateWindow(options)
 			valLabel.Parent = sliderFrame
 
 			local track = Instance.new("Frame")
-			track.Position = UDim2.new(0, 14, 0, 30)
+			track.Position = UDim2.new(0, 14, 0, 33)
 			track.Size = UDim2.new(1, -28, 0, 6)
-			track.BackgroundColor3 = Color3.fromRGB(35, 40, 50)
+			track.BackgroundColor3 = Color3.fromRGB(18, 21, 28)
 			track.ZIndex = 5
 			track.Parent = sliderFrame
 
@@ -1178,15 +1178,46 @@ function EclipseUI:CreateWindow(options)
 			trackCorner.CornerRadius = UDim.new(1, 0)
 			trackCorner.Parent = track
 
+			local trackStroke = Instance.new("UIStroke")
+			trackStroke.Color = Color3.fromRGB(255, 255, 255)
+			trackStroke.Thickness = 1
+			trackStroke.Transparency = 0.90
+			trackStroke.Parent = track
+
 			local fill = Instance.new("Frame")
 			fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
-			fill.BackgroundColor3 = Color3.fromRGB(75, 120, 240)
+			fill.BackgroundColor3 = Color3.fromRGB(59, 130, 246)
 			fill.ZIndex = 6
 			fill.Parent = track
 
 			local fillCorner = Instance.new("UICorner")
 			fillCorner.CornerRadius = UDim.new(1, 0)
 			fillCorner.Parent = fill
+
+			local fillGradient = Instance.new("UIGradient")
+			fillGradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(96, 165, 250)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(37, 99, 235))
+			})
+			fillGradient.Parent = fill
+
+			-- Sleek draggable thumb handle
+			local thumb = Instance.new("Frame")
+			thumb.AnchorPoint = Vector2.new(0.5, 0.5)
+			thumb.Position = UDim2.new(1, 0, 0.5, 0)
+			thumb.Size = UDim2.new(0, 14, 0, 14)
+			thumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			thumb.ZIndex = 7
+			thumb.Parent = fill
+
+			local thumbCorner = Instance.new("UICorner")
+			thumbCorner.CornerRadius = UDim.new(1, 0)
+			thumbCorner.Parent = thumb
+
+			local thumbStroke = Instance.new("UIStroke")
+			thumbStroke.Color = Color3.fromRGB(59, 130, 246)
+			thumbStroke.Thickness = 2
+			thumbStroke.Parent = thumb
 
 			local isDragging = false
 
