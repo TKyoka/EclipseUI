@@ -48,6 +48,7 @@ function EclipseUI:CreateWindow(options)
 	local initialToggleKey = options.ToggleKey or Enum.KeyCode.RightControl
 	local bgName = options.BgName
 	local windowTags = options.Tags
+	local loadAnimEnabled = options.LoadAnim or false
 
 	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -70,6 +71,7 @@ function EclipseUI:CreateWindow(options)
 	mainGroup.BackgroundColor3 = Color3.fromRGB(15, 16, 20)
 	mainGroup.BackgroundTransparency = 0.2
 	mainGroup.BorderSizePixel = 0
+	mainGroup.GroupTransparency = loadAnimEnabled and 1 or 0
 	mainGroup.ZIndex = 2
 	mainGroup.Parent = screenGui
 
@@ -77,6 +79,7 @@ function EclipseUI:CreateWindow(options)
 	uiCorner.CornerRadius = UDim.new(0, 12)
 	uiCorner.Parent = mainGroup
 
+	-- Simple Clean Shimmer Background
 	local mainBackground = Instance.new("Frame")
 	mainBackground.Name = "AnimatedBackground"
 	mainBackground.Size = UDim2.new(1, 0, 1, 0)
@@ -99,7 +102,7 @@ function EclipseUI:CreateWindow(options)
 	local uiStroke = Instance.new("UIStroke")
 	uiStroke.Color = Color3.fromRGB(255, 255, 255)
 	uiStroke.Thickness = 1.5
-	uiStroke.Transparency = 0.4
+	uiStroke.Transparency = loadAnimEnabled and 1 or 0.4
 	uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 	uiStroke.Parent = mainGroup
 
@@ -124,8 +127,76 @@ function EclipseUI:CreateWindow(options)
 		local sheenProgress = (mainTimeAcc * 0.4) % 2 - 1
 		mainBgGradient.Offset = Vector2.new(sheenProgress, 0)
 		local pulse = (math.sin(mainTimeAcc * 2) + 1) / 2
-		uiStroke.Transparency = 0.35 + (pulse * 0.2)
+		if uiStroke.Transparency < 0.9 then
+			uiStroke.Transparency = 0.35 + (pulse * 0.2)
+		end
 	end)
+
+	-- Optional Loading Animation Sequence
+	if loadAnimEnabled then
+		task.spawn(function()
+			local loaderFrame = Instance.new("Frame")
+			loaderFrame.Size = UDim2.new(1, 0, 1, 0)
+			loaderFrame.BackgroundTransparency = 1
+			loaderFrame.ZIndex = 20
+			loaderFrame.Parent = mainGroup
+
+			local loadTitle = Instance.new("TextLabel")
+			loadTitle.AnchorPoint = Vector2.new(0.5, 0.5)
+			loadTitle.Position = UDim2.new(0.5, 0, 0.5, -10)
+			loadTitle.Size = UDim2.new(0, 200, 0, 30)
+			loadTitle.BackgroundTransparency = 1
+			loadTitle.Text = windowName
+			loadTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+			loadTitle.TextTransparency = 1
+			loadTitle.TextSize = 16
+			loadTitle.Font = Enum.Font.GothamBold
+			loadTitle.ZIndex = 21
+			loadTitle.Parent = loaderFrame
+
+			local loadSpinner = Instance.new("Frame")
+			loadSpinner.AnchorPoint = Vector2.new(0.5, 0.5)
+			loadSpinner.Position = UDim2.new(0.5, 0, 0.5, 20)
+			loadSpinner.Size = UDim2.new(0, 24, 0, 24)
+			loadSpinner.BackgroundTransparency = 1
+			loadSpinner.ZIndex = 21
+			loadSpinner.Parent = loaderFrame
+
+			local spinnerRing = Instance.new("UIStroke")
+			spinnerRing.Color = Color3.fromRGB(255, 255, 255)
+			spinnerRing.Thickness = 2
+			spinnerRing.Transparency = 1
+			spinnerRing.Parent = loadSpinner
+
+			local spinnerCorner = Instance.new("UICorner")
+			spinnerCorner.CornerRadius = UDim.new(1, 0)
+			spinnerCorner.Parent = loadSpinner
+
+			-- Fade in loader elements
+			TweenService:Create(loadTitle, TweenInfo.new(0.4), { TextTransparency = 0 }):Play()
+			TweenService:Create(spinnerRing, TweenInfo.new(0.4), { Transparency = 0.2 }):Play()
+			TweenService:Create(mainGroup, TweenInfo.new(0.4), { GroupTransparency = 0 }):Play()
+			TweenService:Create(uiStroke, TweenInfo.new(0.4), { Transparency = 0.4 }):Play()
+
+			local spinConnection
+			spinConnection = RunService.RenderStepped:Connect(function(dt)
+				if not loaderFrame.Parent then
+					spinConnection:Disconnect()
+					return
+				end
+				loadSpinner.Rotation = loadSpinner.Rotation + (dt * 300)
+			end)
+
+			task.wait(1.5) -- Loading duration
+
+			-- Fade out loader elements
+			TweenService:Create(loadTitle, TweenInfo.new(0.3), { TextTransparency = 1 }):Play()
+			TweenService:Create(spinnerRing, TweenInfo.new(0.3), { Transparency = 1 }):Play()
+			task.wait(0.3)
+			if spinConnection then spinConnection:Disconnect() end
+			loaderFrame:Destroy()
+		end)
+	end
 
 	local windowVisible = true
 	UserInputService.InputBegan:Connect(function(input, gpe)
@@ -133,7 +204,7 @@ function EclipseUI:CreateWindow(options)
 		if input.KeyCode == Window.ToggleKey then
 			windowVisible = not windowVisible
 			local targetGroupTrans = windowVisible and 0 or 1
-			local targetStrokeTrans = windowVisible and 0.4 or 1 -- Fades the outer glow completely when hidden
+			local targetStrokeTrans = windowVisible and 0.4 or 1
 			local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 
 			if windowVisible then
@@ -1131,7 +1202,6 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
-		-- Button Component with Continuous Looping Gradient Animation
 		function TabObject:Button(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1140,10 +1210,10 @@ function EclipseUI:CreateWindow(options)
 
 			local btn, stroke = createContainer(targetParent, 38)
 			btn.Name = btnName .. "Button"
-			btn.BackgroundTransparency = 0.75 -- Much more visible background
+			btn.BackgroundTransparency = 0.75
 			btn.ClipsDescendants = true
 
-			stroke.Transparency = 0.5 -- Clearer, brighter outline
+			stroke.Transparency = 0.5
 
 			local btnGradient = Instance.new("UIGradient")
 			btnGradient.Color = ColorSequence.new({
@@ -1154,7 +1224,6 @@ function EclipseUI:CreateWindow(options)
 			btnGradient.Rotation = 0
 			btnGradient.Parent = btn
 
-			-- Continuous Rotation Loop for the Button Gradient
 			task.spawn(function()
 				local tAcc = 0
 				while btn:IsDescendantOf(game) do
