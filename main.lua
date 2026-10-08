@@ -45,6 +45,7 @@ EclipseUI.__index = EclipseUI
 function EclipseUI:CreateWindow(options)
 	options = options or {}
 	local windowName = options.Title or options.Name or "Eclipse UI"
+	local windowIcon = options.Icon
 
 	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -189,15 +190,42 @@ function EclipseUI:CreateWindow(options)
 	header.ZIndex = 3
 	header.Parent = mainGroup
 
+	local titleOffsetLeft = 16
+
+	-- Header Icon Support
+	if windowIcon then
+		local headerIcon = Instance.new("ImageLabel")
+		headerIcon.Name = "HeaderIcon"
+		headerIcon.Size = UDim2.new(0, 16, 0, 16)
+		headerIcon.Position = UDim2.new(0, 14, 0.5, -8)
+		headerIcon.BackgroundTransparency = 1
+		headerIcon.Image = getIconAsset(windowIcon)
+		headerIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
+		headerIcon.ZIndex = 3
+		headerIcon.Parent = header
+
+		if not iconsLoaded and not string.find(tostring(windowIcon), "rbxassetid://") then
+			task.spawn(function()
+				repeat task.wait() until iconsLoaded or not headerIcon:IsDescendantOf(game)
+				if headerIcon:IsDescendantOf(game) then
+					headerIcon.Image = getIconAsset(windowIcon)
+				end
+			end)
+		end
+
+		titleOffsetLeft = 36
+	end
+
 	local titleLabel = Instance.new("TextLabel")
-	titleLabel.Size = UDim2.new(1, -120, 1, 0)
-	titleLabel.Position = UDim2.new(0, 16, 0, 0)
+	titleLabel.Size = UDim2.new(1, -(titleOffsetLeft + 104), 1, 0)
+	titleLabel.Position = UDim2.new(0, titleOffsetLeft, 0, 0)
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Text = windowName
 	titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 	titleLabel.TextSize = 14
 	titleLabel.Font = Enum.Font.GothamBold
 	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+	titleLabel.TextTruncate = Enum.TextTruncate.AtEnd
 	titleLabel.ZIndex = 3
 	titleLabel.Parent = header
 
@@ -271,10 +299,10 @@ function EclipseUI:CreateWindow(options)
 		end
 	end
 
-	-- Control Buttons Order: Minus, Fullscreen/Shrink, Destroy
-	local minimizeBtn = createControlButton("MinimizeBtn", "minus", Color3.fromRGB(255, 255, 255))
-	local resizeBtn = createControlButton("ResizeBtn", "maximize", Color3.fromRGB(255, 255, 255))
+	-- Reversed creation order so Right-Aligned UIListLayout renders: [Minus] [Fullscreen/Shrink] [Destroy]
 	local destroyBtn = createControlButton("DestroyBtn", "x", Color3.fromRGB(255, 60, 60))
+	local resizeBtn = createControlButton("ResizeBtn", "maximize", Color3.fromRGB(255, 255, 255))
+	local minimizeBtn = createControlButton("MinimizeBtn", "minus", Color3.fromRGB(255, 255, 255))
 
 	local isMinimized = false
 	local isMinimizing = false
@@ -585,7 +613,7 @@ function EclipseUI:CreateWindow(options)
 				if previousTab == tab then
 					tween(tab.PageGroup, fadeTweenInfo, { GroupTransparency = 1, Position = UDim2.new(0, 0, 0, -8) })
 					task.delay(0.20, function()
-						if Window.ActiveTab ~= tab then
+						if Window.ActiveTab ~= tab me then
 							tab.PageGroup.Visible = false
 						end
 					end)
