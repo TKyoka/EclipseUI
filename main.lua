@@ -155,12 +155,11 @@ function EclipseUI:CreateWindow(options)
 	end)
 
 	-- Body Content Group
-	local bodyGroup = Instance.new("CanvasGroup")
+	local bodyGroup = Instance.new("Frame")
 	bodyGroup.Name = "BodyGroup"
 	bodyGroup.Size = UDim2.new(1, 0, 1, -46)
 	bodyGroup.Position = UDim2.new(0, 0, 0, 46)
 	bodyGroup.BackgroundTransparency = 1
-	bodyGroup.GroupTransparency = 0
 	bodyGroup.ZIndex = 2
 	bodyGroup.Parent = mainGroup
 
@@ -345,7 +344,6 @@ function EclipseUI:CreateWindow(options)
 		local windowTweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 
 		if isMinimized then
-			TweenService:Create(bodyGroup, windowTweenInfo, { GroupTransparency = 1 }):Play()
 			TweenService:Create(headerLine1, windowTweenInfo, { BackgroundTransparency = 1 }):Play()
 			TweenService:Create(headerLine2, windowTweenInfo, { BackgroundTransparency = 1 }):Play()
 
@@ -357,7 +355,6 @@ function EclipseUI:CreateWindow(options)
 			end)
 		else
 			bodyGroup.Visible = true
-			TweenService:Create(bodyGroup, windowTweenInfo, { GroupTransparency = 0 }):Play()
 			TweenService:Create(headerLine1, windowTweenInfo, { BackgroundTransparency = lineTransparency }):Play()
 			TweenService:Create(headerLine2, windowTweenInfo, { BackgroundTransparency = lineTransparency }):Play()
 
@@ -705,25 +702,13 @@ function EclipseUI:CreateWindow(options)
 				end
 
 				tab.PageGroup.Visible = true
-				tab.PageGroup.Position = UDim2.new(0, 0, 0, 8)
-				tab.PageGroup.GroupTransparency = 1
-				tween(tab.PageGroup, fadeTweenInfo, { GroupTransparency = 0, Position = UDim2.new(0, 0, 0, 0) })
 			else
 				tween(tab.Label, fadeTweenInfo, { TextColor3 = Color3.fromRGB(140, 148, 165) })
 				if tab.Icon then
 					tween(tab.Icon, fadeTweenInfo, { ImageColor3 = Color3.fromRGB(140, 148, 165), ImageTransparency = 0.3 })
 				end
 
-				if previousTab == tab then
-					tween(tab.PageGroup, fadeTweenInfo, { GroupTransparency = 1, Position = UDim2.new(0, 0, 0, -8) })
-					task.delay(0.20, function()
-						if Window.ActiveTab ~= tab then
-							tab.PageGroup.Visible = false
-						end
-					end)
-				else
-					tab.PageGroup.Visible = false
-				end
+				tab.PageGroup.Visible = false
 			end
 		end
 	end
@@ -789,11 +774,10 @@ function EclipseUI:CreateWindow(options)
 		tabText.ZIndex = 5
 		tabText.Parent = tabFrame
 
-		local pageGroup = Instance.new("CanvasGroup")
+		local pageGroup = Instance.new("Frame")
 		pageGroup.Name = tabTitle .. "PageGroup"
 		pageGroup.Size = UDim2.new(1, 0, 1, 0)
 		pageGroup.BackgroundTransparency = 1
-		pageGroup.GroupTransparency = 1
 		pageGroup.Visible = false
 		pageGroup.ZIndex = 3
 		pageGroup.Parent = contents
@@ -867,6 +851,7 @@ function EclipseUI:CreateWindow(options)
 
 		if #Window.Tabs == 1 then
 			task.defer(function()
+				task.wait(0.05)
 				Window:SelectTab(TabObject)
 			end)
 		end
@@ -942,7 +927,7 @@ function EclipseUI:CreateWindow(options)
 			local title = opts.Title or "Paragraph Title"
 			local content = opts.Content or opts.Text or "Paragraph content description goes here."
 
-			local pFrame, pStroke = createContainer(targetParent, 0)
+			local pFrame, pStroke = createContainer(targetParent, 50)
 			pFrame.AutomaticSize = Enum.AutomaticSize.Y
 
 			local layout = Instance.new("UIListLayout")
