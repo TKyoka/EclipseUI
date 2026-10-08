@@ -56,16 +56,6 @@ function EclipseUI:CreateWindow(options)
 	screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	screenGui.Parent = playerGui
 
-	-- Fullscreen Click-to-Shrink Backdrop Overlay
-	local fullscreenBackdrop = Instance.new("TextButton")
-	fullscreenBackdrop.Name = "FullscreenBackdrop"
-	fullscreenBackdrop.Size = UDim2.new(1, 0, 1, 0)
-	fullscreenBackdrop.BackgroundTransparency = 1
-	fullscreenBackdrop.Text = ""
-	fullscreenBackdrop.Visible = false
-	fullscreenBackdrop.ZIndex = 1
-	fullscreenBackdrop.Parent = screenGui
-
 	-- Original Window Dimensions
 	local defaultSize = UDim2.new(0, 480, 0, 320)
 	local defaultPos = UDim2.new(0.5, 0, 0.5, 0)
@@ -388,7 +378,6 @@ function EclipseUI:CreateWindow(options)
 	resizeBtn.MouseButton1Click:Connect(function()
 		if isMinimized then return end
 		isFullscreen = not isFullscreen
-		fullscreenBackdrop.Visible = isFullscreen
 
 		local resizeTweenInfo = TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 
@@ -405,17 +394,6 @@ function EclipseUI:CreateWindow(options)
 				Position = defaultPos
 			}):Play()
 		end
-	end)
-
-	fullscreenBackdrop.MouseButton1Click:Connect(function()
-		if not isFullscreen then return end
-		isFullscreen = false
-		fullscreenBackdrop.Visible = false
-		setButtonIcon(resizeBtn, "maximize")
-		TweenService:Create(mainGroup, TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-			Size = defaultSize,
-			Position = defaultPos
-		}):Play()
 	end)
 
 	destroyBtn.MouseButton1Click:Connect(function()
@@ -915,6 +893,7 @@ function EclipseUI:CreateWindow(options)
 			return frame, stroke
 		end
 
+		-- Reworked Section Component with clean divider line
 		function TabObject:Section(secOptions)
 			secOptions = secOptions or {}
 			local secTitle = typeof(secOptions) == "string" and secOptions or (secOptions.Title or secOptions.Name or "Section")
@@ -932,15 +911,23 @@ function EclipseUI:CreateWindow(options)
 			secLayout.Parent = secFrame
 
 			local secHeader = Instance.new("TextLabel")
-			secHeader.Size = UDim2.new(1, 0, 0, 18)
+			secHeader.Size = UDim2.new(1, 0, 0, 20)
 			secHeader.BackgroundTransparency = 1
 			secHeader.Text = string.upper(secTitle)
-			secHeader.TextColor3 = Color3.fromRGB(110, 120, 140)
+			secHeader.TextColor3 = Color3.fromRGB(130, 140, 165)
 			secHeader.TextSize = 10
 			secHeader.Font = Enum.Font.GothamBold
 			secHeader.TextXAlignment = Enum.TextXAlignment.Left
 			secHeader.ZIndex = 4
 			secHeader.Parent = secFrame
+
+			local secLine = Instance.new("Frame")
+			secLine.Size = UDim2.new(1, 0, 0, 1)
+			secLine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			secLine.BackgroundTransparency = 0.92
+			secLine.BorderSizePixel = 0
+			secLine.ZIndex = 4
+			secLine.Parent = secFrame
 
 			local SectionObj = {}
 
