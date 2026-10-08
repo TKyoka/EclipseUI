@@ -167,35 +167,31 @@ function EclipseUI:CreateWindow(options)
 	bodyGroup.ZIndex = 3
 	bodyGroup.Parent = mainGroup
 
-	-- Separators (CanvasGroup for line fade support during drag)
-	local linesCanvasGroup = Instance.new("CanvasGroup")
-	linesCanvasGroup.Name = "LinesCanvasGroup"
-	linesCanvasGroup.Size = UDim2.new(1, 0, 1, 0)
-	linesCanvasGroup.BackgroundTransparency = 1
-	linesCanvasGroup.GroupTransparency = 0
-	linesCanvasGroup.ZIndex = 2
-	linesCanvasGroup.Parent = mainGroup
+	-- Separators
+	local lines = Instance.new("Folder")
+	lines.Name = "Lines"
+	lines.Parent = mainGroup
 
 	local lineDarkColor = Color3.fromRGB(255, 255, 255)
 	local lineTransparency = 0.92
 
 	local headerLine1 = Instance.new("Frame")
-	headerLine1.Position = UDim2.new(0, 135, 0, 0)
+	headerLine1.Position = UDim2.new(0, 135, 0, 46)
 	headerLine1.Size = UDim2.new(1, -135, 0, 1)
 	headerLine1.BackgroundColor3 = lineDarkColor
 	headerLine1.BackgroundTransparency = lineTransparency
 	headerLine1.BorderSizePixel = 0
 	headerLine1.ZIndex = 2
-	headerLine1.Parent = linesCanvasGroup
+	headerLine1.Parent = lines
 
 	local headerLine2 = Instance.new("Frame")
-	headerLine2.Position = UDim2.new(0, 0, 0, 0)
+	headerLine2.Position = UDim2.new(0, 0, 0, 46)
 	headerLine2.Size = UDim2.new(0, 134, 0, 1)
 	headerLine2.BackgroundColor3 = lineDarkColor
 	headerLine2.BackgroundTransparency = lineTransparency
 	headerLine2.BorderSizePixel = 0
 	headerLine2.ZIndex = 2
-	headerLine2.Parent = linesCanvasGroup
+	headerLine2.Parent = lines
 
 	local verticalLine = Instance.new("Frame")
 	verticalLine.Position = UDim2.new(0, 134, 0, 0)
@@ -279,8 +275,6 @@ function EclipseUI:CreateWindow(options)
 	titleLabel.ZIndex = 4
 	titleLabel.Parent = titleWrapper
 
-	local TagsObj = {}
-
 	if windowTags and typeof(windowTags) == "table" then
 		local tagsList = Instance.new("Frame")
 		tagsList.Name = "TagsList"
@@ -295,16 +289,15 @@ function EclipseUI:CreateWindow(options)
 		tagsLayout.FillDirection = Enum.FillDirection.Horizontal
 		tagsLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 		tagsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-		tagsLayout.Padding = UDim.new(0, 5)
+		tagsLayout.Padding = UDim.new(0, 4)
 		tagsLayout.Parent = tagsList
 
-		for index, tagName in ipairs(windowTags) do
+		for _, tagName in ipairs(windowTags) do
 			local tagPill = Instance.new("Frame")
-			tagPill.Name = "Tag_" .. index
-			tagPill.Size = UDim2.new(0, 0, 0, 20)
+			tagPill.Size = UDim2.new(0, 0, 0, 18)
 			tagPill.AutomaticSize = Enum.AutomaticSize.X
-			tagPill.BackgroundColor3 = Color3.fromRGB(25, 30, 40)
-			tagPill.BackgroundTransparency = 0.4
+			tagPill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			tagPill.BackgroundTransparency = 0.90
 			tagPill.ZIndex = 4
 			tagPill.Parent = tagsList
 
@@ -312,35 +305,22 @@ function EclipseUI:CreateWindow(options)
 			tagCorner.CornerRadius = UDim.new(1, 0)
 			tagCorner.Parent = tagPill
 
-			local tagStroke = Instance.new("UIStroke")
-			tagStroke.Color = Color3.fromRGB(255, 255, 255)
-			tagStroke.Thickness = 1
-			tagStroke.Transparency = 0.85
-			tagStroke.Parent = tagPill
-
 			local tagPadding = Instance.new("UIPadding")
-			tagPadding.PaddingLeft = UDim.new(0, 8)
-			tagPadding.PaddingRight = UDim.new(0, 8)
+			tagPadding.PaddingLeft = UDim.new(0, 6)
+			tagPadding.PaddingRight = UDim.new(0, 6)
 			tagPadding.Parent = tagPill
 
 			local tagText = Instance.new("TextLabel")
-			tagText.Name = "Text"
 			tagText.Size = UDim2.new(0, 0, 1, 0)
 			tagText.AutomaticSize = Enum.AutomaticSize.X
 			tagText.BackgroundTransparency = 1
 			tagText.Text = tostring(tagName)
-			tagText.TextColor3 = Color3.fromRGB(200, 210, 225)
+			tagText.TextColor3 = Color3.fromRGB(180, 190, 210)
 			tagText.TextSize = 10
 			tagText.Font = Enum.Font.GothamBold
 			tagText.TextXAlignment = Enum.TextXAlignment.Left
 			tagText.ZIndex = 4
 			tagText.Parent = tagPill
-
-			TagsObj[index] = {
-				SetText = function(_, newText)
-					tagText.Text = tostring(newText)
-				end
-			}
 		end
 	end
 
@@ -436,7 +416,8 @@ function EclipseUI:CreateWindow(options)
 
 		if isMinimized then
 			TweenService:Create(bodyGroup, fastFadeInfo, { GroupTransparency = 1 }):Play()
-			TweenService:Create(linesCanvasGroup, fastFadeInfo, { GroupTransparency = 1 }):Play()
+			TweenService:Create(headerLine1, fastFadeInfo, { BackgroundTransparency = 1 }):Play()
+			TweenService:Create(headerLine2, fastFadeInfo, { BackgroundTransparency = 1 }):Play()
 
 			task.wait(0.08)
 			bodyGroup.Visible = false
@@ -449,7 +430,8 @@ function EclipseUI:CreateWindow(options)
 		else
 			bodyGroup.Visible = true
 			TweenService:Create(bodyGroup, fastFadeInfo, { GroupTransparency = 0 }):Play()
-			TweenService:Create(linesCanvasGroup, windowTweenInfo, { GroupTransparency = 0 }):Play()
+			TweenService:Create(headerLine1, windowTweenInfo, { BackgroundTransparency = lineTransparency }):Play()
+			TweenService:Create(headerLine2, windowTweenInfo, { BackgroundTransparency = lineTransparency }):Play()
 
 			local targetSize = isFullscreen and UDim2.new(0.95, 0, 0.95, 0) or defaultSize
 			local expandTween = TweenService:Create(mainGroup, windowTweenInfo, { Size = targetSize })
@@ -497,7 +479,7 @@ function EclipseUI:CreateWindow(options)
 		end)
 	end)
 
-	-- Sidebar Containers
+	-- Sidebar Containers (Wrapped in CanvasGroups for dragging watermark fade effect)
 	local tabsCanvasGroup = Instance.new("CanvasGroup")
 	tabsCanvasGroup.Name = "TabsCanvasGroup"
 	tabsCanvasGroup.Size = UDim2.new(0, 134, 1, -52)
@@ -710,25 +692,25 @@ function EclipseUI:CreateWindow(options)
 	contents.ZIndex = 3
 	contents.Parent = bodyGroup
 
-	-- Perfectly Centered BgName Watermark (Hidden by default, appears ONLY on drag)
+	-- Optional BgName Watermark implementation during dragging
 	local bgWatermark
 	if bgName then
 		bgWatermark = Instance.new("TextLabel")
 		bgWatermark.Name = "BgWatermark"
 		bgWatermark.AnchorPoint = Vector2.new(0.5, 0.5)
-		bgWatermark.Position = UDim2.new(0.5, 67, 0.5, 0)
+		bgWatermark.Position = UDim2.new(0.5, 0, 0.5, 0)
 		bgWatermark.Size = UDim2.new(1, 0, 0, 50)
 		bgWatermark.BackgroundTransparency = 1
 		bgWatermark.Text = bgName
 		bgWatermark.TextColor3 = Color3.fromRGB(255, 255, 255)
-		bgWatermark.TextTransparency = 1 -- Hidden initially
-		bgWatermark.TextSize = 28
+		bgWatermark.TextTransparency = 0.25
+		bgWatermark.TextSize = 26
 		bgWatermark.Font = Enum.Font.GothamBold
 		bgWatermark.ZIndex = 2
 		bgWatermark.Parent = bodyGroup
 	end
 
-	-- Smooth Dragging with Watermark & Line Fade Trigger
+	-- Smooth Dragging with BgName Watermark Fade Trigger
 	local dragging = false
 	local dragStart = Vector2.zero
 	local startPos = UDim2.new()
@@ -756,13 +738,11 @@ function EclipseUI:CreateWindow(options)
 				}):Play()
 			end
 
-			local dragFadeInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-			TweenService:Create(tabsCanvasGroup, dragFadeInfo, { GroupTransparency = 1 }):Play()
-			TweenService:Create(userInfoCanvasGroup, dragFadeInfo, { GroupTransparency = 1 }):Play()
-			TweenService:Create(contents, dragFadeInfo, { GroupTransparency = 1 }):Play()
-			TweenService:Create(linesCanvasGroup, dragFadeInfo, { GroupTransparency = 1 }):Play()
-			if bgWatermark then
-				TweenService:Create(bgWatermark, dragFadeInfo, { TextTransparency = 0.25 }):Play()
+			if bgName then
+				local dragFadeInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+				TweenService:Create(tabsCanvasGroup, dragFadeInfo, { GroupTransparency = 1 }):Play()
+				TweenService:Create(userInfoCanvasGroup, dragFadeInfo, { GroupTransparency = 1 }):Play()
+				TweenService:Create(contents, dragFadeInfo, { GroupTransparency = 1 }):Play()
 			end
 
 			input.Changed:Connect(function()
@@ -774,13 +754,11 @@ function EclipseUI:CreateWindow(options)
 						}):Play()
 					end
 
-					local dragEndInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-					TweenService:Create(tabsCanvasGroup, dragEndInfo, { GroupTransparency = 0 }):Play()
-					TweenService:Create(userInfoCanvasGroup, dragEndInfo, { GroupTransparency = 0 }):Play()
-					TweenService:Create(contents, dragEndInfo, { GroupTransparency = 0 }):Play()
-					TweenService:Create(linesCanvasGroup, dragEndInfo, { GroupTransparency = 0 }):Play()
-					if bgWatermark then
-						TweenService:Create(bgWatermark, dragEndInfo, { TextTransparency = 1 }):Play()
+					if bgName then
+						local dragEndInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+						TweenService:Create(tabsCanvasGroup, dragEndInfo, { GroupTransparency = 0 }):Play()
+						TweenService:Create(userInfoCanvasGroup, dragEndInfo, { GroupTransparency = 0 }):Play()
+						TweenService:Create(contents, dragEndInfo, { GroupTransparency = 0 }):Play()
 					end
 				end
 			end)
@@ -805,7 +783,7 @@ function EclipseUI:CreateWindow(options)
 		end
 	end)
 
-	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = toggleKey, Tags = TagsObj }
+	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = toggleKey }
 
 	local pillTweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
 	local fadeTweenInfo = TweenInfo.new(0.20, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
@@ -819,6 +797,7 @@ function EclipseUI:CreateWindow(options)
 	function Window:SelectTab(targetTab)
 		if Window.ActiveTab == targetTab then return end
 
+		local previousTab = Window.ActiveTab
 		Window.ActiveTab = targetTab
 
 		activePill.Visible = true
@@ -911,6 +890,7 @@ function EclipseUI:CreateWindow(options)
 		tabText.ZIndex = 5
 		tabText.Parent = tabFrame
 
+		-- PageGroup as CanvasGroup for smooth tab transition animations
 		local pageGroup = Instance.new("CanvasGroup")
 		pageGroup.Name = tabTitle .. "PageGroup"
 		pageGroup.Size = UDim2.new(1, 0, 1, 0)
@@ -971,6 +951,16 @@ function EclipseUI:CreateWindow(options)
 			end
 		end)
 
+		clickBtn.MouseButton1Down:Connect(function()
+			if Window.ActiveTab == TabObject then
+				tween(activePill, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.new(1, -26, 0, 28) })
+			end
+		end)
+
+		clickBtn.MouseButton1Up:Connect(function()
+			tween(activePill, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.new(1, -20, 0, 32) })
+		end)
+
 		clickBtn.MouseButton1Click:Connect(function()
 			Window:SelectTab(TabObject)
 		end)
@@ -1005,6 +995,7 @@ function EclipseUI:CreateWindow(options)
 			return frame, stroke
 		end
 
+		-- Original Section Component with Optional Icon Support
 		function TabObject:Section(secOptions)
 			secOptions = secOptions or {}
 			local secTitle = typeof(secOptions) == "string" and secOptions or (secOptions.Title or secOptions.Name or "Section")
@@ -1039,6 +1030,15 @@ function EclipseUI:CreateWindow(options)
 				secIconImg.ZIndex = 4
 				secIconImg.Parent = secHeaderContainer
 
+				if not iconsLoaded and not string.find(tostring(secIcon), "rbxassetid://") then
+					task.spawn(function()
+						repeat task.wait() until iconsLoaded or not secIconImg:IsDescendantOf(game)
+						if secIconImg:IsDescendantOf(game) then
+							secIconImg.Image = getIconAsset(secIcon)
+						end
+					end)
+				end
+
 				textOffsetX = 18
 			end
 
@@ -1055,6 +1055,7 @@ function EclipseUI:CreateWindow(options)
 			secHeader.Parent = secHeaderContainer
 
 			local SectionObj = {}
+
 			for k, v in pairs(TabObject) do
 				if typeof(v) == "function" and k ~= "Section" then
 					SectionObj[k] = function(self, opts)
@@ -1062,6 +1063,7 @@ function EclipseUI:CreateWindow(options)
 					end
 				end
 			end
+
 			return SectionObj
 		end
 
@@ -1069,9 +1071,9 @@ function EclipseUI:CreateWindow(options)
 			opts = opts or {}
 			targetParent = targetParent or page
 			local title = opts.Title or "Paragraph Title"
-			local content = opts.Content or opts.Text or "Content goes here."
+			local content = opts.Content or opts.Text or "Paragraph content description goes here."
 
-			local pFrame = createContainer(targetParent, 50)
+			local pFrame, pStroke = createContainer(targetParent, 50)
 			pFrame.AutomaticSize = Enum.AutomaticSize.Y
 
 			local layout = Instance.new("UIListLayout")
@@ -1123,6 +1125,8 @@ function EclipseUI:CreateWindow(options)
 			local callback = opts.Callback or function() end
 
 			local btn, stroke = createContainer(targetParent, 38)
+			btn.Name = btnName .. "Button"
+
 			local label = Instance.new("TextLabel")
 			label.Size = UDim2.new(1, -28, 1, 0)
 			label.Position = UDim2.new(0, 14, 0, 0)
@@ -1142,18 +1146,44 @@ function EclipseUI:CreateWindow(options)
 			clickBtn.ZIndex = 6
 			clickBtn.Parent = btn
 
-			clickBtn.MouseButton1Click:Connect(callback)
+			clickBtn.MouseEnter:Connect(function()
+				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.90 })
+				tween(stroke, fadeTweenInfo, { Transparency = 0.82 })
+				tween(label, fadeTweenInfo, { TextColor3 = Color3.fromRGB(255, 255, 255) })
+			end)
+
+			clickBtn.MouseLeave:Connect(function()
+				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.95 })
+				tween(stroke, fadeTweenInfo, { Transparency = 0.92 })
+				tween(label, fadeTweenInfo, { TextColor3 = Color3.fromRGB(240, 245, 255) })
+			end)
+
+			clickBtn.MouseButton1Down:Connect(function()
+				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.82 })
+				tween(stroke, fadeTweenInfo, { Transparency = 0.70 })
+			end)
+
+			clickBtn.MouseButton1Up:Connect(function()
+				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.90 })
+				tween(stroke, fadeTweenInfo, { Transparency = 0.82 })
+			end)
+
+			clickBtn.MouseButton1Click:Connect(function()
+				callback()
+			end)
+
 			return btn
 		end
 
+		-- Component: Toggle (Animated Gradient & Pill Knob)
 		function TabObject:Toggle(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
-			local title = opts.Title or "Toggle"
+			local title = opts.Title or opts.Name or "Toggle"
 			local state = opts.Default or false
 			local callback = opts.Callback or function() end
 
-			local toggleContainer = createContainer(targetParent, 38)
+			local toggleContainer, stroke = createContainer(targetParent, 38)
 
 			local label = Instance.new("TextLabel")
 			label.Size = UDim2.new(1, -70, 1, 0)
@@ -1168,6 +1198,7 @@ function EclipseUI:CreateWindow(options)
 			label.Parent = toggleContainer
 
 			local toggleFrame = Instance.new("Frame")
+			toggleFrame.Name = "ToggleFrame"
 			toggleFrame.AnchorPoint = Vector2.new(1, 0.5)
 			toggleFrame.Position = UDim2.new(1, -12, 0.5, 0)
 			toggleFrame.Size = UDim2.new(0, 44, 0, 22)
@@ -1181,6 +1212,7 @@ function EclipseUI:CreateWindow(options)
 			tfCorner.Parent = toggleFrame
 
 			local gradientOverlay = Instance.new("Frame")
+			gradientOverlay.Name = "GradientOverlay"
 			gradientOverlay.Size = UDim2.new(1, 0, 1, 0)
 			gradientOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 			gradientOverlay.BackgroundTransparency = state and 0 or 1
@@ -1191,7 +1223,30 @@ function EclipseUI:CreateWindow(options)
 			goCorner.CornerRadius = UDim.new(1, 0)
 			goCorner.Parent = gradientOverlay
 
+			local toggleGradient = Instance.new("UIGradient")
+			toggleGradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(210, 218, 230)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 160, 175))
+			})
+			toggleGradient.Rotation = 45
+			toggleGradient.Parent = gradientOverlay
+
+			task.spawn(function()
+				local t = 0
+				while gradientOverlay:IsDescendantOf(game) do
+					t = t + RunService.RenderStepped:Wait()
+					toggleGradient.Rotation = 45 + (math.sin(t * 2) * 15)
+				end
+			end)
+
+			local tfStroke = Instance.new("UIStroke")
+			tfStroke.Color = Color3.fromRGB(255, 255, 255)
+			tfStroke.Thickness = 1
+			tfStroke.Transparency = state and 0.5 or 0.8
+			tfStroke.Parent = toggleFrame
+
 			local bar = Instance.new("Frame")
+			bar.Name = "Bar"
 			bar.AnchorPoint = Vector2.new(0, 0.5)
 			bar.Size = UDim2.new(0, 20, 0, 16)
 			bar.Position = state and UDim2.new(1, -22, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
@@ -1204,6 +1259,7 @@ function EclipseUI:CreateWindow(options)
 			barCorner.Parent = bar
 
 			local hitBox = Instance.new("TextButton")
+			hitBox.Name = "Hitbox"
 			hitBox.Size = UDim2.new(1, 0, 1, 0)
 			hitBox.BackgroundTransparency = 1
 			hitBox.Text = ""
@@ -1211,14 +1267,490 @@ function EclipseUI:CreateWindow(options)
 			hitBox.Parent = toggleContainer
 
 			local ToggleObj = { Value = state }
-			hitBox.MouseButton1Click:Connect(function()
-				ToggleObj.Value = not ToggleObj.Value
-				bar.Position = ToggleObj.Value and UDim2.new(1, -22, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
-				gradientOverlay.BackgroundTransparency = ToggleObj.Value and 0 or 1
-				pcall(callback, ToggleObj.Value)
+
+			local function updateToggle(newState, animate)
+				ToggleObj.Value = newState
+				local targetPos = newState and UDim2.new(1, -22, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
+				local targetOverlayTrans = newState and 0 or 1
+				local targetStrokeTrans = newState and 0.5 or 0.8
+
+				local info = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+				if animate then
+					tween(bar, info, { Position = targetPos })
+					tween(gradientOverlay, info, { BackgroundTransparency = targetOverlayTrans })
+					tween(tfStroke, info, { Transparency = targetStrokeTrans })
+				else
+					bar.Position = targetPos
+					gradientOverlay.BackgroundTransparency = targetOverlayTrans
+					tfStroke.Transparency = targetStrokeTrans
+				end
+
+				pcall(callback, newState)
+			end
+
+			hitBox.MouseEnter:Connect(function()
+				tween(toggleContainer, fadeTweenInfo, { BackgroundTransparency = 0.90 })
+				tween(stroke, fadeTweenInfo, { Transparency = 0.85 })
 			end)
 
+			hitBox.MouseLeave:Connect(function()
+				tween(toggleContainer, fadeTweenInfo, { BackgroundTransparency = 0.95 })
+				tween(stroke, fadeTweenInfo, { Transparency = 0.92 })
+			end)
+
+			hitBox.MouseButton1Click:Connect(function()
+				updateToggle(not ToggleObj.Value, true)
+			end)
+
+			ToggleObj.Set = function(_, val)
+				updateToggle(val, true)
+			end
+
 			return ToggleObj
+		end
+
+		-- Component: Slider (Animated Silver Gradient, Pill Thumb, Centered Code TextBox)
+		function TabObject:Slider(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local title = opts.Title or opts.Name or "Slider"
+			local min = opts.Min or 0
+			local max = opts.Max or 100
+			local default = math.clamp(opts.Default or min, min, max)
+			local callback = opts.Callback or function() end
+
+			local sliderContainer, stroke = createContainer(targetParent, 52)
+
+			local label = Instance.new("TextLabel")
+			label.Size = UDim2.new(1, -76, 0, 18)
+			label.Position = UDim2.new(0, 14, 0, 8)
+			label.BackgroundTransparency = 1
+			label.Text = title
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
+			label.TextSize = 12
+			label.Font = Enum.Font.GothamBold
+			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.ZIndex = 5
+			label.Parent = sliderContainer
+
+			local valBox = Instance.new("TextBox")
+			valBox.AnchorPoint = Vector2.new(1, 0)
+			valBox.Position = UDim2.new(1, -12, 0, 6)
+			valBox.Size = UDim2.new(0, 50, 0, 22)
+			valBox.BackgroundColor3 = Color3.fromRGB(25, 30, 40)
+			valBox.BackgroundTransparency = 0.3
+			valBox.Text = tostring(default)
+			valBox.TextColor3 = Color3.fromRGB(200, 210, 225)
+			valBox.TextSize = 11
+			valBox.Font = Enum.Font.Code
+			valBox.TextYAlignment = Enum.TextYAlignment.Center
+			valBox.ClearTextOnFocus = false
+			valBox.ZIndex = 6
+			valBox.Parent = sliderContainer
+
+			local valBoxCorner = Instance.new("UICorner")
+			valBoxCorner.CornerRadius = UDim.new(0, 6)
+			valBoxCorner.Parent = valBox
+
+			local valBoxStroke = Instance.new("UIStroke")
+			valBoxStroke.Color = Color3.fromRGB(255, 255, 255)
+			valBoxStroke.Thickness = 1
+			valBoxStroke.Transparency = 0.85
+			valBoxStroke.Parent = valBox
+
+			local track = Instance.new("Frame")
+			track.AnchorPoint = Vector2.new(0.5, 0)
+			track.Position = UDim2.new(0.5, 0, 0, 36)
+			track.Size = UDim2.new(1, -28, 0, 6)
+			track.BackgroundColor3 = Color3.fromRGB(20, 24, 32)
+			track.BorderSizePixel = 0
+			track.ZIndex = 5
+			track.Parent = sliderContainer
+
+			local trackCorner = Instance.new("UICorner")
+			trackCorner.CornerRadius = UDim.new(1, 0)
+			trackCorner.Parent = track
+
+			local fill = Instance.new("Frame")
+			fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+			fill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			fill.BorderSizePixel = 0
+			fill.ZIndex = 6
+			fill.Parent = track
+
+			local fillCorner = Instance.new("UICorner")
+			fillCorner.CornerRadius = UDim.new(1, 0)
+			fillCorner.Parent = fill
+
+			local fillGradient = Instance.new("UIGradient")
+			fillGradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 210, 225)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 160, 175))
+			})
+			fillGradient.Rotation = 0
+			fillGradient.Parent = fill
+
+			task.spawn(function()
+				local t = 0
+				while fill:IsDescendantOf(game) do
+					t = t + RunService.RenderStepped:Wait()
+					fillGradient.Rotation = math.sin(t * 1.5) * 10
+				end
+			end)
+
+			local thumb = Instance.new("Frame")
+			thumb.AnchorPoint = Vector2.new(0.5, 0.5)
+			thumb.Position = UDim2.new(1, 0, 0.5, 0)
+			thumb.Size = UDim2.new(0, 18, 0, 12)
+			thumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			thumb.ZIndex = 7
+			thumb.Parent = fill
+
+			local thumbCorner = Instance.new("UICorner")
+			thumbCorner.CornerRadius = UDim.new(1, 0)
+			thumbCorner.Parent = thumb
+
+			local thumbGradient = Instance.new("UIGradient")
+			thumbGradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 225, 235)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(170, 180, 195))
+			})
+			thumbGradient.Rotation = 90
+			thumbGradient.Parent = thumb
+
+			local thumbStroke = Instance.new("UIStroke")
+			thumbStroke.Color = Color3.fromRGB(255, 255, 255)
+			thumbStroke.Thickness = 1.5
+			thumbStroke.Transparency = 0.2
+			thumbStroke.Parent = thumb
+
+			local isDragging = false
+			local connectionMove, connectionEnd
+
+			local function updateSliderVal(value, fireCallback)
+				value = math.clamp(value, min, max)
+				local percentage = (value - min) / (max - min)
+				valBox.Text = tostring(value)
+				fill.Size = UDim2.new(percentage, 0, 1, 0)
+				if fireCallback then
+					pcall(callback, value)
+				end
+			end
+
+			local function updateSlider(inputX)
+				local absolutePos = track.AbsolutePosition.X
+				local absoluteSize = track.AbsoluteSize.X
+				local percentage = math.clamp((inputX - absolutePos) / absoluteSize, 0, 1)
+				local value = math.floor(min + (max - min) * percentage + 0.5)
+				updateSliderVal(value, true)
+			end
+
+			valBox.FocusLost:Connect(function(enterPressed)
+				local num = tonumber(valBox.Text)
+				if num then
+					updateSliderVal(num, true)
+				else
+					updateSliderVal(min + (max - min) * fill.Size.X.Scale, false)
+				end
+			end)
+
+			thumb.InputBegan:Connect(function(input)
+				if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
+				if isDragging then return end
+
+				isDragging = true
+				tween(thumb, TweenInfo.new(0.15), { Size = UDim2.new(0, 22, 0, 14) })
+				tween(valBoxStroke, TweenInfo.new(0.15), { Transparency = 0.5 })
+
+				connectionMove = UserInputService.InputChanged:Connect(function(moveInput)
+					if moveInput.UserInputType == Enum.UserInputType.MouseMovement or moveInput.UserInputType == Enum.UserInputType.Touch then
+						updateSlider(moveInput.Position.X)
+					end
+				end)
+
+				connectionEnd = UserInputService.InputEnded:Connect(function(endInput)
+					if endInput.UserInputType == input.UserInputType then
+						isDragging = false
+						tween(thumb, TweenInfo.new(0.15), { Size = UDim2.new(0, 18, 0, 12) })
+						tween(valBoxStroke, TweenInfo.new(0.15), { Transparency = 0.85 })
+						if connectionMove then connectionMove:Disconnect() end
+						if connectionEnd then connectionEnd:Disconnect() end
+					end
+				end)
+			end)
+
+			track.InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+					updateSlider(input.Position.X)
+				end
+			end)
+
+			return {
+				Set = function(_, val)
+					updateSliderVal(val, true)
+				end
+			}
+		end
+
+		-- Component: Keybind Selector (Centered Code Font)
+		function TabObject:Keybind(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local title = opts.Title or opts.Name or "Keybind"
+			local currentKey = opts.Default or Enum.KeyCode.E
+			local callback = opts.Callback or function() end
+
+			local kbFrame, stroke = createContainer(targetParent, 38)
+
+			local label = Instance.new("TextLabel")
+			label.Size = UDim2.new(1, -110, 1, 0)
+			label.Position = UDim2.new(0, 14, 0, 0)
+			label.BackgroundTransparency = 1
+			label.Text = title
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
+			label.TextSize = 12
+			label.Font = Enum.Font.GothamBold
+			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.ZIndex = 5
+			label.Parent = kbFrame
+
+			local keyBtn = Instance.new("TextButton")
+			keyBtn.AnchorPoint = Vector2.new(1, 0.5)
+			keyBtn.Position = UDim2.new(1, -12, 0.5, 0)
+			keyBtn.Size = UDim2.new(0, 84, 0, 24)
+			keyBtn.BackgroundColor3 = Color3.fromRGB(25, 30, 40)
+			keyBtn.BackgroundTransparency = 0.3
+			keyBtn.Text = currentKey.Name
+			keyBtn.TextColor3 = Color3.fromRGB(200, 210, 225)
+			keyBtn.TextSize = 11
+			keyBtn.Font = Enum.Font.Code
+			keyBtn.TextYAlignment = Enum.TextYAlignment.Center
+			keyBtn.ZIndex = 6
+			keyBtn.Parent = kbFrame
+
+			local keyCorner = Instance.new("UICorner")
+			keyCorner.CornerRadius = UDim.new(0, 6)
+			keyCorner.Parent = keyBtn
+
+			local keyStroke = Instance.new("UIStroke")
+			keyStroke.Color = Color3.fromRGB(255, 255, 255)
+			keyStroke.Thickness = 1
+			keyStroke.Transparency = 0.85
+			keyStroke.Parent = keyBtn
+
+			local listening = false
+
+			keyBtn.MouseButton1Click:Connect(function()
+				listening = true
+				keyBtn.Text = "..."
+				keyBtn.TextColor3 = Color3.fromRGB(255, 220, 100)
+			end)
+
+			UserInputService.InputBegan:Connect(function(input, gpe)
+				if listening and not gpe and input.UserInputType == Enum.UserInputType.Keyboard then
+					listening = false
+					currentKey = input.KeyCode
+					keyBtn.Text = currentKey.Name
+					keyBtn.TextColor3 = Color3.fromRGB(200, 210, 225)
+					pcall(callback, currentKey)
+				end
+			end)
+
+			return {
+				GetKey = function() return currentKey end
+			}
+		end
+
+		-- Component: Dropdown (Centered Code Font Selection Badge)
+		function TabObject:Dropdown(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local title = opts.Title or opts.Name or "Dropdown"
+			local items = opts.Items or {}
+			local selected = opts.Default or items[1] or "Select..."
+			local callback = opts.Callback or function() end
+
+			local ddFrame, stroke = createContainer(targetParent, 38)
+			ddFrame.ClipsDescendants = true
+
+			local headerBtn = Instance.new("TextButton")
+			headerBtn.Size = UDim2.new(1, 0, 0, 38)
+			headerBtn.BackgroundTransparency = 1
+			headerBtn.Text = ""
+			headerBtn.ZIndex = 6
+			headerBtn.Parent = ddFrame
+
+			local label = Instance.new("TextLabel")
+			label.Size = UDim2.new(1, -120, 0, 38)
+			label.Position = UDim2.new(0, 14, 0, 0)
+			label.BackgroundTransparency = 1
+			label.Text = title
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
+			label.TextSize = 12
+			label.Font = Enum.Font.GothamBold
+			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.ZIndex = 5
+			label.Parent = headerBtn
+
+			local selBox = Instance.new("Frame")
+			selBox.AnchorPoint = Vector2.new(1, 0.5)
+			selBox.Position = UDim2.new(1, -12, 0.5, 0)
+			selBox.Size = UDim2.new(0, 96, 0, 24)
+			selBox.BackgroundColor3 = Color3.fromRGB(25, 30, 40)
+			selBox.BackgroundTransparency = 0.3
+			selBox.ZIndex = 6
+			selBox.Parent = headerBtn
+
+			local selBoxCorner = Instance.new("UICorner")
+			selBoxCorner.CornerRadius = UDim.new(0, 6)
+			selBoxCorner.Parent = selBox
+
+			local selBoxStroke = Instance.new("UIStroke")
+			selBoxStroke.Color = Color3.fromRGB(255, 255, 255)
+			selBoxStroke.Thickness = 1
+			selBoxStroke.Transparency = 0.85
+			selBoxStroke.Parent = selBox
+
+			local selLabel = Instance.new("TextLabel")
+			selLabel.Size = UDim2.new(1, -20, 1, 0)
+			selLabel.Position = UDim2.new(0, 8, 0, 0)
+			selLabel.BackgroundTransparency = 1
+			selLabel.Text = tostring(selected)
+			selLabel.TextColor3 = Color3.fromRGB(200, 210, 225)
+			selLabel.TextSize = 11
+			selLabel.Font = Enum.Font.Code
+			selLabel.TextYAlignment = Enum.TextYAlignment.Center
+			selLabel.TextXAlignment = Enum.TextXAlignment.Left
+			selLabel.TextTruncate = Enum.TextTruncate.AtEnd
+			selLabel.ZIndex = 7
+			selLabel.Parent = selBox
+
+			local arrowIcon = Instance.new("ImageLabel")
+			arrowIcon.Name = "Chevron"
+			arrowIcon.AnchorPoint = Vector2.new(1, 0.5)
+			arrowIcon.Position = UDim2.new(1, -8, 0.5, 0)
+			arrowIcon.Size = UDim2.new(0, 12, 0, 12)
+			arrowIcon.BackgroundTransparency = 1
+			arrowIcon.Image = getIconAsset("chevron-down")
+			arrowIcon.ImageColor3 = Color3.fromRGB(150, 160, 180)
+			arrowIcon.ZIndex = 7
+			arrowIcon.Parent = selBox
+
+			if not iconsLoaded then
+				task.spawn(function()
+					repeat task.wait() until iconsLoaded or not arrowIcon:IsDescendantOf(game)
+					if arrowIcon:IsDescendantOf(game) then
+						arrowIcon.Image = getIconAsset("chevron-down")
+					end
+				end)
+			end
+
+			local isOpen = false
+
+			local itemsList = Instance.new("Frame")
+			itemsList.Position = UDim2.new(0, 10, 0, 42)
+			itemsList.Size = UDim2.new(1, -20, 0, 0)
+			itemsList.AutomaticSize = Enum.AutomaticSize.Y
+			itemsList.BackgroundTransparency = 1
+			itemsList.ZIndex = 5
+			itemsList.Parent = ddFrame
+
+			local listLayout = Instance.new("UIListLayout")
+			listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			listLayout.Padding = UDim.new(0, 3)
+			listLayout.Parent = itemsList
+
+			local listPadding = Instance.new("UIPadding")
+			listPadding.PaddingBottom = UDim.new(0, 8)
+			listPadding.Parent = itemsList
+
+			local itemButtons = {}
+
+			local function refreshSelectionStates()
+				for _, data in ipairs(itemButtons) do
+					local isSel = (data.Item == selected)
+					tween(data.Btn, fadeTweenInfo, {
+						BackgroundTransparency = isSel and 0.85 or 0.95
+					})
+					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 170, 190)
+				end
+			end
+
+			for _, item in ipairs(items) do
+				local itemBtn = Instance.new("TextButton")
+				itemBtn.Size = UDim2.new(1, 0, 0, 28)
+				itemBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+				itemBtn.BackgroundTransparency = 0.95
+				itemBtn.Text = ""
+				itemBtn.ZIndex = 6
+				itemBtn.Parent = itemsList
+
+				local itemCorner = Instance.new("UICorner")
+				itemCorner.CornerRadius = UDim.new(0, 6)
+				itemCorner.Parent = itemBtn
+
+				local itemText = Instance.new("TextLabel")
+				itemText.Size = UDim2.new(1, -16, 1, 0)
+				itemText.Position = UDim2.new(0, 10, 0, 0)
+				itemText.BackgroundTransparency = 1
+				itemText.Text = tostring(item)
+				itemText.TextColor3 = Color3.fromRGB(160, 170, 190)
+				itemText.TextSize = 11
+				itemText.Font = Enum.Font.Gotham
+				itemText.TextYAlignment = Enum.TextYAlignment.Center
+				itemText.TextXAlignment = Enum.TextXAlignment.Left
+				itemText.ZIndex = 7
+				itemText.Parent = itemBtn
+
+				table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText })
+
+				itemBtn.MouseEnter:Connect(function()
+					if selected ~= item then
+						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.90 })
+						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(240, 245, 255) })
+					end
+				end)
+
+				itemBtn.MouseLeave:Connect(function()
+					if selected ~= item then
+						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.95 })
+						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(160, 170, 190) })
+					end
+				end)
+
+				itemBtn.MouseButton1Click:Connect(function()
+					selected = item
+					selLabel.Text = tostring(selected)
+					isOpen = false
+					refreshSelectionStates()
+					tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
+					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.85 })
+					tween(ddFrame, fadeTweenInfo, { Size = UDim2.new(1, 0, 0, 38) })
+					pcall(callback, selected)
+				end)
+			end
+
+			refreshSelectionStates()
+
+			headerBtn.MouseButton1Click:Connect(function()
+				isOpen = not isOpen
+				local targetHeight = isOpen and (46 + listLayout.AbsoluteContentSize.Y) or 38
+				local targetRotation = isOpen and 180 or 0
+				local targetStrokeTrans = isOpen and 0.5 or 0.85
+				tween(arrowIcon, fadeTweenInfo, { Rotation = targetRotation })
+				tween(selBoxStroke, fadeTweenInfo, { Transparency = targetStrokeTrans })
+				tween(ddFrame, fadeTweenInfo, { Size = UDim2.new(1, 0, 0, targetHeight) })
+			end)
+
+			return {
+				GetSelected = function() return selected end,
+				Set = function(_, val)
+					selected = val
+					selLabel.Text = tostring(selected)
+					refreshSelectionStates()
+					pcall(callback, selected)
+				end
+			}
 		end
 
 		return TabObject
