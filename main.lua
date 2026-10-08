@@ -180,8 +180,8 @@ function EclipseUI:CreateWindow(options)
 	local lineTransparency = 0.92
 
 	local headerLine1 = Instance.new("Frame")
-	headerLine1.Position = UDim2.new(0, 135, 0, 46)
-	headerLine1.Size = UDim2.new(1, -135, 0, 1)
+	headerLine1.Position = UDim2.new(0, 134, 0, 46) -- Fixed intersection cross-hair line alignment
+	headerLine1.Size = UDim2.new(1, -134, 0, 1)
 	headerLine1.BackgroundColor3 = lineDarkColor
 	headerLine1.BackgroundTransparency = lineTransparency
 	headerLine1.BorderSizePixel = 0
@@ -701,7 +701,7 @@ function EclipseUI:CreateWindow(options)
 	contents.ZIndex = 3
 	contents.Parent = bodyGroup
 
-	-- BgName Watermark: Placed dead-center of the entire MainGroup frame and hidden by default
+	-- BgName Watermark: Placed dead-center of the entire MainGroup frame using the Frijole font (rbxassetid://12187375194)
 	local bgWatermark
 	if bgName then
 		bgWatermark = Instance.new("TextLabel")
@@ -714,20 +714,20 @@ function EclipseUI:CreateWindow(options)
 		bgWatermark.TextColor3 = Color3.fromRGB(255, 255, 255)
 		bgWatermark.TextTransparency = 1 -- Hidden initially when not dragging
 		bgWatermark.TextSize = 28
-		bgWatermark.Font = Enum.Font.GothamBold
+		bgWatermark.FontFace = Font.new("rbxassetid://12187375194", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
 		bgWatermark.TextXAlignment = Enum.TextXAlignment.Center
 		bgWatermark.ZIndex = 1
 		bgWatermark.Parent = mainGroup
 	end
 
-	-- Smooth Dragging with Watermark & Line Fade Trigger
+	-- Smooth Dragging with Watermark & Line Fade Trigger (Disabled completely in Fullscreen mode)
 	local dragging = false
 	local dragStart = Vector2.zero
 	local startPos = UDim2.new()
 	local targetPos = mainGroup.Position
 
 	header.InputBegan:Connect(function(input)
-		if isFullscreen then return end
+		if isFullscreen then return end -- Prevent dragging or shrinking triggers when maximized in fullscreen
 		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 			local mousePos = input.Position
 			local controlsPos = controlsFrame.AbsolutePosition
