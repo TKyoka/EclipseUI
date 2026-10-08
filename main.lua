@@ -78,91 +78,23 @@ function EclipseUI:CreateWindow(options)
 	uiCorner.Parent = mainGroup
 
 	local mainBackground = Instance.new("Frame")
-	mainBackground.Name = "SpaceBackground"
+	mainBackground.Name = "AnimatedBackground"
 	mainBackground.Size = UDim2.new(1, 0, 1, 0)
-	mainBackground.BackgroundColor3 = Color3.fromRGB(8, 10, 20)
-	mainBackground.BackgroundTransparency = 0.35
+	mainBackground.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	mainBackground.BackgroundTransparency = 0.92
 	mainBackground.BorderSizePixel = 0
-	mainBackground.ClipsDescendants = true
 	mainBackground.ZIndex = 0
 	mainBackground.Parent = mainGroup
 
-	local nebulaGradient = Instance.new("UIGradient")
-	nebulaGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 15, 50)),
-		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(15, 25, 60)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(5, 8, 15))
+	local mainBgGradient = Instance.new("UIGradient")
+	mainBgGradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(15, 16, 22)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(45, 55, 80)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 16, 22))
 	})
-	nebulaGradient.Rotation = 60
-	nebulaGradient.Parent = mainBackground
-
-	local planet = Instance.new("Frame")
-	planet.Name = "DetailedPlanet"
-	planet.AnchorPoint = Vector2.new(0.5, 0.5)
-	planet.Position = UDim2.new(0.18, 0, 0.72, 0)
-	planet.Size = UDim2.new(0, 52, 0, 52)
-	planet.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	planet.BackgroundTransparency = 0.05
-	planet.BorderSizePixel = 0
-	planet.ZIndex = 1
-	planet.Parent = mainBackground
-
-	local planetCorner = Instance.new("UICorner")
-	planetCorner.CornerRadius = UDim.new(1, 0)
-	planetCorner.Parent = planet
-
-	local planetGradient = Instance.new("UIGradient")
-	planetGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 170, 100)),
-		ColorSequenceKeypoint.new(0.4, Color3.fromRGB(210, 90, 50)),
-		ColorSequenceKeypoint.new(0.7, Color3.fromRGB(130, 40, 70)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(70, 20, 50))
-	})
-	planetGradient.Rotation = 35
-	planetGradient.Parent = planet
-
-	local planetHalo = Instance.new("UIStroke")
-	planetHalo.Color = Color3.fromRGB(130, 180, 255)
-	planetHalo.Thickness = 2
-	planetHalo.Transparency = 0.3
-	planetHalo.Parent = planet
-
-	local starContainer = Instance.new("Folder")
-	starContainer.Name = "DetailedStarfield"
-	starContainer.Parent = mainBackground
-
-	local stars = {}
-	math.randomseed(tick())
-	for i = 1, 35 do
-		local starSize = math.random(3, 7)
-		local star = Instance.new("Frame")
-		star.Size = UDim2.new(0, starSize, 0, starSize)
-		star.Position = UDim2.new(math.random(), 0, math.random(), 0)
-		star.BackgroundColor3 = math.random() > 0.7 and Color3.fromRGB(180, 220, 255) or Color3.fromRGB(255, 255, 255)
-		star.BackgroundTransparency = 0.1
-		star.BorderSizePixel = 0
-		star.ZIndex = 1
-		star.Parent = starContainer
-
-		local starCorner = Instance.new("UICorner")
-		starCorner.CornerRadius = UDim.new(1, 0)
-		starCorner.Parent = star
-
-		if starSize >= 5 then
-			local starGlow = Instance.new("UIStroke")
-			starGlow.Color = star.BackgroundColor3
-			starGlow.Thickness = 1.5
-			starGlow.Transparency = 0.5
-			starGlow.Parent = star
-		end
-
-		table.insert(stars, {
-			Instance = star,
-			Speed = math.random(4, 12) / 10,
-			BaseTrans = math.random(10, 50) / 100,
-			Offset = math.random() * 10
-		})
-	end
+	mainBgGradient.Rotation = 45
+	mainBgGradient.Offset = Vector2.new(-1, 0)
+	mainBgGradient.Parent = mainBackground
 
 	local uiStroke = Instance.new("UIStroke")
 	uiStroke.Color = Color3.fromRGB(255, 255, 255)
@@ -173,9 +105,9 @@ function EclipseUI:CreateWindow(options)
 
 	local strokeGradient = Instance.new("UIGradient")
 	strokeGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 110, 160)),
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 90, 120)),
 		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 110, 160))
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 90, 120))
 	})
 	strokeGradient.Parent = uiStroke
 
@@ -188,28 +120,9 @@ function EclipseUI:CreateWindow(options)
 		end
 
 		mainTimeAcc = mainTimeAcc + dt
-		strokeGradient.Rotation = (mainTimeAcc * 40) % 360
-		nebulaGradient.Rotation = (mainTimeAcc * 10) % 360
-
-		-- Floating & Breathing Motion for the Planet
-		planet.Position = UDim2.new(0.18, 0, 0.72, math.sin(mainTimeAcc * 2) * 6)
-		planetGradient.Rotation = (mainTimeAcc * 8) % 360
-
-		-- Animate complex twinkling & drifting stars
-		for _, starData in ipairs(stars) do
-			local s = starData.Instance
-			local timeVal = mainTimeAcc * starData.Speed + starData.Offset
-			s.BackgroundTransparency = math.clamp(starData.BaseTrans + math.sin(timeVal * 5) * 0.45, 0.05, 0.95)
-			
-			local newY = s.Position.Y.Scale - (0.00012 * starData.Speed)
-			if newY < -0.05 then
-				newY = 1.05
-				s.Position = UDim2.new(math.random(), 0, newY, 0)
-			else
-				s.Position = UDim2.new(s.Position.X.Scale, s.Position.X.Offset, newY, 0)
-			end
-		end
-
+		strokeGradient.Rotation = (mainTimeAcc * 60) % 360
+		local sheenProgress = (mainTimeAcc * 0.4) % 2 - 1
+		mainBgGradient.Offset = Vector2.new(sheenProgress, 0)
 		local pulse = (math.sin(mainTimeAcc * 2) + 1) / 2
 		uiStroke.Transparency = 0.35 + (pulse * 0.2)
 	end)
