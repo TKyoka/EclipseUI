@@ -303,7 +303,11 @@ function EclipseUI:CreateWindow(options)
 	local destroyBtn = createControlButton("DestroyBtn", "x", Color3.fromRGB(255, 60, 60))
 	local resizeBtn = createControlButton("ResizeBtn", "maximize", Color3.fromRGB(255, 255, 255))
 	local minimizeBtn = createControlButton("MinimizeBtn", "minus", Color3.fromRGB(255, 255, 255))
-
+	
+	-- Force the exact order left-to-right: Minus (1), Maximize (2), Close (3)
+	minimizeBtn.Parent.LayoutOrder = 1
+	resizeBtn.Parent.LayoutOrder = 2
+	destroyBtn.Parent.LayoutOrder = 3
 	local isMinimized = false
 	local isMinimizing = false
 	local isFullscreen = false
