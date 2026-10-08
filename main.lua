@@ -132,18 +132,20 @@ function EclipseUI:CreateWindow(options)
 		if gpe then return end
 		if input.KeyCode == Window.ToggleKey then
 			windowVisible = not windowVisible
-			local targetTransparency = windowVisible and 0 or 1
+			local targetGroupTrans = windowVisible and 0 or 1
+			local targetStrokeTrans = windowVisible and 0.4 or 1 -- Fades the outer glow completely when hidden
 			local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 
 			if windowVisible then
 				mainGroup.Visible = true
 			end
 
-			local t = TweenService:Create(mainGroup, tweenInfo, { GroupTransparency = targetTransparency })
-			t:Play()
+			TweenService:Create(mainGroup, tweenInfo, { GroupTransparency = targetGroupTrans }):Play()
+			local strokeTween = TweenService:Create(uiStroke, tweenInfo, { Transparency = targetStrokeTrans })
+			strokeTween:Play()
 
 			if not windowVisible then
-				t.Completed:Connect(function()
+				strokeTween.Completed:Connect(function()
 					if not windowVisible then
 						mainGroup.Visible = false
 					end
