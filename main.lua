@@ -412,66 +412,7 @@ function EclipseUI:CreateWindow(options)
 		end)
 	end)
 
-	-- Smooth Dragging
-	local dragging = false
-	local dragStart = Vector2.zero
-	local startPos = UDim2.new()
-	local targetPos = mainGroup.Position
-
-	header.InputBegan:Connect(function(input)
-		if isFullscreen then return end
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			local mousePos = input.Position
-			local controlsPos = controlsFrame.AbsolutePosition
-			local controlsSize = controlsFrame.AbsoluteSize
-
-			if mousePos.X >= controlsPos.X and mousePos.X <= controlsPos.X + controlsSize.X and
-				mousePos.Y >= controlsPos.Y and mousePos.Y <= controlsPos.Y + controlsSize.Y then
-				return
-			end
-
-			dragging = true
-			dragStart = input.Position
-			startPos = mainGroup.Position
-
-			if not isMinimized then
-				TweenService:Create(mainGroup, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-					Size = UDim2.new(0, defaultSize.X.Offset - 8, 0, defaultSize.Y.Offset - 5)
-				}):Play()
-			end
-
-			input.Changed:Connect(function()
-				if input.UserInputState == Enum.UserInputState.End then
-					dragging = false
-					if not isMinimized then
-						TweenService:Create(mainGroup, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-							Size = defaultSize
-						}):Play()
-					end
-				end
-			end)
-		end
-	end)
-
-	UserInputService.InputChanged:Connect(function(input)
-		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-			local delta = input.Position - dragStart
-			targetPos = UDim2.new(
-				startPos.X.Scale,
-				startPos.X.Offset + delta.X,
-				startPos.Y.Scale,
-				startPos.Y.Offset + delta.Y
-			)
-		end
-	end)
-
-	RunService.RenderStepped:Connect(function(dt)
-		if dragging and not isFullscreen then
-			mainGroup.Position = mainGroup.Position:Lerp(targetPos, math.clamp(dt * 20, 0, 1))
-		end
-	end)
-
-	-- Sidebar Containers (Wrapped in CanvasGroups for BgName fade effect)
+	-- Sidebar Containers (Wrapped in CanvasGroups for dragging watermark fade effect)
 	local tabsCanvasGroup = Instance.new("CanvasGroup")
 	tabsCanvasGroup.Name = "TabsCanvasGroup"
 	tabsCanvasGroup.Size = UDim2.new(0, 134, 1, -52)
@@ -684,9 +625,10 @@ function EclipseUI:CreateWindow(options)
 	contents.ZIndex = 3
 	contents.Parent = bodyGroup
 
-	-- Optional BgName Watermark implementation
+	-- Optional BgName Watermark implementation during dragging
+	local bgWatermark
 	if bgName then
-		local bgWatermark = Instance.new("TextLabel")
+		bgWatermark = Instance.new("TextLabel")
 		bgWatermark.Name = "BgWatermark"
 		bgWatermark.AnchorPoint = Vector2.new(0.5, 0.5)
 		bgWatermark.Position = UDim2.new(0.5, 0, 0.5, 0)
@@ -695,19 +637,84 @@ function EclipseUI:CreateWindow(options)
 		bgWatermark.Text = bgName
 		bgWatermark.TextColor3 = Color3.fromRGB(255, 255, 255)
 		bgWatermark.TextTransparency = 0.25
-		bgWatermark.TextSize = 28
+		bgWatermark.TextSize = 26
 		bgWatermark.Font = Enum.Font.GothamBold
 		bgWatermark.ZIndex = 2
 		bgWatermark.Parent = bodyGroup
-
-		task.defer(function()
-			task.wait(0.05)
-			local bgFadeInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-			TweenService:Create(tabsCanvasGroup, bgFadeInfo, { GroupTransparency = 1 }):Play()
-			TweenService:Create(userInfoCanvasGroup, bgFadeInfo, { GroupTransparency = 1 }):Play()
-			TweenService:Create(contents, bgFadeInfo, { GroupTransparency = 1 }):Play()
-		end)
 	end
+
+	-- Smooth Dragging with BgName Watermark Fade Trigger
+	local dragging = false
+	local dragStart = Vector2.zero
+	local startPos = UDim2.new()
+	local targetPos = mainGroup.Position
+
+	header.InputBegan:Connect(function(input)
+		if isFullscreen then return end
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			local mousePos = input.Position
+			local controlsPos = controlsFrame.AbsolutePosition
+			local controlsSize = controlsFrame.AbsoluteSize
+
+			if mousePos.X >= controlsPos.X and mousePos.X <= controlsPos.X + controlsSize.X and
+				mousePos.Y >= controlsPos.Y and mousePos.Y <= controlsPos.Y + controlsSize.Y then
+				return
+			end
+
+			dragging = true
+			dragStart = input.Position
+			startPos = mainGroup.Position
+
+			if not isMinimized then
+				TweenService:Create(mainGroup, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+					Size = UDim2.new(0, defaultSize.X.Offset - 8, 0, defaultSize.Y.Offset - 5)
+				}):Play()
+			end
+
+			if bgName then
+				local dragFadeInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+				TweenService:Create(tabsCanvasGroup, dragFadeInfo, { GroupTransparency = 1 }):Play()
+				TweenService:Create(userInfoCanvasGroup, dragFadeInfo, { GroupTransparency = 1 }):Play()
+				TweenService:Create(contents, dragFadeInfo, { GroupTransparency = 1 }):Play()
+			end
+
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragging = false
+					if not isMinimized then
+						TweenService:Create(mainGroup, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+							Size = defaultSize
+						}):Play()
+					end
+
+					if bgName then
+						local dragEndInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+						TweenService:Create(tabsCanvasGroup, dragEndInfo, { GroupTransparency = 0 }):Play()
+						TweenService:Create(userInfoCanvasGroup, dragEndInfo, { GroupTransparency = 0 }):Play()
+						TweenService:Create(contents, dragEndInfo, { GroupTransparency = 0 }):Play()
+					end
+				end
+			end)
+		end
+	end)
+
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			local delta = input.Position - dragStart
+			targetPos = UDim2.new(
+				startPos.X.Scale,
+				startPos.X.Offset + delta.X,
+				startPos.Y.Scale,
+				startPos.Y.Offset + delta.Y
+			)
+		end
+	end)
+
+	RunService.RenderStepped:Connect(function(dt)
+		if dragging and not isFullscreen then
+			mainGroup.Position = mainGroup.Position:Lerp(targetPos, math.clamp(dt * 20, 0, 1))
+		end
+	end)
 
 	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = toggleKey }
 
@@ -921,7 +928,7 @@ function EclipseUI:CreateWindow(options)
 			return frame, stroke
 		end
 
-		-- Reworked Section Component with clean divider line
+		-- Reworked Section Component: Clean pill badge/pill header style
 		function TabObject:Section(secOptions)
 			secOptions = secOptions or {}
 			local secTitle = typeof(secOptions) == "string" and secOptions or (secOptions.Title or secOptions.Name or "Section")
@@ -938,24 +945,35 @@ function EclipseUI:CreateWindow(options)
 			secLayout.SortOrder = Enum.SortOrder.LayoutOrder
 			secLayout.Parent = secFrame
 
+			local headerContainer = Instance.new("Frame")
+			headerContainer.Size = UDim2.new(1, 0, 0, 22)
+			headerContainer.BackgroundTransparency = 1
+			headerContainer.ZIndex = 4
+			headerContainer.Parent = secFrame
+
+			local accentBar = Instance.new("Frame")
+			accentBar.Size = UDim2.new(0, 3, 0, 11)
+			accentBar.Position = UDim2.new(0, 0, 0.5, -5)
+			accentBar.BackgroundColor3 = Color3.fromRGB(150, 170, 210)
+			accentBar.BorderSizePixel = 0
+			accentBar.ZIndex = 4
+			accentBar.Parent = headerContainer
+
+			local accentBarCorner = Instance.new("UICorner")
+			accentBarCorner.CornerRadius = UDim.new(1, 0)
+			accentBarCorner.Parent = accentBar
+
 			local secHeader = Instance.new("TextLabel")
-			secHeader.Size = UDim2.new(1, 0, 0, 20)
+			secHeader.Size = UDim2.new(1, -12, 1, 0)
+			secHeader.Position = UDim2.new(0, 10, 0, 0)
 			secHeader.BackgroundTransparency = 1
 			secHeader.Text = string.upper(secTitle)
-			secHeader.TextColor3 = Color3.fromRGB(130, 140, 165)
+			secHeader.TextColor3 = Color3.fromRGB(160, 172, 198)
 			secHeader.TextSize = 10
 			secHeader.Font = Enum.Font.GothamBold
 			secHeader.TextXAlignment = Enum.TextXAlignment.Left
 			secHeader.ZIndex = 4
-			secHeader.Parent = secFrame
-
-			local secLine = Instance.new("Frame")
-			secLine.Size = UDim2.new(1, 0, 0, 1)
-			secLine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-			secLine.BackgroundTransparency = 0.92
-			secLine.BorderSizePixel = 0
-			secLine.ZIndex = 4
-			secLine.Parent = secFrame
+			secHeader.Parent = headerContainer
 
 			local SectionObj = {}
 
