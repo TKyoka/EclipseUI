@@ -80,22 +80,63 @@ function EclipseUI:CreateWindow(options)
 	local mainBackground = Instance.new("Frame")
 	mainBackground.Name = "SpaceBackground"
 	mainBackground.Size = UDim2.new(1, 0, 1, 0)
-	mainBackground.BackgroundColor3 = Color3.fromRGB(8, 9, 14) -- Deep space cosmic tone
-	mainBackground.BackgroundTransparency = 0.1
+	mainBackground.BackgroundColor3 = Color3.fromRGB(12, 14, 24)
+	mainBackground.BackgroundTransparency = 0.45 -- Translucent so the world shows through
 	mainBackground.BorderSizePixel = 0
 	mainBackground.ClipsDescendants = true
 	mainBackground.ZIndex = 0
 	mainBackground.Parent = mainGroup
 
-	-- Cosmic Nebula Gradient Overlay
-	local nebulaGradient = Instance.new("UIGradient")
-	nebulaGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(15, 12, 30)),
-		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(25, 18, 45)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(8, 9, 14))
+	-- Nebula / Galaxy Swirl Glow Overlay
+	local galaxyGlow = Instance.new("Frame")
+	galaxyGlow.Name = "GalaxyGlow"
+	galaxyGlow.AnchorPoint = Vector2.new(0.5, 0.5)
+	galaxyGlow.Position = UDim2.new(0.7, 0, 0.3, 0)
+	galaxyGlow.Size = UDim2.new(0, 240, 0, 240)
+	galaxyGlow.BackgroundTransparency = 1
+	galaxyGlow.ZIndex = 0
+	galaxyGlow.Parent = mainBackground
+
+	local galaxyCorner = Instance.new("UICorner")
+	galaxyCorner.CornerRadius = UDim.new(1, 0)
+	galaxyCorner.Parent = galaxyGlow
+
+	local galaxyGradient = Instance.new("UIGradient")
+	galaxyGradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(120, 60, 180)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(60, 120, 220)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 10, 30))
 	})
-	nebulaGradient.Rotation = 45
-	nebulaGradient.Parent = mainBackground
+	galaxyGradient.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.4),
+		NumberSequenceKeypoint.new(0.7, 0.8),
+		NumberSequenceKeypoint.new(1, 1)
+	})
+	galaxyGradient.Parent = galaxyGlow
+
+	-- Floating Planet Element
+	local planet = Instance.new("Frame")
+	planet.Name = "Planet"
+	planet.AnchorPoint = Vector2.new(0.5, 0.5)
+	planet.Position = UDim2.new(0.2, 0, 0.75, 0)
+	planet.Size = UDim2.new(0, 42, 0, 42)
+	planet.BackgroundColor3 = Color3.fromRGB(255, 140, 80)
+	planet.BackgroundTransparency = 0.15
+	planet.BorderSizePixel = 0
+	planet.ZIndex = 1
+	planet.Parent = mainBackground
+
+	local planetCorner = Instance.new("UICorner")
+	planetCorner.CornerRadius = UDim.new(1, 0)
+	planetCorner.Parent = planet
+
+	local planetGradient = Instance.new("UIGradient")
+	planetGradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 200, 140)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(170, 50, 30))
+	})
+	planetGradient.Rotation = 45
+	planetGradient.Parent = planet
 
 	-- Generate Stars
 	local starContainer = Instance.new("Folder")
@@ -104,7 +145,7 @@ function EclipseUI:CreateWindow(options)
 
 	local stars = {}
 	math.randomseed(tick())
-	for i = 1, 30 do
+	for i = 1, 25 do
 		local star = Instance.new("Frame")
 		star.Size = UDim2.new(0, math.random(2, 4), 0, math.random(2, 4))
 		star.Position = UDim2.new(math.random(), 0, math.random(), 0)
@@ -119,8 +160,8 @@ function EclipseUI:CreateWindow(options)
 
 		table.insert(stars, {
 			Instance = star,
-			Speed = math.random(4, 12) / 10,
-			BaseTrans = math.random(20, 60) / 100,
+			Speed = math.random(3, 10) / 10,
+			BaseTrans = math.random(25, 65) / 100,
 			Offset = math.random() * 10
 		})
 	end
@@ -150,17 +191,18 @@ function EclipseUI:CreateWindow(options)
 
 		mainTimeAcc = mainTimeAcc + dt
 		strokeGradient.Rotation = (mainTimeAcc * 40) % 360
+		galaxyGradient.Rotation = (mainTimeAcc * 15) % 360
+
+		-- Subtle floating motion for the planet
+		planet.Position = UDim2.new(0.2, 0, 0.75, math.sin(mainTimeAcc * 1.5) * 8)
 
 		-- Animate floating & twinkling stars
 		for _, starData in ipairs(stars) do
 			local s = starData.Instance
 			local timeVal = mainTimeAcc * starData.Speed + starData.Offset
+			s.BackgroundTransparency = math.clamp(starData.BaseTrans + math.sin(timeVal * 4) * 0.4, 0.15, 0.95)
 			
-			-- Twinkle effect by modulating transparency
-			s.BackgroundTransparency = math.clamp(starData.BaseTrans + math.sin(timeVal * 4) * 0.4, 0.1, 0.95)
-			
-			-- Slow upward drifting motion
-			local newY = s.Position.Y.Scale - (0.00012 * starData.Speed)
+			local newY = s.Position.Y.Scale - (0.0001 * starData.Speed)
 			if newY < -0.05 then
 				newY = 1.05
 				s.Position = UDim2.new(math.random(), 0, newY, 0)
