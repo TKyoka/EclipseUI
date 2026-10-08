@@ -1,40 +1,48 @@
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+
 local LocalPlayer = Players.LocalPlayer
 
 local EclipseUI = {}
 EclipseUI.__index = EclipseUI
 
-
-local HttpService = game:GetService("HttpService")
+-- Dynamic HTTP fetcher compatible across all client environments
+local function fetchUrl(url)
+	local requestFunc = (syn and syn.request) or (http and http.request) or request or http_request
+	if requestFunc then
+		local response = requestFunc({ Url = url, Method = "GET" })
+		return response and response.Body
+	elseif game.HttpGet then
+		return game:HttpGet(url)
+	end
+	return nil
+end
 
 local LucideIcons = {}
+local iconsLoaded = false
+
 task.spawn(function()
 	local url = "https://raw.githubusercontent.com/TKyoka/EclipseUI/refs/heads/main/lucideicons"
-
-	-- Compatibility check for executor http functions
-	local fetchFunc = httpGet or request or (syn and syn.request) or function(u) return game:HttpGet(u) end
-
-	local success, response = pcall(function()
-		if typeof(fetchFunc) == "function" then
-			local res = fetchFunc(url)
-			return typeof(res) == "table" and res.Body or res
-		end
-	end)
+	local success, response = pcall(fetchUrl, url)
 
 	if success and response then
-		local decoded = pcall(function()
-			LucideIcons = HttpService:JSONDecode(response)
+		local decodedSuccess, decoded = pcall(function()
+			return HttpService:JSONDecode(response)
 		end)
-		if not decoded then
+
+		if decodedSuccess and type(decoded) == "table" then
+			LucideIcons = decoded
+		else
 			local loadFunc = loadstring("return " .. response)
 			if loadFunc then
-				LucideIcons = loadFunc()
+				LucideIcons = loadFunc() or {}
 			end
 		end
 	else
 		warn("[EclipseUI] Failed to fetch icons from GitHub:", response)
 	end
+	iconsLoaded = true
 end)
 
 function EclipseUI:CreateWindow(options)
@@ -64,7 +72,7 @@ function EclipseUI:CreateWindow(options)
 	uiCorner.CornerRadius = UDim.new(0, 12)
 	uiCorner.Parent = mainGroup
 
-	-- Clean Outer Frame Outline
+	-- Outer Frame Outline
 	local uiStroke = Instance.new("UIStroke")
 	uiStroke.Color = Color3.fromRGB(255, 255, 255)
 	uiStroke.Thickness = 1.5
@@ -177,8 +185,8 @@ function EclipseUI:CreateWindow(options)
 
 	task.spawn(function()
 		local content, isReady = Players:GetUserThumbnailAsync(
-			LocalPlayer.UserId, 
-			Enum.ThumbnailType.HeadShot, 
+			LocalPlayer.UserId,
+			Enum.ThumbnailType.HeadShot,
 			Enum.ThumbnailSize.Size420x420
 		)
 		if isReady then
@@ -260,11 +268,6 @@ function EclipseUI:CreateWindow(options)
 		local tabTitle = tabOptions.Title or tabOptions.Name or "Tab"
 		local rawIcon = tabOptions.Icon
 
-		local iconAsset = nil
-		if rawIcon then
-			iconAsset = LucideIcons[string.lower(rawIcon)] or rawIcon
-		end
-
 		local tabFrame = Instance.new("Frame")
 		tabFrame.Name = tabTitle .. "TabFrame"
 		tabFrame.Size = UDim2.new(1, 0, 0, 30)
@@ -291,21 +294,29 @@ function EclipseUI:CreateWindow(options)
 		clickBtn.ZIndex = 3
 		clickBtn.Parent = tabFrame
 
-		-- Icon creation for Tab
 		local iconImg = nil
 		local textOffset = 12
 
-		if iconAsset then
+		if rawIcon then
 			iconImg = Instance.new("ImageLabel")
 			iconImg.Name = "Icon"
 			iconImg.Size = UDim2.new(0, 15, 0, 15)
 			iconImg.Position = UDim2.new(0, 10, 0.5, -7)
 			iconImg.BackgroundTransparency = 1
-			iconImg.Image = iconAsset
 			iconImg.ImageColor3 = Color3.fromRGB(160, 168, 184)
 			iconImg.ZIndex = 2
 			iconImg.Parent = tabFrame
 			textOffset = 32
+
+			task.spawn(function()
+				while not iconsLoaded do
+					task.wait(0.05)
+				end
+				local asset = LucideIcons[string.lower(rawIcon)] or rawIcon
+				if asset then
+					iconImg.Image = asset
+				end
+			end)
 		end
 
 		local tabText = Instance.new("TextLabel")
@@ -345,12 +356,12 @@ function EclipseUI:CreateWindow(options)
 		pagePadding.PaddingBottom = UDim.new(0, 12)
 		pagePadding.Parent = page
 
-		local TabObject = { 
-			Page = page, 
-			Background = tabFrame, 
+		local TabObject = {
+			Page = page,
+			Background = tabFrame,
 			Stroke = tabStroke,
-			Button = clickBtn, 
-			Label = tabText, 
+			Button = clickBtn,
+			Label = tabText,
 			IconImage = iconImg
 		}
 
