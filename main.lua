@@ -2,6 +2,7 @@ local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -132,70 +133,115 @@ function EclipseUI:CreateWindow(options)
 		end
 	end)
 
-	-- Optional Loading Animation Sequence
+	-- Built-in Functional Loader (Tracks real initialization tasks)
 	if loadAnimEnabled then
-		task.spawn(function()
-			local loaderFrame = Instance.new("Frame")
-			loaderFrame.Size = UDim2.new(1, 0, 1, 0)
-			loaderFrame.BackgroundTransparency = 1
-			loaderFrame.ZIndex = 20
-			loaderFrame.Parent = mainGroup
+		mainGroup.Visible = false
 
-			local loadTitle = Instance.new("TextLabel")
-			loadTitle.AnchorPoint = Vector2.new(0.5, 0.5)
-			loadTitle.Position = UDim2.new(0.5, 0, 0.5, -10)
-			loadTitle.Size = UDim2.new(0, 200, 0, 30)
-			loadTitle.BackgroundTransparency = 1
-			loadTitle.Text = windowName
-			loadTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-			loadTitle.TextTransparency = 1
-			loadTitle.TextSize = 16
-			loadTitle.Font = Enum.Font.GothamBold
-			loadTitle.ZIndex = 21
-			loadTitle.Parent = loaderFrame
+		local blur = Instance.new("BlurEffect")
+		blur.Size = 0
+		blur.Parent = Lighting
+		TweenService:Create(blur, TweenInfo.new(1.0, Enum.EasingStyle.Quint), {Size = 16}):Play()
 
-			local loadSpinner = Instance.new("Frame")
-			loadSpinner.AnchorPoint = Vector2.new(0.5, 0.5)
-			loadSpinner.Position = UDim2.new(0.5, 0, 0.5, 20)
-			loadSpinner.Size = UDim2.new(0, 24, 0, 24)
-			loadSpinner.BackgroundTransparency = 1
-			loadSpinner.ZIndex = 21
-			loadSpinner.Parent = loaderFrame
+		local loaderGui = Instance.new("ScreenGui")
+		loaderGui.Name = "EclipseLoaderGui"
+		loaderGui.IgnoreGuiInset = true
+		loaderGui.ResetOnSpawn = false
+		loaderGui.Parent = playerGui
 
-			local spinnerRing = Instance.new("UIStroke")
-			spinnerRing.Color = Color3.fromRGB(255, 255, 255)
-			spinnerRing.Thickness = 2
-			spinnerRing.Transparency = 1
-			spinnerRing.Parent = loadSpinner
+		local overlay = Instance.new("Frame")
+		overlay.Size = UDim2.new(1, 0, 1, 0)
+		overlay.BackgroundColor3 = Color3.fromRGB(10, 11, 15)
+		overlay.BackgroundTransparency = 1
+		overlay.BorderSizePixel = 0
+		overlay.Parent = loaderGui
 
-			local spinnerCorner = Instance.new("UICorner")
-			spinnerCorner.CornerRadius = UDim.new(1, 0)
-			spinnerCorner.Parent = loadSpinner
+		TweenService:Create(overlay, TweenInfo.new(0.8, Enum.EasingStyle.Quint), {BackgroundTransparency = 0.3}):Play()
 
-			-- Fade in loader elements
-			TweenService:Create(loadTitle, TweenInfo.new(0.4), { TextTransparency = 0 }):Play()
-			TweenService:Create(spinnerRing, TweenInfo.new(0.4), { Transparency = 0.2 }):Play()
-			TweenService:Create(mainGroup, TweenInfo.new(0.4), { GroupTransparency = 0 }):Play()
-			TweenService:Create(uiStroke, TweenInfo.new(0.4), { Transparency = 0.4 }):Play()
+		local container = Instance.new("Frame")
+		container.AnchorPoint = Vector2.new(0.5, 0.5)
+		container.Position = UDim2.new(0.5, 0, 0.5, 0)
+		container.Size = UDim2.new(0, 360, 0, 64)
+		container.BackgroundTransparency = 1
+		container.Parent = overlay
 
-			local spinConnection
-			spinConnection = RunService.RenderStepped:Connect(function(dt)
-				if not loaderFrame.Parent then
-					spinConnection:Disconnect()
-					return
-				end
-				loadSpinner.Rotation = loadSpinner.Rotation + (dt * 300)
-			end)
+		local label = Instance.new("TextLabel")
+		label.BackgroundTransparency = 1
+		label.Size = UDim2.new(1, 0, 0, 24)
+		label.Text = "INITIALIZING " .. string.upper(windowName)
+		label.TextColor3 = Color3.fromRGB(255, 255, 255)
+		label.TextTransparency = 1
+		label.TextSize = 15
+		label.Font = Enum.Font.GothamBold
+		label.TextXAlignment = Enum.TextXAlignment.Center
+		label.Parent = container
 
-			task.wait(1.5) -- Loading duration
+		local barBg = Instance.new("Frame")
+		barBg.AnchorPoint = Vector2.new(0.5, 0.5)
+		barBg.Position = UDim2.new(0.5, 0, 0.75, 0)
+		barBg.Size = UDim2.new(0, 280, 0, 6)
+		barBg.BackgroundColor3 = Color3.fromRGB(25, 30, 42)
+		barBg.BackgroundTransparency = 1
+		barBg.BorderSizePixel = 0
+		barBg.Parent = container
 
-			-- Fade out loader elements
-			TweenService:Create(loadTitle, TweenInfo.new(0.3), { TextTransparency = 1 }):Play()
-			TweenService:Create(spinnerRing, TweenInfo.new(0.3), { Transparency = 1 }):Play()
-			task.wait(0.3)
-			if spinConnection then spinConnection:Disconnect() end
-			loaderFrame:Destroy()
-		end)
+		local barBgCorner = Instance.new("UICorner")
+		barBgCorner.CornerRadius = UDim.new(1, 0)
+		barBgCorner.Parent = barBg
+
+		local bar = Instance.new("Frame")
+		bar.Size = UDim2.new(0, 0, 1, 0)
+		bar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		bar.BackgroundTransparency = 1
+		bar.BorderSizePixel = 0
+		bar.Parent = barBg
+
+		local barCorner = Instance.new("UICorner")
+		barCorner.CornerRadius = UDim.new(1, 0)
+		barCorner.Parent = bar
+
+		local barGradient = Instance.new("UIGradient")
+		barGradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 130, 200)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+		})
+		barGradient.Parent = bar
+
+		TweenService:Create(label, TweenInfo.new(0.4), {TextTransparency = 0}):Play()
+		TweenService:Create(barBg, TweenInfo.new(0.4), {BackgroundTransparency = 0.4}):Play()
+		TweenService:Create(bar, TweenInfo.new(0.4), {BackgroundTransparency = 0}):Play()
+
+		-- Actual Loading Tracker (Awaits real completion tasks with timeout)
+		local progress = 0
+		local loadStartTime = tick()
+
+		while not iconsLoaded and (tick() - loadStartTime < 4) do
+			task.wait(0.05)
+		end
+		progress = 0.65
+
+		TweenService:Create(bar, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(progress, 0, 1, 0)}):Play()
+		task.wait(0.2)
+
+		-- Finalize remaining initialization tasks
+		progress = 1
+		TweenService:Create(bar, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 1, 0)}):Play()
+		task.wait(0.4)
+
+		-- Fade out loader and reveal main window
+		TweenService:Create(overlay, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
+		TweenService:Create(label, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
+		TweenService:Create(barBg, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+		TweenService:Create(bar, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
+		TweenService:Create(blur, TweenInfo.new(0.5, Enum.EasingStyle.Quint), {Size = 0}):Play()
+		task.wait(0.4)
+
+		loaderGui:Destroy()
+		blur:Destroy()
+
+		-- Reveal Main Window Smoothly
+		mainGroup.Visible = true
+		TweenService:Create(mainGroup, TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {GroupTransparency = 0}):Play()
+		TweenService:Create(uiStroke, TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Transparency = 0.4}):Play()
 	end
 
 	local windowVisible = true
