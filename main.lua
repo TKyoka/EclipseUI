@@ -42,7 +42,6 @@ end
 local EclipseUI = {}
 EclipseUI.__index = EclipseUI
 
--- Animated Notification System Component with Wrapper Layout
 function EclipseUI:Notify(opts)
 	opts = opts or {}
 	local title = opts.Title or "Notification"
@@ -81,6 +80,7 @@ function EclipseUI:Notify(opts)
 	end
 
 	local wrapper = Instance.new("Frame")
+	wrapper.Name = "NotifWrapper"
 	wrapper.Size = UDim2.new(1, 0, 0, 58)
 	wrapper.BackgroundTransparency = 1
 	wrapper.ZIndex = 99
@@ -280,12 +280,16 @@ function EclipseUI:CreateWindow(options)
 		end
 	end)
 
+	local loaderGuiRef = nil
+	local blurRef = nil
+
 	if loadAnimEnabled then
 		mainGroup.Visible = false
 
 		local blur = Instance.new("BlurEffect")
 		blur.Size = 0
 		blur.Parent = Lighting
+		blurRef = blur
 		TweenService:Create(blur, TweenInfo.new(1.0, Enum.EasingStyle.Quint), {Size = 16}):Play()
 
 		local loaderGui = Instance.new("ScreenGui")
@@ -293,6 +297,7 @@ function EclipseUI:CreateWindow(options)
 		loaderGui.IgnoreGuiInset = true
 		loaderGui.ResetOnSpawn = false
 		loaderGui.Parent = playerGui
+		loaderGuiRef = loaderGui
 
 		local overlay = Instance.new("Frame")
 		overlay.Size = UDim2.new(1, 0, 1, 0)
@@ -380,6 +385,8 @@ function EclipseUI:CreateWindow(options)
 
 		loaderGui:Destroy()
 		blur:Destroy()
+		loaderGuiRef = nil
+		blurRef = nil
 
 		mainGroup.Visible = true
 		TweenService:Create(mainGroup, TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {GroupTransparency = 0}):Play()
@@ -502,7 +509,6 @@ function EclipseUI:CreateWindow(options)
 		titleOffsetLeft = 38
 	end
 
-	-- Fixed Header Layout (Title + Subtitle stacked, Tags in front/beside them horizontally)
 	local titleWrapper = Instance.new("Frame")
 	titleWrapper.Name = "TitleWrapper"
 	titleWrapper.AnchorPoint = Vector2.new(0, 0.5)
@@ -772,6 +778,7 @@ function EclipseUI:CreateWindow(options)
 		end
 	end)
 
+	-- Full Cleanup and Destruction on Close
 	destroyBtn.MouseButton1Click:Connect(function()
 		if mainAnimConnection then
 			mainAnimConnection:Disconnect()
@@ -785,6 +792,16 @@ function EclipseUI:CreateWindow(options)
 
 		task.delay(0.25, function()
 			screenGui:Destroy()
+			local notifGui = playerGui:FindFirstChild("EclipseNotifications")
+			if notifGui then
+				notifGui:Destroy()
+			end
+			if loaderGuiRef and loaderGuiRef.Parent then
+				loaderGuiRef:Destroy()
+			end
+			if blurRef and blurRef.Parent then
+				blurRef:Destroy()
+			end
 		end)
 	end)
 
@@ -1302,6 +1319,22 @@ function EclipseUI:CreateWindow(options)
 			return frame, stroke
 		end
 
+		-- New Space Component
+		function TabObject:Space(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local spaceHeight = typeof(opts) == "number" and opts or (opts.Height or opts.Size or 12)
+
+			local spaceFrame = Instance.new("Frame")
+			spaceFrame.Name = "Space"
+			spaceFrame.Size = UDim2.new(1, 0, 0, spaceHeight)
+			spaceFrame.BackgroundTransparency = 1
+			spaceFrame.ZIndex = 4
+			spaceFrame.Parent = targetParent
+
+			return spaceFrame
+		end
+
 		function TabObject:Section(secOptions)
 			secOptions = secOptions or {}
 			local secTitle = typeof(secOptions) == "string" and secOptions or (secOptions.Title or secOptions.Name or "Section")
@@ -1624,7 +1657,6 @@ function EclipseUI:CreateWindow(options)
 			return ToggleObj
 		end
 
-		-- Cleaned Up & Polished Slider Component
 		function TabObject:Slider(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
