@@ -42,9 +42,122 @@ end
 local EclipseUI = {}
 EclipseUI.__index = EclipseUI
 
+-- Notification System Component
+function EclipseUI:Notify(opts)
+	opts = opts or {}
+	local title = opts.Title or "Notification"
+	local content = opts.Content or ""
+	local duration = opts.Duration or 4
+	local iconName = opts.Icon
+
+	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+	local notifGui = playerGui:FindFirstChild("EclipseNotifications")
+	if not notifGui then
+		notifGui = Instance.new("ScreenGui")
+		notifGui.Name = "EclipseNotifications"
+		notifGui.IgnoreGuiInset = true
+		notifGui.ResetOnSpawn = false
+		notifGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+		notifGui.Parent = playerGui
+	end
+
+	local holder = notifGui:FindFirstChild("Holder")
+	if not holder then
+		holder = Instance.new("Frame")
+		holder.Name = "Holder"
+		holder.AnchorPoint = Vector2.new(1, 1)
+		holder.Position = UDim2.new(1, -20, 1, -20)
+		holder.Size = UDim2.new(0, 300, 1, 0)
+		holder.BackgroundTransparency = 1
+
+		local listLayout = Instance.new("UIListLayout")
+		listLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+		listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+		listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+		listLayout.Padding = UDim.new(0, 8)
+		listLayout.Parent = holder
+
+		holder.Parent = notifGui
+	end
+
+	local cardGroup = Instance.new("CanvasGroup")
+	cardGroup.Size = UDim2.new(1, 0, 0, 58)
+	cardGroup.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
+	cardGroup.BackgroundTransparency = 0.2
+	cardGroup.GroupTransparency = 1
+	cardGroup.ZIndex = 100
+	cardGroup.Parent = holder
+
+	local cardCorner = Instance.new("UICorner")
+	cardCorner.CornerRadius = UDim.new(0, 8)
+	cardCorner.Parent = cardGroup
+
+	local cardStroke = Instance.new("UIStroke")
+	cardStroke.Color = Color3.fromRGB(255, 255, 255)
+	cardStroke.Transparency = 0.8
+	cardStroke.Parent = cardGroup
+
+	local textOffsetLeft = 14
+	if iconName then
+		local iconImg = Instance.new("ImageLabel")
+		iconImg.Size = UDim2.new(0, 18, 0, 18)
+		iconImg.Position = UDim2.new(0, 14, 0.5, -9)
+		iconImg.BackgroundTransparency = 1
+		iconImg.Image = getIconAsset(iconName)
+		iconImg.ImageColor3 = Color3.fromRGB(200, 210, 230)
+		iconImg.ZIndex = 101
+		iconImg.Parent = cardGroup
+		textOffsetLeft = 40
+	end
+
+	local textContainer = Instance.new("Frame")
+	textContainer.Size = UDim2.new(1, -(textOffsetLeft + 14), 1, 0)
+	textContainer.Position = UDim2.new(0, textOffsetLeft, 0, 0)
+	textContainer.BackgroundTransparency = 1
+	textContainer.ZIndex = 101
+	textContainer.Parent = cardGroup
+
+	local titleLabel = Instance.new("TextLabel")
+	titleLabel.Size = UDim2.new(1, 0, 0, 18)
+	titleLabel.Position = UDim2.new(0, 0, 0, 10)
+	titleLabel.BackgroundTransparency = 1
+	titleLabel.Text = title
+	titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+	titleLabel.TextSize = 12
+	titleLabel.Font = Enum.Font.GothamBold
+	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+	titleLabel.ZIndex = 101
+	titleLabel.Parent = textContainer
+
+	local contentLabel = Instance.new("TextLabel")
+	contentLabel.Size = UDim2.new(1, 0, 0, 16)
+	contentLabel.Position = UDim2.new(0, 0, 0, 28)
+	contentLabel.BackgroundTransparency = 1
+	contentLabel.Text = content
+	contentLabel.TextColor3 = Color3.fromRGB(150, 160, 180)
+	contentLabel.TextSize = 11
+	contentLabel.Font = Enum.Font.Gotham
+	contentLabel.TextXAlignment = Enum.TextXAlignment.Left
+	contentLabel.TextTruncate = Enum.TextTruncate.AtEnd
+	contentLabel.ZIndex = 101
+	contentLabel.Parent = textContainer
+
+	-- Animate In
+	TweenService:Create(cardGroup, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {GroupTransparency = 0}):Play()
+
+	task.spawn(function()
+		task.wait(duration)
+		-- Animate Out
+		TweenService:Create(cardGroup, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {GroupTransparency = 1}):Play()
+		task.wait(0.25)
+		cardGroup:Destroy()
+	end)
+end
+
 function EclipseUI:CreateWindow(options)
 	options = options or {}
 	local windowName = options.Title or options.Name or "Eclipse UI"
+	local windowSubtitle = options.Subtitle
 	local windowIcon = options.Icon
 	local initialToggleKey = options.ToggleKey or Enum.KeyCode.RightControl
 	local bgName = options.BgName
@@ -80,7 +193,6 @@ function EclipseUI:CreateWindow(options)
 	uiCorner.CornerRadius = UDim.new(0, 12)
 	uiCorner.Parent = mainGroup
 
-	-- Simple Clean Shimmer Background
 	local mainBackground = Instance.new("Frame")
 	mainBackground.Name = "AnimatedBackground"
 	mainBackground.Size = UDim2.new(1, 0, 1, 0)
@@ -133,7 +245,6 @@ function EclipseUI:CreateWindow(options)
 		end
 	end)
 
-	-- Built-in Functional Loader (Tracks real initialization tasks)
 	if loadAnimEnabled then
 		mainGroup.Visible = false
 
@@ -210,7 +321,6 @@ function EclipseUI:CreateWindow(options)
 		TweenService:Create(barBg, TweenInfo.new(0.4), {BackgroundTransparency = 0.4}):Play()
 		TweenService:Create(bar, TweenInfo.new(0.4), {BackgroundTransparency = 0}):Play()
 
-		-- Actual Loading Tracker (Awaits real completion tasks with timeout)
 		local progress = 0
 		local loadStartTime = tick()
 
@@ -222,12 +332,10 @@ function EclipseUI:CreateWindow(options)
 		TweenService:Create(bar, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Size = UDim2.new(progress, 0, 1, 0)}):Play()
 		task.wait(0.2)
 
-		-- Finalize remaining initialization tasks
 		progress = 1
 		TweenService:Create(bar, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 1, 0)}):Play()
 		task.wait(0.4)
 
-		-- Fade out loader and reveal main window
 		TweenService:Create(overlay, TweenInfo.new(0.4), {BackgroundTransparency = 1}):Play()
 		TweenService:Create(label, TweenInfo.new(0.3), {TextTransparency = 1}):Play()
 		TweenService:Create(barBg, TweenInfo.new(0.3), {BackgroundTransparency = 1}):Play()
@@ -238,7 +346,6 @@ function EclipseUI:CreateWindow(options)
 		loaderGui:Destroy()
 		blur:Destroy()
 
-		-- Reveal Main Window Smoothly
 		mainGroup.Visible = true
 		TweenService:Create(mainGroup, TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {GroupTransparency = 0}):Play()
 		TweenService:Create(uiStroke, TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Transparency = 0.4}):Play()
@@ -369,15 +476,15 @@ function EclipseUI:CreateWindow(options)
 	titleWrapper.Parent = header
 
 	local titleLayout = Instance.new("UIListLayout")
-	titleLayout.FillDirection = Enum.FillDirection.Horizontal
+	titleLayout.FillDirection = windowSubtitle and Enum.FillDirection.Vertical or Enum.FillDirection.Horizontal
 	titleLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 	titleLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	titleLayout.Padding = UDim.new(0, 8)
+	titleLayout.Padding = UDim.new(0, windowSubtitle and 1 or 8)
 	titleLayout.Parent = titleWrapper
 
 	local titleLabel = Instance.new("TextLabel")
 	titleLabel.Name = "Title"
-	titleLabel.Size = UDim2.new(0, 0, 1, 0)
+	titleLabel.Size = UDim2.new(0, 0, windowSubtitle and 0 or 1, windowSubtitle and 15 or 0)
 	titleLabel.AutomaticSize = Enum.AutomaticSize.X
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Text = windowName
@@ -388,6 +495,22 @@ function EclipseUI:CreateWindow(options)
 	titleLabel.LayoutOrder = 1
 	titleLabel.ZIndex = 4
 	titleLabel.Parent = titleWrapper
+
+	if windowSubtitle then
+		local subtitleLabel = Instance.new("TextLabel")
+		subtitleLabel.Name = "Subtitle"
+		subtitleLabel.Size = UDim2.new(0, 0, 0, 12)
+		subtitleLabel.AutomaticSize = Enum.AutomaticSize.X
+		subtitleLabel.BackgroundTransparency = 1
+		subtitleLabel.Text = windowSubtitle
+		subtitleLabel.TextColor3 = Color3.fromRGB(150, 160, 180)
+		subtitleLabel.TextSize = 10
+		subtitleLabel.Font = Enum.Font.Gotham
+		subtitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+		subtitleLabel.LayoutOrder = 2
+		subtitleLabel.ZIndex = 4
+		subtitleLabel.Parent = titleWrapper
+	end
 
 	local TagsObj = {}
 	if windowTags and typeof(windowTags) == "table" then
@@ -1667,12 +1790,16 @@ function EclipseUI:CreateWindow(options)
 			end)
 
 			UserInputService.InputBegan:Connect(function(input, gpe)
-				if listening and not gpe and input.UserInputType == Enum.UserInputType.Keyboard then
-					listening = false
-					currentKey = input.KeyCode
-					keyBtn.Text = currentKey.Name
-					keyBtn.TextColor3 = Color3.fromRGB(200, 210, 225)
-					pcall(callback, currentKey)
+				if gpe then return end
+				if input.UserInputType == Enum.UserInputType.Keyboard then
+					if listening then
+						listening = false
+						currentKey = input.KeyCode
+						keyBtn.Text = currentKey.Name
+						keyBtn.TextColor3 = Color3.fromRGB(200, 210, 225)
+					elseif input.KeyCode == currentKey then
+						pcall(callback, currentKey)
+					end
 				end
 			end)
 
