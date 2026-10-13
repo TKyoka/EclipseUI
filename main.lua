@@ -210,7 +210,12 @@ function EclipseUI:CreateWindow(options)
 	local defaultSize = UDim2.new(0, 480, 0, 320)
 	local defaultPos = UDim2.new(0.5, 0, 0.5, 0)
 
-	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = initialToggleKey, Tags = {} }
+	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = initialToggleKey, Tags = {}, CleanupItems = {} }
+
+	function Window:Cleanup(item)
+		table.insert(self.CleanupItems, item)
+		return item
+	end
 
 	local mainGroup = Instance.new("CanvasGroup")
 	mainGroup.Name = "MainGroup"
@@ -779,13 +784,22 @@ function EclipseUI:CreateWindow(options)
 		end
 	end)
 
-	-- Full Cleanup and Total Destruction
 	destroyBtn.MouseButton1Click:Connect(function()
 		if mainAnimConnection then
 			mainAnimConnection:Disconnect()
 		end
 		if toggleKeyConn then
 			toggleKeyConn:Disconnect()
+		end
+
+		for _, item in ipairs(Window.CleanupItems) do
+			if typeof(item) == "Instance" then
+				pcall(function() item:Destroy() end)
+			elseif typeof(item) == "RBXScriptConnection" then
+				pcall(function() item:Disconnect() end)
+			elseif typeof(item) == "function" then
+				pcall(item)
+			end
 		end
 
 		local destroyTweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.In)
@@ -868,6 +882,14 @@ function EclipseUI:CreateWindow(options)
 	tabsPadding.PaddingTop = UDim.new(0, 8)
 	tabsPadding.PaddingBottom = UDim.new(0, 8)
 	tabsPadding.Parent = tabs
+
+	-- Connect scrolling to update the indicator position dynamically
+	tabs:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+		if Window.ActiveTab then
+			local targetY = Window.ActiveTab.Frame.Position.Y.Offset - tabs.CanvasPosition.Y
+			activePill.Position = UDim2.new(0.5, 0, 0, targetY + 16)
+		end
+	end)
 
 	local userInfoCanvasGroup = Instance.new("CanvasGroup")
 	userInfoCanvasGroup.Name = "UserInfoCanvasGroup"
@@ -1130,7 +1152,7 @@ function EclipseUI:CreateWindow(options)
 		Window.ActiveTab = targetTab
 
 		activePill.Visible = true
-		local targetY = targetTab.Frame.AbsolutePosition.Y - tabsCanvasGroup.AbsolutePosition.Y
+		local targetY = targetTab.Frame.Position.Y.Offset - tabs.CanvasPosition.Y
 		tween(activePill, pillTweenInfo, { Position = UDim2.new(0.5, 0, 0, targetY + 16) })
 
 		for _, tab in ipairs(Window.Tabs) do
@@ -1323,7 +1345,6 @@ function EclipseUI:CreateWindow(options)
 			return frame, stroke
 		end
 
-		-- Space Component (Default Height set to 6px)
 		function TabObject:Space(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1759,21 +1780,13 @@ function EclipseUI:CreateWindow(options)
 			thumbStroke.Parent = thumb
 
 			local isDragging = false
-			local lastCallbackTick = 0
 			local connectionMove, connectionEnd
 
-			local function updateSliderVal(value, fireCallback)
+			local function updateSliderVal(value)
 				value = math.clamp(value, min, max)
 				local percentage = (value - min) / (max - min)
 				valBox.Text = tostring(value)
 				fill.Size = UDim2.new(percentage, 0, 1, 0)
-				if fireCallback then
-					local now = tick()
-					if now - lastCallbackTick >= 0.12 then
-						lastCallbackTick = now
-						pcall(callback, value)
-					end
-				end
 			end
 
 			local function updateSlider(inputX)
@@ -1781,7 +1794,7 @@ function EclipseUI:CreateWindow(options)
 				local absoluteSize = track.AbsoluteSize.X
 				local percentage = math.clamp((inputX - absolutePos) / absoluteSize, 0, 1)
 				local value = math.floor(min + (max - min) * percentage + 0.5)
-				updateSliderVal(value, true)
+				updateSliderVal(value)
 			end
 
 			valBox.Focused:Connect(function()
@@ -1792,10 +1805,10 @@ function EclipseUI:CreateWindow(options)
 				tween(valBoxStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
 				local num = tonumber(valBox.Text)
 				if num then
-					updateSliderVal(num, true)
+					updateSliderVal(num)
 					pcall(callback, num)
 				else
-					updateSliderVal(min + (max - min) * fill.Size.X.Scale, false)
+					updateSliderVal(min + (max - min) * fill.Size.X.Scale)
 				end
 			end)
 
@@ -1816,7 +1829,8 @@ function EclipseUI:CreateWindow(options)
 				connectionEnd = UserInputService.InputEnded:Connect(function(endInput)
 					if endInput.UserInputType == input.UserInputType then
 						isDragging = false
-						pcall(callback, tonumber(valBox.Text) or default)
+						local finalVal = tonumber(valBox.Text) or default
+						pcall(callback, finalVal)
 						tween(thumb, TweenInfo.new(0.15), { Size = UDim2.new(0, 16, 0, 12) })
 						tween(valBoxStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
 						if connectionMove then connectionMove:Disconnect() end
@@ -1828,13 +1842,14 @@ function EclipseUI:CreateWindow(options)
 			track.InputBegan:Connect(function(input)
 				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 					updateSlider(input.Position.X)
-					pcall(callback, tonumber(valBox.Text) or default)
+					local finalVal = tonumber(valBox.Text) or default
+					pcall(callback, finalVal)
 				end
 			end)
 
 			return {
 				Set = function(_, val)
-					updateSliderVal(val, true)
+					updateSliderVal(val)
 				end
 			}
 		end
