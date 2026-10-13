@@ -42,7 +42,7 @@ end
 local EclipseUI = {}
 EclipseUI.__index = EclipseUI
 
--- Notification System Component (Enhanced with Slide & Glow)
+-- Notification System Component (Enhanced Spring Slide & Scale)
 function EclipseUI:Notify(opts)
 	opts = opts or {}
 	local title = opts.Title or "Notification"
@@ -85,7 +85,7 @@ function EclipseUI:Notify(opts)
 	cardGroup.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
 	cardGroup.BackgroundTransparency = 0.2
 	cardGroup.GroupTransparency = 1
-	cardGroup.Position = UDim2.new(0, 50, 0, 0) -- Slide start offset
+	cardGroup.Position = UDim2.new(0, 80, 0, 0)
 	cardGroup.ZIndex = 100
 	cardGroup.Parent = holder
 
@@ -163,8 +163,8 @@ function EclipseUI:Notify(opts)
 	contentLabel.ZIndex = 101
 	contentLabel.Parent = textContainer
 
-	-- Smooth Slide & Fade In
-	TweenService:Create(cardGroup, TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+	-- Sleek Spring Pop-In Animation
+	TweenService:Create(cardGroup, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, 0), {
 		GroupTransparency = 0,
 		Position = UDim2.new(0, 0, 0, 0)
 	}):Play()
@@ -172,10 +172,10 @@ function EclipseUI:Notify(opts)
 	task.spawn(function()
 		task.wait(duration)
 		if notifConn then notifConn:Disconnect() end
-		-- Smooth Slide & Fade Out
+		-- Smooth Pop-Out Animation
 		TweenService:Create(cardGroup, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
 			GroupTransparency = 1,
-			Position = UDim2.new(0, 50, 0, 0)
+			Position = UDim2.new(0, 60, 0, 0)
 		}):Play()
 		task.wait(0.25)
 		cardGroup:Destroy()
@@ -495,12 +495,11 @@ function EclipseUI:CreateWindow(options)
 		titleOffsetLeft = 38
 	end
 
-	-- Fixed Subtitle & Title Header Layout Alignment
 	local titleWrapper = Instance.new("Frame")
 	titleWrapper.Name = "TitleWrapper"
 	titleWrapper.AnchorPoint = Vector2.new(0, 0.5)
 	titleWrapper.Position = UDim2.new(0, titleOffsetLeft, 0.5, 0)
-	titleWrapper.Size = UDim2.new(1, -(titleOffsetLeft + 104), 0, 32)
+	titleWrapper.Size = UDim2.new(1, -(titleOffsetLeft + 104), 0, 30)
 	titleWrapper.BackgroundTransparency = 1
 	titleWrapper.ZIndex = 4
 	titleWrapper.Parent = header
@@ -514,7 +513,7 @@ function EclipseUI:CreateWindow(options)
 
 	local titleLabel = Instance.new("TextLabel")
 	titleLabel.Name = "Title"
-	titleLabel.Size = UDim2.new(1, 0, 0, 16)
+	titleLabel.Size = UDim2.new(1, 0, 0, 15)
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Text = windowName
 	titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1599,6 +1598,7 @@ function EclipseUI:CreateWindow(options)
 			return ToggleObj
 		end
 
+		-- Improved Slider with Clean Polished Textbox
 		function TabObject:Slider(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1611,7 +1611,7 @@ function EclipseUI:CreateWindow(options)
 			local sliderContainer, stroke = createContainer(targetParent, 52)
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, -76, 0, 18)
+			label.Size = UDim2.new(1, -84, 0, 18)
 			label.Position = UDim2.new(0, 14, 0, 8)
 			label.BackgroundTransparency = 1
 			label.Text = title
@@ -1625,13 +1625,13 @@ function EclipseUI:CreateWindow(options)
 			local valBox = Instance.new("TextBox")
 			valBox.AnchorPoint = Vector2.new(1, 0)
 			valBox.Position = UDim2.new(1, -12, 0, 6)
-			valBox.Size = UDim2.new(0, 50, 0, 22)
-			valBox.BackgroundColor3 = Color3.fromRGB(25, 30, 40)
-			valBox.BackgroundTransparency = 0.3
+			valBox.Size = UDim2.new(0, 56, 0, 22)
+			valBox.BackgroundColor3 = Color3.fromRGB(18, 22, 30)
+			valBox.BackgroundTransparency = 0.2
 			valBox.Text = tostring(default)
-			valBox.TextColor3 = Color3.fromRGB(200, 210, 225)
+			valBox.TextColor3 = Color3.fromRGB(220, 230, 245)
 			valBox.TextSize = 11
-			valBox.Font = Enum.Font.Code
+			valBox.Font = Enum.Font.GothamBold
 			valBox.TextYAlignment = Enum.TextYAlignment.Center
 			valBox.ClearTextOnFocus = false
 			valBox.ZIndex = 6
@@ -1644,7 +1644,7 @@ function EclipseUI:CreateWindow(options)
 			local valBoxStroke = Instance.new("UIStroke")
 			valBoxStroke.Color = Color3.fromRGB(255, 255, 255)
 			valBoxStroke.Thickness = 1
-			valBoxStroke.Transparency = 0.85
+			valBoxStroke.Transparency = 0.75
 			valBoxStroke.Parent = valBox
 
 			local track = Instance.new("Frame")
@@ -1707,7 +1707,7 @@ function EclipseUI:CreateWindow(options)
 				fill.Size = UDim2.new(percentage, 0, 1, 0)
 				if fireCallback then
 					local now = tick()
-					if now - lastCallbackTick >= 0.15 then
+					if now - lastCallbackTick >= 0.12 then
 						lastCallbackTick = now
 						pcall(callback, value)
 					end
@@ -1722,10 +1722,16 @@ function EclipseUI:CreateWindow(options)
 				updateSliderVal(value, true)
 			end
 
+			valBox.Focused:Connect(function()
+				tween(valBoxStroke, TweenInfo.new(0.15), { Transparency = 0.2 })
+			end)
+
 			valBox.FocusLost:Connect(function()
+				tween(valBoxStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
 				local num = tonumber(valBox.Text)
 				if num then
 					updateSliderVal(num, true)
+					pcall(callback, num)
 				else
 					updateSliderVal(min + (max - min) * fill.Size.X.Scale, false)
 				end
@@ -1737,7 +1743,7 @@ function EclipseUI:CreateWindow(options)
 
 				isDragging = true
 				tween(thumb, TweenInfo.new(0.15), { Size = UDim2.new(0, 22, 0, 14) })
-				tween(valBoxStroke, TweenInfo.new(0.15), { Transparency = 0.5 })
+				tween(valBoxStroke, TweenInfo.new(0.15), { Transparency = 0.4 })
 
 				connectionMove = UserInputService.InputChanged:Connect(function(moveInput)
 					if moveInput.UserInputType == Enum.UserInputType.MouseMovement or moveInput.UserInputType == Enum.UserInputType.Touch then
@@ -1748,10 +1754,9 @@ function EclipseUI:CreateWindow(options)
 				connectionEnd = UserInputService.InputEnded:Connect(function(endInput)
 					if endInput.UserInputType == input.UserInputType then
 						isDragging = false
-						-- Fire final value on release
 						pcall(callback, tonumber(valBox.Text) or default)
 						tween(thumb, TweenInfo.new(0.15), { Size = UDim2.new(0, 18, 0, 12) })
-						tween(valBoxStroke, TweenInfo.new(0.15), { Transparency = 0.85 })
+						tween(valBoxStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
 						if connectionMove then connectionMove:Disconnect() end
 						if connectionEnd then connectionEnd:Disconnect() end
 					end
@@ -1772,6 +1777,7 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
+		-- Improved Keybind with Polished Input Button
 		function TabObject:Keybind(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1796,13 +1802,13 @@ function EclipseUI:CreateWindow(options)
 			local keyBtn = Instance.new("TextButton")
 			keyBtn.AnchorPoint = Vector2.new(1, 0.5)
 			keyBtn.Position = UDim2.new(1, -12, 0.5, 0)
-			keyBtn.Size = UDim2.new(0, 84, 0, 24)
-			keyBtn.BackgroundColor3 = Color3.fromRGB(25, 30, 40)
-			keyBtn.BackgroundTransparency = 0.3
+			keyBtn.Size = UDim2.new(0, 90, 0, 24)
+			keyBtn.BackgroundColor3 = Color3.fromRGB(18, 22, 30)
+			keyBtn.BackgroundTransparency = 0.2
 			keyBtn.Text = currentKey.Name
-			keyBtn.TextColor3 = Color3.fromRGB(200, 210, 225)
+			keyBtn.TextColor3 = Color3.fromRGB(220, 230, 245)
 			keyBtn.TextSize = 11
-			keyBtn.Font = Enum.Font.Code
+			keyBtn.Font = Enum.Font.GothamBold
 			keyBtn.TextYAlignment = Enum.TextYAlignment.Center
 			keyBtn.ZIndex = 6
 			keyBtn.Parent = kbFrame
@@ -1814,15 +1820,28 @@ function EclipseUI:CreateWindow(options)
 			local keyStroke = Instance.new("UIStroke")
 			keyStroke.Color = Color3.fromRGB(255, 255, 255)
 			keyStroke.Thickness = 1
-			keyStroke.Transparency = 0.85
+			keyStroke.Transparency = 0.75
 			keyStroke.Parent = keyBtn
 
 			local listening = false
+
+			keyBtn.MouseEnter:Connect(function()
+				if not listening then
+					tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.4 })
+				end
+			end)
+
+			keyBtn.MouseLeave:Connect(function()
+				if not listening then
+					tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
+				end
+			end)
 
 			keyBtn.MouseButton1Click:Connect(function()
 				listening = true
 				keyBtn.Text = "..."
 				keyBtn.TextColor3 = Color3.fromRGB(255, 220, 100)
+				tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.2 })
 			end)
 
 			UserInputService.InputBegan:Connect(function(input, gpe)
@@ -1832,7 +1851,8 @@ function EclipseUI:CreateWindow(options)
 						listening = false
 						currentKey = input.KeyCode
 						keyBtn.Text = currentKey.Name
-						keyBtn.TextColor3 = Color3.fromRGB(200, 210, 225)
+						keyBtn.TextColor3 = Color3.fromRGB(220, 230, 245)
+						tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
 					elseif input.KeyCode == currentKey then
 						pcall(callback, currentKey)
 					end
@@ -1844,6 +1864,7 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
+		-- Redesigned Dropdown Style (Modern Popup List & Selection Indicators)
 		function TabObject:Dropdown(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1863,7 +1884,7 @@ function EclipseUI:CreateWindow(options)
 			headerBtn.Parent = ddFrame
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, -120, 0, 38)
+			label.Size = UDim2.new(1, -125, 0, 38)
 			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = title
@@ -1877,9 +1898,9 @@ function EclipseUI:CreateWindow(options)
 			local selBox = Instance.new("Frame")
 			selBox.AnchorPoint = Vector2.new(1, 0.5)
 			selBox.Position = UDim2.new(1, -12, 0.5, 0)
-			selBox.Size = UDim2.new(0, 96, 0, 24)
-			selBox.BackgroundColor3 = Color3.fromRGB(25, 30, 40)
-			selBox.BackgroundTransparency = 0.3
+			selBox.Size = UDim2.new(0, 104, 0, 24)
+			selBox.BackgroundColor3 = Color3.fromRGB(18, 22, 30)
+			selBox.BackgroundTransparency = 0.2
 			selBox.ZIndex = 6
 			selBox.Parent = headerBtn
 
@@ -1890,17 +1911,17 @@ function EclipseUI:CreateWindow(options)
 			local selBoxStroke = Instance.new("UIStroke")
 			selBoxStroke.Color = Color3.fromRGB(255, 255, 255)
 			selBoxStroke.Thickness = 1
-			selBoxStroke.Transparency = 0.85
+			selBoxStroke.Transparency = 0.75
 			selBoxStroke.Parent = selBox
 
 			local selLabel = Instance.new("TextLabel")
-			selLabel.Size = UDim2.new(1, -20, 1, 0)
+			selLabel.Size = UDim2.new(1, -26, 1, 0)
 			selLabel.Position = UDim2.new(0, 8, 0, 0)
 			selLabel.BackgroundTransparency = 1
 			selLabel.Text = tostring(selected)
-			selLabel.TextColor3 = Color3.fromRGB(200, 210, 225)
+			selLabel.TextColor3 = Color3.fromRGB(220, 230, 245)
 			selLabel.TextSize = 11
-			selLabel.Font = Enum.Font.Code
+			selLabel.Font = Enum.Font.GothamBold
 			selLabel.TextYAlignment = Enum.TextYAlignment.Center
 			selLabel.TextXAlignment = Enum.TextXAlignment.Left
 			selLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -1914,14 +1935,14 @@ function EclipseUI:CreateWindow(options)
 			arrowIcon.Size = UDim2.new(0, 12, 0, 12)
 			arrowIcon.BackgroundTransparency = 1
 			arrowIcon.Image = getIconAsset("chevron-down")
-			arrowIcon.ImageColor3 = Color3.fromRGB(150, 160, 180)
+			arrowIcon.ImageColor3 = Color3.fromRGB(170, 180, 200)
 			arrowIcon.ZIndex = 7
 			arrowIcon.Parent = selBox
 
 			if not iconsLoaded then
 				task.spawn(function()
 					repeat task.wait() until iconsLoaded or not arrowIcon:IsDescendantOf(game)
-					if arrowIcon:IsDescendantOf(game) then
+					if icon:IsDescendantOf(game) then
 						arrowIcon.Image = getIconAsset("chevron-down")
 					end
 				end)
@@ -1952,17 +1973,18 @@ function EclipseUI:CreateWindow(options)
 				for _, data in ipairs(itemButtons) do
 					local isSel = (data.Item == selected)
 					tween(data.Btn, fadeTweenInfo, {
-						BackgroundTransparency = isSel and 0.85 or 0.95
+						BackgroundTransparency = isSel and 0.82 or 0.96
 					})
-					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 170, 190)
+					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(150, 160, 180)
+					data.Indicator.BackgroundTransparency = isSel and 0 or 1
 				end
 			end
 
 			for _, item in ipairs(items) do
 				local itemBtn = Instance.new("TextButton")
-				itemBtn.Size = UDim2.new(1, 0, 0, 28)
+				itemBtn.Size = UDim2.new(1, 0, 0, 30)
 				itemBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-				itemBtn.BackgroundTransparency = 0.95
+				itemBtn.BackgroundTransparency = 0.96
 				itemBtn.Text = ""
 				itemBtn.ZIndex = 6
 				itemBtn.Parent = itemsList
@@ -1971,12 +1993,25 @@ function EclipseUI:CreateWindow(options)
 				itemCorner.CornerRadius = UDim.new(0, 6)
 				itemCorner.Parent = itemBtn
 
+				local indicator = Instance.new("Frame")
+				indicator.AnchorPoint = Vector2.new(0, 0.5)
+				indicator.Position = UDim2.new(0, 6, 0.5, 0)
+				indicator.Size = UDim2.new(0, 3, 0, 12)
+				indicator.BackgroundColor3 = Color3.fromRGB(100, 140, 255)
+				indicator.BackgroundTransparency = 1
+				indicator.ZIndex = 7
+				indicator.Parent = itemBtn
+
+				local indCorner = Instance.new("UICorner")
+				indCorner.CornerRadius = UDim.new(1, 0)
+				indCorner.Parent = indicator
+
 				local itemText = Instance.new("TextLabel")
-				itemText.Size = UDim2.new(1, -16, 1, 0)
-				itemText.Position = UDim2.new(0, 10, 0, 0)
+				itemText.Size = UDim2.new(1, -20, 1, 0)
+				itemText.Position = UDim2.new(0, 16, 0, 0)
 				itemText.BackgroundTransparency = 1
 				itemText.Text = tostring(item)
-				itemText.TextColor3 = Color3.fromRGB(160, 170, 190)
+				itemText.TextColor3 = Color3.fromRGB(150, 160, 180)
 				itemText.TextSize = 11
 				itemText.Font = Enum.Font.Gotham
 				itemText.TextYAlignment = Enum.TextYAlignment.Center
@@ -1984,19 +2019,19 @@ function EclipseUI:CreateWindow(options)
 				itemText.ZIndex = 7
 				itemText.Parent = itemBtn
 
-				table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText })
+				table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText, Indicator = indicator })
 
 				itemBtn.MouseEnter:Connect(function()
 					if selected ~= item then
 						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.90 })
-						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(240, 245, 255) })
+						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(230, 238, 250) })
 					end
 				end)
 
 				itemBtn.MouseLeave:Connect(function()
 					if selected ~= item then
-						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.95 })
-						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(160, 170, 190) })
+						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.96 })
+						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(150, 160, 180) })
 					end
 				end)
 
@@ -2006,7 +2041,7 @@ function EclipseUI:CreateWindow(options)
 					isOpen = false
 					refreshSelectionStates()
 					tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
-					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.85 })
+					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
 					tween(ddFrame, fadeTweenInfo, { Size = UDim2.new(1, 0, 0, 38) })
 					pcall(callback, selected)
 				end)
@@ -2018,7 +2053,7 @@ function EclipseUI:CreateWindow(options)
 				isOpen = not isOpen
 				local targetHeight = isOpen and (46 + listLayout.AbsoluteContentSize.Y) or 38
 				local targetRotation = isOpen and 180 or 0
-				local targetStrokeTrans = isOpen and 0.5 or 0.85
+				local targetStrokeTrans = isOpen and 0.4 or 0.75
 				tween(arrowIcon, fadeTweenInfo, { Rotation = targetRotation })
 				tween(selBoxStroke, fadeTweenInfo, { Transparency = targetStrokeTrans })
 				tween(ddFrame, fadeTweenInfo, { Size = UDim2.new(1, 0, 0, targetHeight) })
