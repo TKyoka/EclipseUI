@@ -42,7 +42,7 @@ end
 local EclipseUI = {}
 EclipseUI.__index = EclipseUI
 
--- Notification System Component
+-- Notification System Component (Enhanced with Slide & Glow)
 function EclipseUI:Notify(opts)
 	opts = opts or {}
 	local title = opts.Title or "Notification"
@@ -85,6 +85,7 @@ function EclipseUI:Notify(opts)
 	cardGroup.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
 	cardGroup.BackgroundTransparency = 0.2
 	cardGroup.GroupTransparency = 1
+	cardGroup.Position = UDim2.new(0, 50, 0, 0) -- Slide start offset
 	cardGroup.ZIndex = 100
 	cardGroup.Parent = holder
 
@@ -94,8 +95,28 @@ function EclipseUI:Notify(opts)
 
 	local cardStroke = Instance.new("UIStroke")
 	cardStroke.Color = Color3.fromRGB(255, 255, 255)
-	cardStroke.Transparency = 0.8
+	cardStroke.Thickness = 1.5
+	cardStroke.Transparency = 0.4
 	cardStroke.Parent = cardGroup
+
+	local strokeGradient = Instance.new("UIGradient")
+	strokeGradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 90, 120)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 90, 120))
+	})
+	strokeGradient.Parent = cardStroke
+
+	local notifTimeAcc = 0
+	local notifConn
+	notifConn = RunService.RenderStepped:Connect(function(dt)
+		if not cardGroup:IsDescendantOf(game) then
+			notifConn:Disconnect()
+			return
+		end
+		notifTimeAcc = notifTimeAcc + dt
+		strokeGradient.Rotation = (notifTimeAcc * 60) % 360
+	end)
 
 	local textOffsetLeft = 14
 	if iconName then
@@ -142,13 +163,20 @@ function EclipseUI:Notify(opts)
 	contentLabel.ZIndex = 101
 	contentLabel.Parent = textContainer
 
-	-- Animate In
-	TweenService:Create(cardGroup, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {GroupTransparency = 0}):Play()
+	-- Smooth Slide & Fade In
+	TweenService:Create(cardGroup, TweenInfo.new(0.35, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+		GroupTransparency = 0,
+		Position = UDim2.new(0, 0, 0, 0)
+	}):Play()
 
 	task.spawn(function()
 		task.wait(duration)
-		-- Animate Out
-		TweenService:Create(cardGroup, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {GroupTransparency = 1}):Play()
+		if notifConn then notifConn:Disconnect() end
+		-- Smooth Slide & Fade Out
+		TweenService:Create(cardGroup, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+			GroupTransparency = 1,
+			Position = UDim2.new(0, 50, 0, 0)
+		}):Play()
 		task.wait(0.25)
 		cardGroup:Destroy()
 	end)
@@ -464,32 +492,33 @@ function EclipseUI:CreateWindow(options)
 			end)
 		end
 
-		titleOffsetLeft = 36
+		titleOffsetLeft = 38
 	end
 
+	-- Fixed Subtitle & Title Header Layout Alignment
 	local titleWrapper = Instance.new("Frame")
 	titleWrapper.Name = "TitleWrapper"
-	titleWrapper.Size = UDim2.new(1, -(titleOffsetLeft + 104), 1, 0)
-	titleWrapper.Position = UDim2.new(0, titleOffsetLeft, 0, 0)
+	titleWrapper.AnchorPoint = Vector2.new(0, 0.5)
+	titleWrapper.Position = UDim2.new(0, titleOffsetLeft, 0.5, 0)
+	titleWrapper.Size = UDim2.new(1, -(titleOffsetLeft + 104), 0, 32)
 	titleWrapper.BackgroundTransparency = 1
 	titleWrapper.ZIndex = 4
 	titleWrapper.Parent = header
 
 	local titleLayout = Instance.new("UIListLayout")
-	titleLayout.FillDirection = windowSubtitle and Enum.FillDirection.Vertical or Enum.FillDirection.Horizontal
+	titleLayout.FillDirection = Enum.FillDirection.Vertical
 	titleLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 	titleLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	titleLayout.Padding = UDim.new(0, windowSubtitle and 1 or 8)
+	titleLayout.Padding = UDim.new(0, 1)
 	titleLayout.Parent = titleWrapper
 
 	local titleLabel = Instance.new("TextLabel")
 	titleLabel.Name = "Title"
-	titleLabel.Size = UDim2.new(0, 0, windowSubtitle and 0 or 1, windowSubtitle and 15 or 0)
-	titleLabel.AutomaticSize = Enum.AutomaticSize.X
+	titleLabel.Size = UDim2.new(1, 0, 0, 16)
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Text = windowName
 	titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-	titleLabel.TextSize = 14
+	titleLabel.TextSize = 13
 	titleLabel.Font = Enum.Font.GothamBold
 	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 	titleLabel.LayoutOrder = 1
@@ -499,8 +528,7 @@ function EclipseUI:CreateWindow(options)
 	if windowSubtitle then
 		local subtitleLabel = Instance.new("TextLabel")
 		subtitleLabel.Name = "Subtitle"
-		subtitleLabel.Size = UDim2.new(0, 0, 0, 12)
-		subtitleLabel.AutomaticSize = Enum.AutomaticSize.X
+		subtitleLabel.Size = UDim2.new(1, 0, 0, 12)
 		subtitleLabel.BackgroundTransparency = 1
 		subtitleLabel.Text = windowSubtitle
 		subtitleLabel.TextColor3 = Color3.fromRGB(150, 160, 180)
@@ -1669,6 +1697,7 @@ function EclipseUI:CreateWindow(options)
 			thumbStroke.Parent = thumb
 
 			local isDragging = false
+			local lastCallbackTick = 0
 			local connectionMove, connectionEnd
 
 			local function updateSliderVal(value, fireCallback)
@@ -1677,7 +1706,11 @@ function EclipseUI:CreateWindow(options)
 				valBox.Text = tostring(value)
 				fill.Size = UDim2.new(percentage, 0, 1, 0)
 				if fireCallback then
-					pcall(callback, value)
+					local now = tick()
+					if now - lastCallbackTick >= 0.15 then
+						lastCallbackTick = now
+						pcall(callback, value)
+					end
 				end
 			end
 
@@ -1715,6 +1748,8 @@ function EclipseUI:CreateWindow(options)
 				connectionEnd = UserInputService.InputEnded:Connect(function(endInput)
 					if endInput.UserInputType == input.UserInputType then
 						isDragging = false
+						-- Fire final value on release
+						pcall(callback, tonumber(valBox.Text) or default)
 						tween(thumb, TweenInfo.new(0.15), { Size = UDim2.new(0, 18, 0, 12) })
 						tween(valBoxStroke, TweenInfo.new(0.15), { Transparency = 0.85 })
 						if connectionMove then connectionMove:Disconnect() end
@@ -1726,6 +1761,7 @@ function EclipseUI:CreateWindow(options)
 			track.InputBegan:Connect(function(input)
 				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 					updateSlider(input.Position.X)
+					pcall(callback, tonumber(valBox.Text) or default)
 				end
 			end)
 
