@@ -394,7 +394,8 @@ function EclipseUI:CreateWindow(options)
 	end
 
 	local windowVisible = true
-	UserInputService.InputBegan:Connect(function(input, gpe)
+	local toggleKeyConn
+	toggleKeyConn = UserInputService.InputBegan:Connect(function(input, gpe)
 		if gpe then return end
 		if input.KeyCode == Window.ToggleKey then
 			windowVisible = not windowVisible
@@ -778,10 +779,13 @@ function EclipseUI:CreateWindow(options)
 		end
 	end)
 
-	-- Full Cleanup and Destruction on Close
+	-- Full Cleanup and Total Destruction
 	destroyBtn.MouseButton1Click:Connect(function()
 		if mainAnimConnection then
 			mainAnimConnection:Disconnect()
+		end
+		if toggleKeyConn then
+			toggleKeyConn:Disconnect()
 		end
 
 		local destroyTweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.In)
@@ -1319,11 +1323,11 @@ function EclipseUI:CreateWindow(options)
 			return frame, stroke
 		end
 
-		-- New Space Component
+		-- Space Component (Default Height set to 6px)
 		function TabObject:Space(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
-			local spaceHeight = typeof(opts) == "number" and opts or (opts.Height or opts.Size or 12)
+			local spaceHeight = typeof(opts) == "number" and opts or (opts.Height or opts.Size or 6)
 
 			local spaceFrame = Instance.new("Frame")
 			spaceFrame.Name = "Space"
@@ -1901,7 +1905,12 @@ function EclipseUI:CreateWindow(options)
 				tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.2 })
 			end)
 
-			UserInputService.InputBegan:Connect(function(input, gpe)
+			local keybindInputConn
+			keybindInputConn = UserInputService.InputBegan:Connect(function(input, gpe)
+				if not kbFrame:IsDescendantOf(game) then
+					if keybindInputConn then keybindInputConn:Disconnect() end
+					return
+				end
 				if gpe then return end
 				if input.UserInputType == Enum.UserInputType.Keyboard then
 					if listening then
