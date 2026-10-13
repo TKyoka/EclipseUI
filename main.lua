@@ -42,7 +42,7 @@ end
 local EclipseUI = {}
 EclipseUI.__index = EclipseUI
 
--- Notification System Component (Enhanced Spring Slide & Scale)
+-- Fixed Animated Notification System Component
 function EclipseUI:Notify(opts)
 	opts = opts or {}
 	local title = opts.Title or "Notification"
@@ -85,7 +85,7 @@ function EclipseUI:Notify(opts)
 	cardGroup.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
 	cardGroup.BackgroundTransparency = 0.2
 	cardGroup.GroupTransparency = 1
-	cardGroup.Position = UDim2.new(0, 80, 0, 0)
+	cardGroup.Position = UDim2.new(0, 40, 0, 0)
 	cardGroup.ZIndex = 100
 	cardGroup.Parent = holder
 
@@ -163,8 +163,8 @@ function EclipseUI:Notify(opts)
 	contentLabel.ZIndex = 101
 	contentLabel.Parent = textContainer
 
-	-- Sleek Spring Pop-In Animation
-	TweenService:Create(cardGroup, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out, 0, false, 0), {
+	-- Trigger Entrance Animation
+	TweenService:Create(cardGroup, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
 		GroupTransparency = 0,
 		Position = UDim2.new(0, 0, 0, 0)
 	}):Play()
@@ -172,12 +172,13 @@ function EclipseUI:Notify(opts)
 	task.spawn(function()
 		task.wait(duration)
 		if notifConn then notifConn:Disconnect() end
-		-- Smooth Pop-Out Animation
-		TweenService:Create(cardGroup, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+		-- Trigger Exit Animation
+		local fadeOut = TweenService:Create(cardGroup, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
 			GroupTransparency = 1,
-			Position = UDim2.new(0, 60, 0, 0)
-		}):Play()
-		task.wait(0.25)
+			Position = UDim2.new(0, 40, 0, 0)
+		})
+		fadeOut:Play()
+		fadeOut.Completed:Wait()
 		cardGroup:Destroy()
 	end)
 end
@@ -1598,7 +1599,6 @@ function EclipseUI:CreateWindow(options)
 			return ToggleObj
 		end
 
-		-- Improved Slider with Clean Polished Textbox
 		function TabObject:Slider(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1777,7 +1777,6 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
-		-- Improved Keybind with Polished Input Button
 		function TabObject:Keybind(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1864,7 +1863,7 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
-		-- Redesigned Dropdown Style (Modern Popup List & Selection Indicators)
+		-- Renewed Dropdown Style (Sleek, Clean Popup List with No Accent Lines)
 		function TabObject:Dropdown(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1942,7 +1941,7 @@ function EclipseUI:CreateWindow(options)
 			if not iconsLoaded then
 				task.spawn(function()
 					repeat task.wait() until iconsLoaded or not arrowIcon:IsDescendantOf(game)
-					if icon:IsDescendantOf(game) then
+					if arrowIcon:IsDescendantOf(game) then
 						arrowIcon.Image = getIconAsset("chevron-down")
 					end
 				end)
@@ -1976,13 +1975,12 @@ function EclipseUI:CreateWindow(options)
 						BackgroundTransparency = isSel and 0.82 or 0.96
 					})
 					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(150, 160, 180)
-					data.Indicator.BackgroundTransparency = isSel and 0 or 1
 				end
 			end
 
 			for _, item in ipairs(items) do
 				local itemBtn = Instance.new("TextButton")
-				itemBtn.Size = UDim2.new(1, 0, 0, 30)
+				itemBtn.Size = UDim2.new(1, 0, 0, 28)
 				itemBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 				itemBtn.BackgroundTransparency = 0.96
 				itemBtn.Text = ""
@@ -1993,22 +1991,9 @@ function EclipseUI:CreateWindow(options)
 				itemCorner.CornerRadius = UDim.new(0, 6)
 				itemCorner.Parent = itemBtn
 
-				local indicator = Instance.new("Frame")
-				indicator.AnchorPoint = Vector2.new(0, 0.5)
-				indicator.Position = UDim2.new(0, 6, 0.5, 0)
-				indicator.Size = UDim2.new(0, 3, 0, 12)
-				indicator.BackgroundColor3 = Color3.fromRGB(100, 140, 255)
-				indicator.BackgroundTransparency = 1
-				indicator.ZIndex = 7
-				indicator.Parent = itemBtn
-
-				local indCorner = Instance.new("UICorner")
-				indCorner.CornerRadius = UDim.new(1, 0)
-				indCorner.Parent = indicator
-
 				local itemText = Instance.new("TextLabel")
-				itemText.Size = UDim2.new(1, -20, 1, 0)
-				itemText.Position = UDim2.new(0, 16, 0, 0)
+				itemText.Size = UDim2.new(1, -16, 1, 0)
+				itemText.Position = UDim2.new(0, 12, 0, 0)
 				itemText.BackgroundTransparency = 1
 				itemText.Text = tostring(item)
 				itemText.TextColor3 = Color3.fromRGB(150, 160, 180)
@@ -2019,7 +2004,7 @@ function EclipseUI:CreateWindow(options)
 				itemText.ZIndex = 7
 				itemText.Parent = itemBtn
 
-				table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText, Indicator = indicator })
+				table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText })
 
 				itemBtn.MouseEnter:Connect(function()
 					if selected ~= item then
