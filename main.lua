@@ -831,36 +831,6 @@ function EclipseUI:CreateWindow(options)
 	tabsCanvasGroup.ZIndex = 3
 	tabsCanvasGroup.Parent = bodyGroup
 
-	local activePill = Instance.new("Frame")
-	activePill.Name = "ActivePill"
-	activePill.AnchorPoint = Vector2.new(0.5, 0.5)
-	activePill.Size = UDim2.new(1, -20, 0, 32)
-	activePill.Position = UDim2.new(0.5, 0, 0, 24)
-	activePill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	activePill.BackgroundTransparency = 0.82
-	activePill.Visible = false
-	activePill.ZIndex = 3
-	activePill.Parent = tabsCanvasGroup
-
-	local pillCorner = Instance.new("UICorner")
-	pillCorner.CornerRadius = UDim.new(0, 7)
-	pillCorner.Parent = activePill
-
-	local pillStroke = Instance.new("UIStroke")
-	pillStroke.Color = Color3.fromRGB(255, 255, 255)
-	pillStroke.Thickness = 1
-	pillStroke.Transparency = 0.75
-	pillStroke.Parent = activePill
-
-	local pillGradient = Instance.new("UIGradient")
-	pillGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(65, 85, 140)),
-		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(35, 42, 60)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 28, 38))
-	})
-	pillGradient.Rotation = 90
-	pillGradient.Parent = activePill
-
 	local tabs = Instance.new("ScrollingFrame")
 	tabs.Name = "Tabs"
 	tabs.Size = UDim2.new(1, 0, 1, 0)
@@ -883,13 +853,35 @@ function EclipseUI:CreateWindow(options)
 	tabsPadding.PaddingBottom = UDim.new(0, 8)
 	tabsPadding.Parent = tabs
 
-	-- Connect scrolling to update the indicator position dynamically
-	tabs:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
-		if Window.ActiveTab then
-			local targetY = Window.ActiveTab.Frame.Position.Y.Offset - tabs.CanvasPosition.Y
-			activePill.Position = UDim2.new(0.5, 0, 0, targetY + 16)
-		end
-	end)
+	-- Parented directly inside `tabs` scrolling frame so it auto-scrolls with the buttons
+	local activePill = Instance.new("Frame")
+	activePill.Name = "ActivePill"
+	activePill.AnchorPoint = Vector2.new(0, 0)
+	activePill.Size = UDim2.new(1, 0, 0, 32)
+	activePill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	activePill.BackgroundTransparency = 0.82
+	activePill.Visible = false
+	activePill.ZIndex = 3
+	activePill.Parent = tabs
+
+	local pillCorner = Instance.new("UICorner")
+	pillCorner.CornerRadius = UDim.new(0, 7)
+	pillCorner.Parent = activePill
+
+	local pillStroke = Instance.new("UIStroke")
+	pillStroke.Color = Color3.fromRGB(255, 255, 255)
+	pillStroke.Thickness = 1
+	pillStroke.Transparency = 0.75
+	pillStroke.Parent = activePill
+
+	local pillGradient = Instance.new("UIGradient")
+	pillGradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(65, 85, 140)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(35, 42, 60)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 28, 38))
+	})
+	pillGradient.Rotation = 90
+	pillGradient.Parent = activePill
 
 	local userInfoCanvasGroup = Instance.new("CanvasGroup")
 	userInfoCanvasGroup.Name = "UserInfoCanvasGroup"
@@ -1152,8 +1144,7 @@ function EclipseUI:CreateWindow(options)
 		Window.ActiveTab = targetTab
 
 		activePill.Visible = true
-		local targetY = targetTab.Frame.Position.Y.Offset - tabs.CanvasPosition.Y
-		tween(activePill, pillTweenInfo, { Position = UDim2.new(0.5, 0, 0, targetY + 16) })
+		tween(activePill, pillTweenInfo, { Position = UDim2.new(0, 0, 0, targetTab.Frame.Position.Y.Offset) })
 
 		for _, tab in ipairs(Window.Tabs) do
 			if tab == targetTab then
@@ -1303,12 +1294,12 @@ function EclipseUI:CreateWindow(options)
 
 		clickBtn.MouseButton1Down:Connect(function()
 			if Window.ActiveTab == TabObject then
-				tween(activePill, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.new(1, -26, 0, 28) })
+				tween(activePill, TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.new(1, -6, 0, 28) })
 			end
 		end)
 
 		clickBtn.MouseButton1Up:Connect(function()
-			tween(activePill, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.new(1, -20, 0, 32) })
+			tween(activePill, TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.new(1, 0, 0, 32) })
 		end)
 
 		clickBtn.MouseButton1Click:Connect(function()
@@ -1887,7 +1878,7 @@ function EclipseUI:CreateWindow(options)
 			keyBtn.Font = Enum.Font.GothamBold
 			keyBtn.TextYAlignment = Enum.TextYAlignment.Center
 			keyBtn.ZIndex = 6
-			keyBtn.Parent = kbFrame
+			keyBtn.Parent = keyBtnFrame or kbFrame
 
 			local keyCorner = Instance.new("UICorner")
 			keyCorner.CornerRadius = UDim.new(0, 6)
