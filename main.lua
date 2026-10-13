@@ -42,7 +42,7 @@ end
 local EclipseUI = {}
 EclipseUI.__index = EclipseUI
 
--- Fixed Animated Notification System Component
+-- Fully Fixed Animated Notification System Component
 function EclipseUI:Notify(opts)
 	opts = opts or {}
 	local title = opts.Title or "Notification"
@@ -85,9 +85,8 @@ function EclipseUI:Notify(opts)
 	cardGroup.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
 	cardGroup.BackgroundTransparency = 0.2
 	cardGroup.GroupTransparency = 1
-	cardGroup.Position = UDim2.new(0, 40, 0, 0)
+	cardGroup.Position = UDim2.new(0, 50, 0, 0)
 	cardGroup.ZIndex = 100
-	cardGroup.Parent = holder
 
 	local cardCorner = Instance.new("UICorner")
 	cardCorner.CornerRadius = UDim.new(0, 8)
@@ -163,19 +162,24 @@ function EclipseUI:Notify(opts)
 	contentLabel.ZIndex = 101
 	contentLabel.Parent = textContainer
 
-	-- Trigger Entrance Animation
-	TweenService:Create(cardGroup, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-		GroupTransparency = 0,
-		Position = UDim2.new(0, 0, 0, 0)
-	}):Play()
+	cardGroup.Parent = holder
+
+	task.defer(function()
+		if not cardGroup.Parent then return end
+		TweenService:Create(cardGroup, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+			GroupTransparency = 0,
+			Position = UDim2.new(0, 0, 0, 0)
+		}):Play()
+	end)
 
 	task.spawn(function()
 		task.wait(duration)
 		if notifConn then notifConn:Disconnect() end
-		-- Trigger Exit Animation
+		if not cardGroup.Parent then return end
+		
 		local fadeOut = TweenService:Create(cardGroup, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
 			GroupTransparency = 1,
-			Position = UDim2.new(0, 40, 0, 0)
+			Position = UDim2.new(0, 50, 0, 0)
 		})
 		fadeOut:Play()
 		fadeOut.Completed:Wait()
@@ -1863,7 +1867,6 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
-		-- Renewed Dropdown Style (Sleek, Clean Popup List with No Accent Lines)
 		function TabObject:Dropdown(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
