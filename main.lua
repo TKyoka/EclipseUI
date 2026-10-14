@@ -198,6 +198,7 @@ function EclipseUI:CreateWindow(options)
 	local bgName = options.BgName
 	local windowTags = options.Tags
 	local loadAnimEnabled = options.LoadAnim or false
+	local openButtonEnabled = options.OpenButton or false
 
 	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -399,30 +400,72 @@ function EclipseUI:CreateWindow(options)
 	end
 
 	local windowVisible = true
+	
+	local function toggleWindowVisibility()
+		windowVisible = not windowVisible
+		local targetGroupTrans = windowVisible and 0 or 1
+		local targetStrokeTrans = windowVisible and 0.4 or 1
+		local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+
+		if windowVisible then
+			mainGroup.Visible = true
+		end
+
+		TweenService:Create(mainGroup, tweenInfo, { GroupTransparency = targetGroupTrans }):Play()
+		local strokeTween = TweenService:Create(uiStroke, tweenInfo, { Transparency = targetStrokeTrans })
+		strokeTween:Play()
+
+		if not windowVisible then
+			strokeTween.Completed:Connect(function()
+				if not windowVisible then
+					mainGroup.Visible = false
+				end
+			end)
+		end
+	end
+
+	if openButtonEnabled then
+		local openBtnGui = Instance.new("ScreenGui")
+		openBtnGui.Name = "EclipseOpenButtonGui"
+		openBtnGui.ResetOnSpawn = false
+		openBtnGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+		openBtnGui.Parent = playerGui
+
+		local openBtn = Instance.new("TextButton")
+		openBtn.Size = UDim2.new(0, 42, 0, 42)
+		openBtn.Position = UDim2.new(0, 20, 0, 20)
+		openBtn.BackgroundColor3 = Color3.fromRGB(15, 16, 20)
+		openBtn.BackgroundTransparency = 0.2
+		openBtn.Text = "UI"
+		openBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+		openBtn.TextSize = 12
+		openBtn.Font = Enum.Font.GothamBold
+		openBtn.AutoButtonColor = false
+		openBtn.Parent = openBtnGui
+
+		local openCorner = Instance.new("UICorner")
+		openCorner.CornerRadius = UDim.new(0, 8)
+		openCorner.Parent = openBtn
+
+		local openStroke = Instance.new("UIStroke")
+		openStroke.Color = Color3.fromRGB(255, 255, 255)
+		openStroke.Thickness = 1.5
+		openStroke.Transparency = 0.4
+		openStroke.Parent = openBtn
+
+		openBtn.MouseButton1Click:Connect(function()
+			toggleWindowVisibility()
+		end)
+
+		Window.OpenButtonGui = openBtnGui
+		table.insert(Window.CleanupItems, openBtnGui)
+	end
+
 	local toggleKeyConn
 	toggleKeyConn = UserInputService.InputBegan:Connect(function(input, gpe)
 		if gpe then return end
 		if input.KeyCode == Window.ToggleKey then
-			windowVisible = not windowVisible
-			local targetGroupTrans = windowVisible and 0 or 1
-			local targetStrokeTrans = windowVisible and 0.4 or 1
-			local tweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-
-			if windowVisible then
-				mainGroup.Visible = true
-			end
-
-			TweenService:Create(mainGroup, tweenInfo, { GroupTransparency = targetGroupTrans }):Play()
-			local strokeTween = TweenService:Create(uiStroke, tweenInfo, { Transparency = targetStrokeTrans })
-			strokeTween:Play()
-
-			if not windowVisible then
-				strokeTween.Completed:Connect(function()
-					if not windowVisible then
-						mainGroup.Visible = false
-					end
-				end)
-			end
+			toggleWindowVisibility()
 		end
 	end)
 
