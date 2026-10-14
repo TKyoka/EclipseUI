@@ -1340,7 +1340,7 @@ function EclipseUI:CreateWindow(options)
 		function TabObject:Space(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
-			local spaceHeight = typeof(opts) == "number" and opts or (opts.Height or opts.Size or 6)
+			local spaceHeight = typeof(opts) == "number" and opts or (opts.Height or opts.Size or 3)
 
 			local spaceFrame = Instance.new("Frame")
 			spaceFrame.Name = "Space"
@@ -1940,7 +1940,7 @@ function EclipseUI:CreateWindow(options)
 			targetParent = targetParent or page
 			local title = opts.Title or opts.Name or "Dropdown"
 			local items = opts.Items or {}
-			local selected = opts.Default or items[1] or "Select..."
+			local selected = (opts.Default ~= nil and opts.Default ~= "") and opts.Default or "--"
 			local callback = opts.Callback or function() end
 
 			local ddFrame, stroke = createContainer(targetParent, 38)
@@ -2249,7 +2249,7 @@ function EclipseUI:CreateWindow(options)
 			local function updateDisplay()
 				local list = getSelectedList()
 				if #list == 0 then
-					selLabel.Text = "None"
+					selLabel.Text = "--"
 				elseif #list == 1 then
 					selLabel.Text = tostring(list[1])
 				else
