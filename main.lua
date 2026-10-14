@@ -1821,7 +1821,6 @@ function EclipseUI:CreateWindow(options)
 				connectionEnd = UserInputService.InputEnded:Connect(function(endInput)
 					if endInput.UserInputType == input.UserInputType then
 						isDragging = false
-						-- Callback fires only once after letting go of the slider pill
 						pcall(callback, tonumber(valBox.Text) or default)
 						tween(thumb, TweenInfo.new(0.15), { Size = UDim2.new(0, 16, 0, 12) })
 						tween(valBoxStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
@@ -2123,6 +2122,224 @@ function EclipseUI:CreateWindow(options)
 					selLabel.Text = tostring(selected)
 					refreshSelectionStates()
 					pcall(callback, selected)
+				end
+			}
+		end
+
+		function TabObject:MultiDropdown(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local title = opts.Title or opts.Name or "MultiDropdown"
+			local items = opts.Items or {}
+			local default = opts.Default or {}
+			local callback = opts.Callback or function() end
+
+			local selectedMap = {}
+			if typeof(default) == "table" then
+				for _, item in ipairs(default) do
+					selectedMap[item] = true
+				end
+			end
+
+			local ddFrame, stroke = createContainer(targetParent, 38)
+			ddFrame.ClipsDescendants = true
+
+			local headerBtn = Instance.new("TextButton")
+			headerBtn.Size = UDim2.new(1, 0, 0, 38)
+			headerBtn.BackgroundTransparency = 1
+			headerBtn.Text = ""
+			headerBtn.ZIndex = 6
+			headerBtn.Parent = ddFrame
+
+			local label = Instance.new("TextLabel")
+			label.Size = UDim2.new(1, -125, 0, 38)
+			label.Position = UDim2.new(0, 14, 0, 0)
+			label.BackgroundTransparency = 1
+			label.Text = title
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
+			label.TextSize = 12
+			label.Font = Enum.Font.GothamBold
+			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.ZIndex = 5
+			label.Parent = headerBtn
+
+			local selBox = Instance.new("Frame")
+			selBox.AnchorPoint = Vector2.new(1, 0.5)
+			selBox.Position = UDim2.new(1, -12, 0.5, 0)
+			selBox.Size = UDim2.new(0, 104, 0, 24)
+			selBox.BackgroundColor3 = Color3.fromRGB(18, 22, 30)
+			selBox.BackgroundTransparency = 0.2
+			selBox.ZIndex = 6
+			selBox.Parent = headerBtn
+
+			local selBoxCorner = Instance.new("UICorner")
+			selBoxCorner.CornerRadius = UDim.new(0, 6)
+			selBoxCorner.Parent = selBox
+
+			local selBoxStroke = Instance.new("UIStroke")
+			selBoxStroke.Color = Color3.fromRGB(255, 255, 255)
+			selBoxStroke.Thickness = 1
+			selBoxStroke.Transparency = 0.75
+			selBoxStroke.Parent = selBox
+
+			local selLabel = Instance.new("TextLabel")
+			selLabel.Size = UDim2.new(1, -26, 1, 0)
+			selLabel.Position = UDim2.new(0, 8, 0, 0)
+			selLabel.BackgroundTransparency = 1
+			selLabel.TextColor3 = Color3.fromRGB(220, 230, 245)
+			selLabel.TextSize = 11
+			selLabel.Font = Enum.Font.GothamBold
+			selLabel.TextYAlignment = Enum.TextYAlignment.Center
+			selLabel.TextXAlignment = Enum.TextXAlignment.Left
+			selLabel.TextTruncate = Enum.TextTruncate.AtEnd
+			selLabel.ZIndex = 7
+			selLabel.Parent = selBox
+
+			local arrowIcon = Instance.new("ImageLabel")
+			arrowIcon.Name = "Chevron"
+			arrowIcon.AnchorPoint = Vector2.new(1, 0.5)
+			arrowIcon.Position = UDim2.new(1, -8, 0.5, 0)
+			arrowIcon.Size = UDim2.new(0, 12, 0, 12)
+			arrowIcon.BackgroundTransparency = 1
+			arrowIcon.Image = getIconAsset("chevron-down")
+			arrowIcon.ImageColor3 = Color3.fromRGB(170, 180, 200)
+			arrowIcon.ZIndex = 7
+			arrowIcon.Parent = selBox
+
+			if not iconsLoaded then
+				task.spawn(function()
+					repeat task.wait() until iconsLoaded or not arrowIcon:IsDescendantOf(game)
+					if arrowIcon:IsDescendantOf(game) then
+						arrowIcon.Image = getIconAsset("chevron-down")
+					end
+				end)
+			end
+
+			local isOpen = false
+
+			local itemsList = Instance.new("Frame")
+			itemsList.Position = UDim2.new(0, 10, 0, 42)
+			itemsList.Size = UDim2.new(1, -20, 0, 0)
+			itemsList.AutomaticSize = Enum.AutomaticSize.Y
+			itemsList.BackgroundTransparency = 1
+			itemsList.ZIndex = 5
+			itemsList.Parent = ddFrame
+
+			local listLayout = Instance.new("UIListLayout")
+			listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			listLayout.Padding = UDim.new(0, 3)
+			listLayout.Parent = itemsList
+
+			local listPadding = Instance.new("UIPadding")
+			listPadding.PaddingBottom = UDim.new(0, 8)
+			listPadding.Parent = itemsList
+
+			local itemButtons = {}
+
+			local function getSelectedList()
+				local list = {}
+				for _, item in ipairs(items) do
+					if selectedMap[item] then
+						table.insert(list, item)
+					end
+				end
+				return list
+			end
+
+			local function updateDisplay()
+				local list = getSelectedList()
+				if #list == 0 then
+					selLabel.Text = "None"
+				elseif #list == 1 then
+					selLabel.Text = tostring(list[1])
+				else
+					selLabel.Text = #list .. " selected"
+				end
+			end
+
+			local function refreshSelectionStates()
+				for _, data in ipairs(itemButtons) do
+					local isSel = selectedMap[data.Item] == true
+					tween(data.Btn, fadeTweenInfo, {
+						BackgroundTransparency = isSel and 0.82 or 0.96
+					})
+					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(150, 160, 180)
+				end
+				updateDisplay()
+			end
+
+			for _, item in ipairs(items) do
+				local itemBtn = Instance.new("TextButton")
+				itemBtn.Size = UDim2.new(1, 0, 0, 28)
+				itemBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+				itemBtn.BackgroundTransparency = 0.96
+				itemBtn.Text = ""
+				itemBtn.ZIndex = 6
+				itemBtn.Parent = itemsList
+
+				local itemCorner = Instance.new("UICorner")
+				itemCorner.CornerRadius = UDim.new(0, 6)
+				itemCorner.Parent = itemBtn
+
+				local itemText = Instance.new("TextLabel")
+				itemText.Size = UDim2.new(1, -16, 1, 0)
+				itemText.Position = UDim2.new(0, 12, 0, 0)
+				itemText.BackgroundTransparency = 1
+				itemText.Text = tostring(item)
+				itemText.TextColor3 = Color3.fromRGB(150, 160, 180)
+				itemText.TextSize = 11
+				itemText.Font = Enum.Font.Gotham
+				itemText.TextYAlignment = Enum.TextYAlignment.Center
+				itemText.TextXAlignment = Enum.TextXAlignment.Left
+				itemText.ZIndex = 7
+				itemText.Parent = itemBtn
+
+				table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText })
+
+				itemBtn.MouseEnter:Connect(function()
+					if not selectedMap[item] then
+						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.90 })
+						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(230, 238, 250) })
+					end
+				end)
+
+				itemBtn.MouseLeave:Connect(function()
+					if not selectedMap[item] then
+						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.96 })
+						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(150, 160, 180) })
+					end
+				end)
+
+				itemBtn.MouseButton1Click:Connect(function()
+					selectedMap[item] = not selectedMap[item]
+					refreshSelectionStates()
+					pcall(callback, getSelectedList())
+				end)
+			end
+
+			refreshSelectionStates()
+
+			headerBtn.MouseButton1Click:Connect(function()
+				isOpen = not isOpen
+				local targetHeight = isOpen and (46 + listLayout.AbsoluteContentSize.Y) or 38
+				local targetRotation = isOpen and 180 or 0
+				local targetStrokeTrans = isOpen and 0.4 or 0.75
+				tween(arrowIcon, fadeTweenInfo, { Rotation = targetRotation })
+				tween(selBoxStroke, fadeTweenInfo, { Transparency = targetStrokeTrans })
+				tween(ddFrame, fadeTweenInfo, { Size = UDim2.new(1, 0, 0, targetHeight) })
+			end)
+
+			return {
+				GetSelected = function() return getSelectedList() end,
+				Set = function(_, val)
+					selectedMap = {}
+					if typeof(val) == "table" then
+						for _, item in ipairs(val) do
+							selectedMap[item] = true
+						end
+					end
+					refreshSelectionStates()
+					pcall(callback, getSelectedList())
 				end
 			}
 		end
