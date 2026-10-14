@@ -885,7 +885,7 @@ function EclipseUI:CreateWindow(options)
 
 	tabs:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
 		if Window.ActiveTab then
-			local targetY = Window.ActiveTab.Frame.Position.Y.Offset + 8 - tabs.CanvasPosition.Y
+			local targetY = Window.ActiveTab.Frame.AbsolutePosition.Y - tabs.AbsolutePosition.Y + tabs.CanvasPosition.Y
 			activePill.Position = UDim2.new(0, 10, 0, targetY)
 		end
 	end)
@@ -1151,7 +1151,7 @@ function EclipseUI:CreateWindow(options)
 		Window.ActiveTab = targetTab
 
 		activePill.Visible = true
-		local targetY = targetTab.Frame.Position.Y.Offset + 8 - tabs.CanvasPosition.Y
+		local targetY = targetTab.Frame.AbsolutePosition.Y - tabs.AbsolutePosition.Y + tabs.CanvasPosition.Y
 		tween(activePill, pillTweenInfo, { Position = UDim2.new(0, 10, 0, targetY) })
 
 		for _, tab in ipairs(Window.Tabs) do
