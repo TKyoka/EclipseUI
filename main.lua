@@ -212,7 +212,6 @@ function EclipseUI:CreateWindow(options)
 
 	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = initialToggleKey, Tags = {}, CleanupItems = {} }
 
-	-- Method to register ESP, Highlights, or custom connections for auto-cleanup
 	function Window:Cleanup(item)
 		table.insert(self.CleanupItems, item)
 		return item
@@ -785,7 +784,6 @@ function EclipseUI:CreateWindow(options)
 		end
 	end)
 
-	-- Full Cleanup & Registered Items Destruction
 	destroyBtn.MouseButton1Click:Connect(function()
 		if mainAnimConnection then
 			mainAnimConnection:Disconnect()
@@ -794,7 +792,6 @@ function EclipseUI:CreateWindow(options)
 			toggleKeyConn:Disconnect()
 		end
 
-		-- Automatically clean up all registered ESP/Highlights/Connections
 		for _, item in ipairs(Window.CleanupItems) do
 			if typeof(item) == "Instance" then
 				pcall(function() item:Destroy() end)
@@ -1775,21 +1772,13 @@ function EclipseUI:CreateWindow(options)
 			thumbStroke.Parent = thumb
 
 			local isDragging = false
-			local lastCallbackTick = 0
 			local connectionMove, connectionEnd
 
-			local function updateSliderVal(value, fireCallback)
+			local function updateSliderVal(value)
 				value = math.clamp(value, min, max)
 				local percentage = (value - min) / (max - min)
 				valBox.Text = tostring(value)
 				fill.Size = UDim2.new(percentage, 0, 1, 0)
-				if fireCallback then
-					local now = tick()
-					if now - lastCallbackTick >= 0.12 then
-						lastCallbackTick = now
-						pcall(callback, value)
-					end
-				end
 			end
 
 			local function updateSlider(inputX)
@@ -1797,7 +1786,7 @@ function EclipseUI:CreateWindow(options)
 				local absoluteSize = track.AbsoluteSize.X
 				local percentage = math.clamp((inputX - absolutePos) / absoluteSize, 0, 1)
 				local value = math.floor(min + (max - min) * percentage + 0.5)
-				updateSliderVal(value, true)
+				updateSliderVal(value)
 			end
 
 			valBox.Focused:Connect(function()
@@ -1808,10 +1797,10 @@ function EclipseUI:CreateWindow(options)
 				tween(valBoxStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
 				local num = tonumber(valBox.Text)
 				if num then
-					updateSliderVal(num, true)
+					updateSliderVal(num)
 					pcall(callback, num)
 				else
-					updateSliderVal(min + (max - min) * fill.Size.X.Scale, false)
+					updateSliderVal(min + (max - min) * fill.Size.X.Scale)
 				end
 			end)
 
@@ -1832,6 +1821,7 @@ function EclipseUI:CreateWindow(options)
 				connectionEnd = UserInputService.InputEnded:Connect(function(endInput)
 					if endInput.UserInputType == input.UserInputType then
 						isDragging = false
+						-- Callback fires only once after letting go of the slider pill
 						pcall(callback, tonumber(valBox.Text) or default)
 						tween(thumb, TweenInfo.new(0.15), { Size = UDim2.new(0, 16, 0, 12) })
 						tween(valBoxStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
@@ -1850,7 +1840,7 @@ function EclipseUI:CreateWindow(options)
 
 			return {
 				Set = function(_, val)
-					updateSliderVal(val, true)
+					updateSliderVal(val)
 				end
 			}
 		end
