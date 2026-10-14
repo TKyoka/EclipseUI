@@ -883,12 +883,16 @@ function EclipseUI:CreateWindow(options)
 	tabsPadding.PaddingBottom = UDim.new(0, 8)
 	tabsPadding.Parent = tabs
 
-	tabs:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
-		if Window.ActiveTab then
-			local targetY = Window.ActiveTab.Frame.AbsolutePosition.Y - tabs.AbsolutePosition.Y + tabs.CanvasPosition.Y
-			activePill.Position = UDim2.new(0, 10, 0, targetY)
+	-- Continuous RenderStepped loop to keep the indicator locked perfectly onto the active tab even while scrolling
+	local pillTrackConn
+	pillTrackConn = RunService.RenderStepped:Connect(function()
+		if Window.ActiveTab and Window.ActiveTab.Frame and activePill.Visible then
+			local tabFrame = Window.ActiveTab.Frame
+			local relativeY = tabFrame.Position.Y.Offset - tabs.CanvasPosition.Y + 8
+			activePill.Position = UDim2.new(0, 10, 0, relativeY)
 		end
 	end)
+	Window:Cleanup(pillTrackConn)
 
 	local userInfoCanvasGroup = Instance.new("CanvasGroup")
 	userInfoCanvasGroup.Name = "UserInfoCanvasGroup"
@@ -1151,7 +1155,7 @@ function EclipseUI:CreateWindow(options)
 		Window.ActiveTab = targetTab
 
 		activePill.Visible = true
-		local targetY = targetTab.Frame.AbsolutePosition.Y - tabs.AbsolutePosition.Y + tabs.CanvasPosition.Y
+		local targetY = targetTab.Frame.Position.Y.Offset - tabs.CanvasPosition.Y + 8
 		tween(activePill, pillTweenInfo, { Position = UDim2.new(0, 10, 0, targetY) })
 
 		for _, tab in ipairs(Window.Tabs) do
