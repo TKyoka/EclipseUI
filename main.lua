@@ -469,21 +469,27 @@ function EclipseUI:CreateWindow(options)
 			end)
 		end
 
-		-- Make OpenButton draggable seamlessly
+		-- Fixed draggable & clickable interaction logic
 		local openDragging = false
 		local openDragStart = Vector2.zero
 		local openStartPos = UDim2.new()
+		local totalDelta = 0
 
 		openBtn.InputBegan:Connect(function(input)
 			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-				openDragging = true
+				openDragging = false
 				openDragStart = input.Position
 				openStartPos = openBtn.Position
+				totalDelta = 0
 
 				local moveConn, endConn
 				moveConn = UserInputService.InputChanged:Connect(function(moveInput)
-					if openDragging and (moveInput.UserInputType == Enum.UserInputType.MouseMovement or moveInput.UserInputType == Enum.UserInputType.Touch) then
+					if moveInput.UserInputType == Enum.UserInputType.MouseMovement or moveInput.UserInputType == Enum.UserInputType.Touch then
 						local delta = moveInput.Position - openDragStart
+						if delta.Magnitude > 4 then
+							openDragging = true
+						end
+						totalDelta = delta.Magnitude
 						openBtn.Position = UDim2.new(
 							openStartPos.X.Scale,
 							openStartPos.X.Offset + delta.X,
@@ -495,17 +501,14 @@ function EclipseUI:CreateWindow(options)
 
 				endConn = UserInputService.InputEnded:Connect(function(endInput)
 					if endInput.UserInputType == input.UserInputType then
-						openDragging = false
 						if moveConn then moveConn:Disconnect() end
 						if endConn then endConn:Disconnect() end
+						if totalDelta <= 5 then
+							openDragging = false
+							toggleWindowVisibility()
+						end
 					end
 				end)
-			end
-		end)
-
-		openBtn.MouseButton1Click:Connect(function()
-			if not openDragging then
-				toggleWindowVisibility()
 			end
 		end)
 
@@ -1051,7 +1054,7 @@ function EclipseUI:CreateWindow(options)
 		avatarCorner.CornerRadius = UDim.new(1, 0)
 		avatarCorner.Parent = avatarImage
 
-		local userThumbnail = ""
+		local realThumbnail = ""
 		task.spawn(function()
 			local content, isReady = Players:GetUserThumbnailAsync(
 				LocalPlayer.UserId,
@@ -1059,8 +1062,8 @@ function EclipseUI:CreateWindow(options)
 				Enum.ThumbnailSize.Size420x420
 			)
 			if isReady then
-				userThumbnail = content
-				avatarImage.Image = userAnon and "rbxassetid://11984980776" or content
+				realThumbnail = content
+				avatarImage.Image = userAnon and "rbxassetid://11984980776" or realThumbnail
 			end
 		end)
 
@@ -1116,6 +1119,10 @@ function EclipseUI:CreateWindow(options)
 		end)
 
 		userInfo.MouseButton1Click:Connect(function()
+			userAnon = not userAnon
+			displayNameLabel.Text = userAnon and "Eclipse" or LocalPlayer.DisplayName
+			usernameLabel.Text = userAnon and "@EclipseUI" or ("@" .. LocalPlayer.Name)
+			avatarImage.Image = userAnon and "rbxassetid://11984980776" or (realThumbnail ~= "" and realThumbnail or "rbxassetid://11984980776")
 			pcall(userCallback)
 		end)
 	end
@@ -1689,10 +1696,10 @@ function EclipseUI:CreateWindow(options)
 			textBox.BackgroundTransparency = 0.2
 			textBox.Text = tostring(default)
 			textBox.PlaceholderText = placeholder
-			textBox.PlaceholderColor3 = Color3.fromRGB(100, 110, 130)
-			textBox.TextColor3 = Color3.fromRGB(220, 230, 245)
+			textBox.PlaceholderColor3 = Color3.fromRGB(110, 120, 140)
+			textBox.TextColor3 = Color3.fromRGB(230, 238, 250)
 			textBox.TextSize = 11
-			textBox.Font = Enum.Font.GothamBold
+			textBox.Font = Enum.Font.GothamMedium
 			textBox.TextYAlignment = Enum.TextYAlignment.Center
 			textBox.ClearTextOnFocus = false
 			textBox.ZIndex = 6
@@ -1707,6 +1714,12 @@ function EclipseUI:CreateWindow(options)
 			tbStroke.Thickness = 1
 			tbStroke.Transparency = 0.75
 			tbStroke.Parent = textBox
+
+			-- Padding for crisp text spacing/alignment inside TextBoxes
+			local tbPadding = Instance.new("UIPadding")
+			tbPadding.PaddingLeft = UDim.new(0, 8)
+			tbPadding.PaddingRight = UDim.new(0, 8)
+			tbPadding.Parent = textBox
 
 			textBox.Focused:Connect(function()
 				tween(tbStroke, TweenInfo.new(0.15), { Transparency = 0.2 })
@@ -2007,9 +2020,9 @@ function EclipseUI:CreateWindow(options)
 			valBox.BackgroundColor3 = Color3.fromRGB(18, 22, 30)
 			valBox.BackgroundTransparency = 0.2
 			valBox.Text = tostring(default)
-			valBox.TextColor3 = Color3.fromRGB(220, 230, 245)
+			valBox.TextColor3 = Color3.fromRGB(230, 238, 250)
 			valBox.TextSize = 11
-			valBox.Font = Enum.Font.GothamBold
+			valBox.Font = Enum.Font.GothamMedium
 			valBox.TextYAlignment = Enum.TextYAlignment.Center
 			valBox.ClearTextOnFocus = false
 			valBox.ZIndex = 6
@@ -2175,9 +2188,9 @@ function EclipseUI:CreateWindow(options)
 			keyBtn.BackgroundColor3 = Color3.fromRGB(18, 22, 30)
 			keyBtn.BackgroundTransparency = 0.2
 			keyBtn.Text = currentKey.Name
-			keyBtn.TextColor3 = Color3.fromRGB(220, 230, 245)
+			keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
 			keyBtn.TextSize = 11
-			keyBtn.Font = Enum.Font.GothamBold
+			keyBtn.Font = Enum.Font.GothamMedium
 			keyBtn.TextYAlignment = Enum.TextYAlignment.Center
 			keyBtn.ZIndex = 6
 			keyBtn.Parent = kbFrame
@@ -2225,7 +2238,7 @@ function EclipseUI:CreateWindow(options)
 						listening = false
 						currentKey = input.KeyCode
 						keyBtn.Text = currentKey.Name
-						keyBtn.TextColor3 = Color3.fromRGB(220, 230, 245)
+						keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
 						tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
 					elseif input.KeyCode == currentKey then
 						pcall(callback, currentKey)
@@ -2292,9 +2305,9 @@ function EclipseUI:CreateWindow(options)
 			selLabel.Position = UDim2.new(0, 8, 0, 0)
 			selLabel.BackgroundTransparency = 1
 			selLabel.Text = tostring(selected)
-			selLabel.TextColor3 = Color3.fromRGB(220, 230, 245)
+			selLabel.TextColor3 = Color3.fromRGB(230, 238, 250)
 			selLabel.TextSize = 11
-			selLabel.Font = Enum.Font.GothamBold
+			selLabel.Font = Enum.Font.GothamMedium
 			selLabel.TextYAlignment = Enum.TextYAlignment.Center
 			selLabel.TextXAlignment = Enum.TextXAlignment.Left
 			selLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -2489,9 +2502,9 @@ function EclipseUI:CreateWindow(options)
 			selLabel.Size = UDim2.new(1, -26, 1, 0)
 			selLabel.Position = UDim2.new(0, 8, 0, 0)
 			selLabel.BackgroundTransparency = 1
-			selLabel.TextColor3 = Color3.fromRGB(220, 230, 245)
+			selLabel.TextColor3 = Color3.fromRGB(230, 238, 250)
 			selLabel.TextSize = 11
-			selLabel.Font = Enum.Font.GothamBold
+			selLabel.Font = Enum.Font.GothamMedium
 			selLabel.TextYAlignment = Enum.TextYAlignment.Center
 			selLabel.TextXAlignment = Enum.TextXAlignment.Left
 			selLabel.TextTruncate = Enum.TextTruncate.AtEnd
