@@ -199,6 +199,7 @@ function EclipseUI:CreateWindow(options)
 	local windowTags = options.Tags
 	local loadAnimEnabled = options.LoadAnim or false
 	local openButtonEnabled = options.OpenButton or false
+	local userOptions = options.User
 
 	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -431,20 +432,17 @@ function EclipseUI:CreateWindow(options)
 		openBtnGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 		openBtnGui.Parent = playerGui
 
-		local openBtn = Instance.new("TextButton")
-		openBtn.Size = UDim2.new(0, 42, 0, 42)
+		local openBtn = Instance.new("ImageButton")
+		openBtn.Size = UDim2.new(0, 44, 0, 44)
 		openBtn.Position = UDim2.new(0, 20, 0, 20)
-		openBtn.BackgroundColor3 = Color3.fromRGB(15, 16, 20)
+		openBtn.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
 		openBtn.BackgroundTransparency = 0.2
-		openBtn.Text = "UI"
-		openBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-		openBtn.TextSize = 12
-		openBtn.Font = Enum.Font.GothamBold
 		openBtn.AutoButtonColor = false
+		openBtn.Image = ""
 		openBtn.Parent = openBtnGui
 
 		local openCorner = Instance.new("UICorner")
-		openCorner.CornerRadius = UDim.new(0, 8)
+		openCorner.CornerRadius = UDim.new(0, 10)
 		openCorner.Parent = openBtn
 
 		local openStroke = Instance.new("UIStroke")
@@ -453,8 +451,62 @@ function EclipseUI:CreateWindow(options)
 		openStroke.Transparency = 0.4
 		openStroke.Parent = openBtn
 
+		local openIcon = Instance.new("ImageLabel")
+		openIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+		openIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
+		openIcon.Size = UDim2.new(0, 20, 0, 20)
+		openIcon.BackgroundTransparency = 1
+		openIcon.Image = getIconAsset(windowIcon or "sparkles")
+		openIcon.ImageColor3 = Color3.fromRGB(240, 245, 255)
+		openIcon.Parent = openBtn
+
+		if not iconsLoaded and windowIcon then
+			task.spawn(function()
+				repeat task.wait() until iconsLoaded or not openIcon:IsDescendantOf(game)
+				if openIcon:IsDescendantOf(game) then
+					openIcon.Image = getIconAsset(windowIcon)
+				end
+			end)
+		end
+
+		-- Make OpenButton draggable seamlessly
+		local openDragging = false
+		local openDragStart = Vector2.zero
+		local openStartPos = UDim2.new()
+
+		openBtn.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				openDragging = true
+				openDragStart = input.Position
+				openStartPos = openBtn.Position
+
+				local moveConn, endConn
+				moveConn = UserInputService.InputChanged:Connect(function(moveInput)
+					if openDragging and (moveInput.UserInputType == Enum.UserInputType.MouseMovement or moveInput.UserInputType == Enum.UserInputType.Touch) then
+						local delta = moveInput.Position - openDragStart
+						openBtn.Position = UDim2.new(
+							openStartPos.X.Scale,
+							openStartPos.X.Offset + delta.X,
+							openStartPos.Y.Scale,
+							openStartPos.Y.Offset + delta.Y
+						)
+					end
+				end)
+
+				endConn = UserInputService.InputEnded:Connect(function(endInput)
+					if endInput.UserInputType == input.UserInputType then
+						openDragging = false
+						if moveConn then moveConn:Disconnect() end
+						if endConn then endConn:Disconnect() end
+					end
+				end)
+			end
+		end)
+
 		openBtn.MouseButton1Click:Connect(function()
-			toggleWindowVisibility()
+			if not openDragging then
+				toggleWindowVisibility()
+			end
 		end)
 
 		Window.OpenButtonGui = openBtnGui
@@ -477,6 +529,22 @@ function EclipseUI:CreateWindow(options)
 	bodyGroup.GroupTransparency = 0
 	bodyGroup.ZIndex = 3
 	bodyGroup.Parent = mainGroup
+
+	local showUser = true
+	local userAnon = false
+	local userCallback = function() end
+
+	if userOptions ~= nil then
+		if typeof(userOptions) == "table" then
+			if userOptions.Enabled ~= nil then showUser = userOptions.Enabled end
+			if userOptions.Anonymous ~= nil then userAnon = userOptions.Anonymous end
+			if userOptions.Callback ~= nil then userCallback = userOptions.Callback end
+		elseif typeof(userOptions) == "boolean" then
+			showUser = userOptions
+		end
+	end
+
+	local bodySizeOffset = showUser and 52 or 0
 
 	local linesCanvasGroup = Instance.new("CanvasGroup")
 	linesCanvasGroup.Name = "LinesCanvasGroup"
@@ -516,15 +584,18 @@ function EclipseUI:CreateWindow(options)
 	verticalLine.ZIndex = 2
 	verticalLine.Parent = linesCanvasGroup
 
-	local userLine = Instance.new("Frame")
-	userLine.AnchorPoint = Vector2.new(0, 1)
-	userLine.Position = UDim2.new(0, 0, 1, -52)
-	userLine.Size = UDim2.new(0, 134, 0, 1)
-	userLine.BackgroundColor3 = lineDarkColor
-	userLine.BackgroundTransparency = lineTransparency
-	userLine.BorderSizePixel = 0
-	userLine.ZIndex = 2
-	userLine.Parent = linesCanvasGroup
+	local userLine
+	if showUser then
+		userLine = Instance.new("Frame")
+		userLine.AnchorPoint = Vector2.new(0, 1)
+		userLine.Position = UDim2.new(0, 0, 1, -52)
+		userLine.Size = UDim2.new(0, 134, 0, 1)
+		userLine.BackgroundColor3 = lineDarkColor
+		userLine.BackgroundTransparency = lineTransparency
+		userLine.BorderSizePixel = 0
+		userLine.ZIndex = 2
+		userLine.Parent = linesCanvasGroup
+	end
 
 	local header = Instance.new("Frame")
 	header.Name = "Header"
@@ -868,7 +939,7 @@ function EclipseUI:CreateWindow(options)
 
 	local tabsCanvasGroup = Instance.new("CanvasGroup")
 	tabsCanvasGroup.Name = "TabsCanvasGroup"
-	tabsCanvasGroup.Size = UDim2.new(0, 134, 1, -52)
+	tabsCanvasGroup.Size = UDim2.new(0, 134, 1, -(52 + bodySizeOffset))
 	tabsCanvasGroup.BackgroundTransparency = 1
 	tabsCanvasGroup.GroupTransparency = 0
 	tabsCanvasGroup.ZIndex = 3
@@ -926,145 +997,128 @@ function EclipseUI:CreateWindow(options)
 	tabsPadding.PaddingBottom = UDim.new(0, 8)
 	tabsPadding.Parent = tabs
 
-	local userInfoCanvasGroup = Instance.new("CanvasGroup")
-	userInfoCanvasGroup.Name = "UserInfoCanvasGroup"
-	userInfoCanvasGroup.AnchorPoint = Vector2.new(0, 1)
-	userInfoCanvasGroup.Position = UDim2.new(0, 0, 1, 0)
-	userInfoCanvasGroup.Size = UDim2.new(0, 134, 0, 52)
-	userInfoCanvasGroup.BackgroundTransparency = 1
-	userInfoCanvasGroup.GroupTransparency = 0
-	userInfoCanvasGroup.ZIndex = 3
-	userInfoCanvasGroup.Parent = bodyGroup
+	if showUser then
+		local userInfoCanvasGroup = Instance.new("CanvasGroup")
+		userInfoCanvasGroup.Name = "UserInfoCanvasGroup"
+		userInfoCanvasGroup.AnchorPoint = Vector2.new(0, 1)
+		userInfoCanvasGroup.Position = UDim2.new(0, 0, 1, 0)
+		userInfoCanvasGroup.Size = UDim2.new(0, 134, 0, 52)
+		userInfoCanvasGroup.BackgroundTransparency = 1
+		userInfoCanvasGroup.GroupTransparency = 0
+		userInfoCanvasGroup.ZIndex = 3
+		userInfoCanvasGroup.Parent = bodyGroup
 
-	local userInfo = Instance.new("TextButton")
-	userInfo.Name = "UserInfo"
-	userInfo.AnchorPoint = Vector2.new(0.5, 0.5)
-	userInfo.Position = UDim2.new(0.5, 0, 0.5, 0)
-	userInfo.Size = UDim2.new(1, -8, 1, -8)
-	userInfo.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	userInfo.BackgroundTransparency = 1
-	userInfo.Text = ""
-	userInfo.AutoButtonColor = false
-	userInfo.ZIndex = 3
-	userInfo.Parent = userInfoCanvasGroup
+		local userInfo = Instance.new("TextButton")
+		userInfo.Name = "UserInfo"
+		userInfo.AnchorPoint = Vector2.new(0.5, 0.5)
+		userInfo.Position = UDim2.new(0.5, 0, 0.5, 0)
+		userInfo.Size = UDim2.new(1, -8, 1, -8)
+		userInfo.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		userInfo.BackgroundTransparency = 1
+		userInfo.Text = ""
+		userInfo.AutoButtonColor = false
+		userInfo.ZIndex = 3
+		userInfo.Parent = userInfoCanvasGroup
 
-	local userCorner = Instance.new("UICorner")
-	userCorner.CornerRadius = UDim.new(0, 8)
-	userCorner.Parent = userInfo
+		local userCorner = Instance.new("UICorner")
+		userCorner.CornerRadius = UDim.new(0, 8)
+		userCorner.Parent = userInfo
 
-	local userStroke = Instance.new("UIStroke")
-	userStroke.Color = Color3.fromRGB(255, 255, 255)
-	userStroke.Thickness = 1
-	userStroke.Transparency = 1
-	userStroke.Parent = userInfo
+		local userStroke = Instance.new("UIStroke")
+		userStroke.Color = Color3.fromRGB(255, 255, 255)
+		userStroke.Thickness = 1
+		userStroke.Transparency = 1
+		userStroke.Parent = userInfo
 
-	local userContentGroup = Instance.new("CanvasGroup")
-	userContentGroup.Name = "UserContentGroup"
-	userContentGroup.Size = UDim2.new(1, 0, 1, 0)
-	userContentGroup.BackgroundTransparency = 1
-	userContentGroup.GroupTransparency = 0
-	userContentGroup.ZIndex = 3
-	userContentGroup.Parent = userInfo
+		local userContentGroup = Instance.new("CanvasGroup")
+		userContentGroup.Name = "UserContentGroup"
+		userContentGroup.Size = UDim2.new(1, 0, 1, 0)
+		userContentGroup.BackgroundTransparency = 1
+		userContentGroup.GroupTransparency = 0
+		userContentGroup.ZIndex = 3
+		userContentGroup.Parent = userInfo
 
-	local avatarImage = Instance.new("ImageLabel")
-	avatarImage.Name = "Avatar"
-	avatarImage.Size = UDim2.new(0, 30, 0, 30)
-	avatarImage.Position = UDim2.new(0, 8, 0.5, -15)
-	avatarImage.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	avatarImage.BackgroundTransparency = 0.94
-	avatarImage.ZIndex = 4
-	avatarImage.Parent = userContentGroup
+		local avatarImage = Instance.new("ImageLabel")
+		avatarImage.Name = "Avatar"
+		avatarImage.Size = UDim2.new(0, 30, 0, 30)
+		avatarImage.Position = UDim2.new(0, 8, 0.5, -15)
+		avatarImage.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		avatarImage.BackgroundTransparency = 0.94
+		avatarImage.ZIndex = 4
+		avatarImage.Parent = userContentGroup
 
-	local avatarCorner = Instance.new("UICorner")
-	avatarCorner.CornerRadius = UDim.new(1, 0)
-	avatarCorner.Parent = avatarImage
+		local avatarCorner = Instance.new("UICorner")
+		avatarCorner.CornerRadius = UDim.new(1, 0)
+		avatarCorner.Parent = avatarImage
 
-	local userThumbnail = ""
-	task.spawn(function()
-		local content, isReady = Players:GetUserThumbnailAsync(
-			LocalPlayer.UserId,
-			Enum.ThumbnailType.HeadShot,
-			Enum.ThumbnailSize.Size420x420
-		)
-		if isReady then
-			userThumbnail = content
-			avatarImage.Image = content
-		end
-	end)
-
-	local displayNameLabel = Instance.new("TextLabel")
-	displayNameLabel.Name = "DisplayName"
-	displayNameLabel.Size = UDim2.new(1, -48, 0, 15)
-	displayNameLabel.Position = UDim2.new(0, 44, 0, 8)
-	displayNameLabel.BackgroundTransparency = 1
-	displayNameLabel.Text = LocalPlayer.DisplayName
-	displayNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-	displayNameLabel.TextSize = 12
-	displayNameLabel.Font = Enum.Font.GothamBold
-	displayNameLabel.TextXAlignment = Enum.TextXAlignment.Left
-	displayNameLabel.TextTruncate = Enum.TextTruncate.AtEnd
-	displayNameLabel.ZIndex = 4
-	displayNameLabel.Parent = userContentGroup
-
-	local usernameLabel = Instance.new("TextLabel")
-	usernameLabel.Name = "Username"
-	usernameLabel.Size = UDim2.new(1, -48, 0, 13)
-	usernameLabel.Position = UDim2.new(0, 44, 0, 23)
-	usernameLabel.BackgroundTransparency = 1
-	usernameLabel.Text = "@" .. LocalPlayer.Name
-	usernameLabel.TextColor3 = Color3.fromRGB(150, 158, 175)
-	usernameLabel.TextSize = 10
-	usernameLabel.Font = Enum.Font.GothamBold
-	usernameLabel.TextXAlignment = Enum.TextXAlignment.Left
-	usernameLabel.TextTruncate = Enum.TextTruncate.AtEnd
-	usernameLabel.ZIndex = 4
-	usernameLabel.Parent = userContentGroup
-
-	local isHiddenUser = false
-	local userHoverInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-	local userPressInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-	local fadeOutInfo = TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-	local fadeInInfo = TweenInfo.new(0.18, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-
-	userInfo.MouseEnter:Connect(function()
-		TweenService:Create(userInfo, userHoverInfo, { BackgroundTransparency = 0.94 }):Play()
-		TweenService:Create(userStroke, userHoverInfo, { Transparency = 0.90 }):Play()
-		TweenService:Create(displayNameLabel, userHoverInfo, { TextColor3 = Color3.fromRGB(255, 255, 255) }):Play()
-	end)
-
-	userInfo.MouseLeave:Connect(function()
-		TweenService:Create(userInfo, userHoverInfo, { BackgroundTransparency = 1 }):Play()
-		TweenService:Create(userStroke, userHoverInfo, { Transparency = 1 }):Play()
-		TweenService:Create(displayNameLabel, userHoverInfo, { TextColor3 = Color3.fromRGB(240, 245, 255) }):Play()
-	end)
-
-	userInfo.MouseButton1Down:Connect(function()
-		TweenService:Create(userInfo, userPressInfo, { Size = UDim2.new(1, -12, 1, -12) }):Play()
-	end)
-
-	userInfo.MouseButton1Up:Connect(function()
-		TweenService:Create(userInfo, userHoverInfo, { Size = UDim2.new(1, -8, 1, -8) }):Play()
-	end)
-
-	userInfo.MouseButton1Click:Connect(function()
-		isHiddenUser = not isHiddenUser
-		local fadeOut = TweenService:Create(userContentGroup, fadeOutInfo, { GroupTransparency = 1 })
-		fadeOut:Play()
-
-		fadeOut.Completed:Connect(function()
-			if isHiddenUser then
-				displayNameLabel.Text = "Eclipse"
-				usernameLabel.Text = "@EclipseUI"
-				avatarImage.Image = "rbxassetid://11984980776"
-			else
-				displayNameLabel.Text = LocalPlayer.DisplayName
-				usernameLabel.Text = "@" .. LocalPlayer.Name
-				avatarImage.Image = userThumbnail
+		local userThumbnail = ""
+		task.spawn(function()
+			local content, isReady = Players:GetUserThumbnailAsync(
+				LocalPlayer.UserId,
+				Enum.ThumbnailType.HeadShot,
+				Enum.ThumbnailSize.Size420x420
+			)
+			if isReady then
+				userThumbnail = content
+				avatarImage.Image = userAnon and "rbxassetid://11984980776" or content
 			end
-
-			TweenService:Create(userContentGroup, fadeInInfo, { GroupTransparency = 0 }):Play()
 		end)
-	end)
+
+		local displayNameLabel = Instance.new("TextLabel")
+		displayNameLabel.Name = "DisplayName"
+		displayNameLabel.Size = UDim2.new(1, -48, 0, 15)
+		displayNameLabel.Position = UDim2.new(0, 44, 0, 8)
+		displayNameLabel.BackgroundTransparency = 1
+		displayNameLabel.Text = userAnon and "Eclipse" or LocalPlayer.DisplayName
+		displayNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		displayNameLabel.TextSize = 12
+		displayNameLabel.Font = Enum.Font.GothamBold
+		displayNameLabel.TextXAlignment = Enum.TextXAlignment.Left
+		displayNameLabel.TextTruncate = Enum.TextTruncate.AtEnd
+		displayNameLabel.ZIndex = 4
+		displayNameLabel.Parent = userContentGroup
+
+		local usernameLabel = Instance.new("TextLabel")
+		usernameLabel.Name = "Username"
+		usernameLabel.Size = UDim2.new(1, -48, 0, 13)
+		usernameLabel.Position = UDim2.new(0, 44, 0, 23)
+		usernameLabel.BackgroundTransparency = 1
+		usernameLabel.Text = userAnon and "@EclipseUI" or ("@" .. LocalPlayer.Name)
+		usernameLabel.TextColor3 = Color3.fromRGB(150, 158, 175)
+		usernameLabel.TextSize = 10
+		usernameLabel.Font = Enum.Font.GothamBold
+		usernameLabel.TextXAlignment = Enum.TextXAlignment.Left
+		usernameLabel.TextTruncate = Enum.TextTruncate.AtEnd
+		usernameLabel.ZIndex = 4
+		usernameLabel.Parent = userContentGroup
+
+		local userHoverInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+		local userPressInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+		userInfo.MouseEnter:Connect(function()
+			TweenService:Create(userInfo, userHoverInfo, { BackgroundTransparency = 0.94 }):Play()
+			TweenService:Create(userStroke, userHoverInfo, { Transparency = 0.90 }):Play()
+			TweenService:Create(displayNameLabel, userHoverInfo, { TextColor3 = Color3.fromRGB(255, 255, 255) }):Play()
+		end)
+
+		userInfo.MouseLeave:Connect(function()
+			TweenService:Create(userInfo, userHoverInfo, { BackgroundTransparency = 1 }):Play()
+			TweenService:Create(userStroke, userHoverInfo, { Transparency = 1 }):Play()
+			TweenService:Create(displayNameLabel, userHoverInfo, { TextColor3 = Color3.fromRGB(240, 245, 255) }):Play()
+		end)
+
+		userInfo.MouseButton1Down:Connect(function()
+			TweenService:Create(userInfo, userPressInfo, { Size = UDim2.new(1, -12, 1, -12) }):Play()
+		end)
+
+		userInfo.MouseButton1Up:Connect(function()
+			TweenService:Create(userInfo, userHoverInfo, { Size = UDim2.new(1, -8, 1, -8) }):Play()
+		end)
+
+		userInfo.MouseButton1Click:Connect(function()
+			pcall(userCallback)
+		end)
+	end
 
 	local contents = Instance.new("CanvasGroup")
 	contents.Name = "Contents"
@@ -1123,7 +1177,12 @@ function EclipseUI:CreateWindow(options)
 
 			local dragFadeInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 			TweenService:Create(tabsCanvasGroup, dragFadeInfo, { GroupTransparency = 1 }):Play()
-			TweenService:Create(userInfoCanvasGroup, dragFadeInfo, { GroupTransparency = 1 }):Play()
+			if showUser then
+				local userInfoGroup = bodyGroup:FindFirstChild("UserInfoCanvasGroup")
+				if userInfoGroup then
+					TweenService:Create(userInfoGroup, dragFadeInfo, { GroupTransparency = 1 }):Play()
+				end
+			end
 			TweenService:Create(contents, dragFadeInfo, { GroupTransparency = 1 }):Play()
 			TweenService:Create(linesCanvasGroup, dragFadeInfo, { GroupTransparency = 1 }):Play()
 			if bgWatermark then
@@ -1143,7 +1202,12 @@ function EclipseUI:CreateWindow(options)
 
 					local dragEndInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 					TweenService:Create(tabsCanvasGroup, dragEndInfo, { GroupTransparency = 0 }):Play()
-					TweenService:Create(userInfoCanvasGroup, dragEndInfo, { GroupTransparency = 0 }):Play()
+					if showUser then
+						local userInfoGroup = bodyGroup:FindFirstChild("UserInfoCanvasGroup")
+						if userInfoGroup then
+							TweenService:Create(userInfoGroup, dragEndInfo, { GroupTransparency = 0 }):Play()
+						end
+					end
 					TweenService:Create(contents, dragEndInfo, { GroupTransparency = 0 }):Play()
 					TweenService:Create(linesCanvasGroup, dragEndInfo, { GroupTransparency = 0 }):Play()
 					if bgWatermark then
@@ -1315,7 +1379,10 @@ function EclipseUI:CreateWindow(options)
 			Page = page,
 			Button = clickBtn,
 			Label = tabText,
-			Icon = iconImage
+			Icon = iconImage,
+			Select = function(self)
+				Window:SelectTab(self)
+			end
 		}
 
 		clickBtn.MouseEnter:Connect(function()
@@ -1590,6 +1657,199 @@ function EclipseUI:CreateWindow(options)
 			end)
 
 			return btn
+		end
+
+		function TabObject:Input(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local title = opts.Title or opts.Name or "Input"
+			local default = opts.Default or ""
+			local placeholder = opts.Placeholder or "Enter text..."
+			local callback = opts.Callback or function() end
+
+			local inputContainer, stroke = createContainer(targetParent, 38)
+
+			local label = Instance.new("TextLabel")
+			label.Size = UDim2.new(1, -150, 1, 0)
+			label.Position = UDim2.new(0, 14, 0, 0)
+			label.BackgroundTransparency = 1
+			label.Text = title
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
+			label.TextSize = 12
+			label.Font = Enum.Font.GothamBold
+			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.ZIndex = 5
+			label.Parent = inputContainer
+
+			local textBox = Instance.new("TextBox")
+			textBox.AnchorPoint = Vector2.new(1, 0.5)
+			textBox.Position = UDim2.new(1, -12, 0.5, 0)
+			textBox.Size = UDim2.new(0, 130, 0, 24)
+			textBox.BackgroundColor3 = Color3.fromRGB(18, 22, 30)
+			textBox.BackgroundTransparency = 0.2
+			textBox.Text = tostring(default)
+			textBox.PlaceholderText = placeholder
+			textBox.PlaceholderColor3 = Color3.fromRGB(100, 110, 130)
+			textBox.TextColor3 = Color3.fromRGB(220, 230, 245)
+			textBox.TextSize = 11
+			textBox.Font = Enum.Font.GothamBold
+			textBox.TextYAlignment = Enum.TextYAlignment.Center
+			textBox.ClearTextOnFocus = false
+			textBox.ZIndex = 6
+			textBox.Parent = inputContainer
+
+			local tbCorner = Instance.new("UICorner")
+			tbCorner.CornerRadius = UDim.new(0, 6)
+			tbCorner.Parent = textBox
+
+			local tbStroke = Instance.new("UIStroke")
+			tbStroke.Color = Color3.fromRGB(255, 255, 255)
+			tbStroke.Thickness = 1
+			tbStroke.Transparency = 0.75
+			tbStroke.Parent = textBox
+
+			textBox.Focused:Connect(function()
+				tween(tbStroke, TweenInfo.new(0.15), { Transparency = 0.2 })
+			end)
+
+			textBox.FocusLost:Connect(function(enterPressed)
+				tween(tbStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
+				pcall(callback, textBox.Text)
+			end)
+
+			return {
+				GetText = function() return textBox.Text end,
+				SetText = function(_, val)
+					textBox.Text = tostring(val)
+					pcall(callback, textBox.Text)
+				end
+			}
+		end
+
+		function TabObject:Colorpicker(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local title = opts.Title or opts.Name or "Colorpicker"
+			local defaultColor = opts.Default or Color3.fromRGB(255, 255, 255)
+			local callback = opts.Callback or function() end
+
+			local cpContainer, stroke = createContainer(targetParent, 38)
+			cpContainer.ClipsDescendants = true
+
+			local label = Instance.new("TextLabel")
+			label.Size = UDim2.new(1, -60, 1, 0)
+			label.Position = UDim2.new(0, 14, 0, 0)
+			label.BackgroundTransparency = 1
+			label.Text = title
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
+			label.TextSize = 12
+			label.Font = Enum.Font.GothamBold
+			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.ZIndex = 5
+			label.Parent = cpContainer
+
+			local colorPreview = Instance.new("TextButton")
+			colorPreview.AnchorPoint = Vector2.new(1, 0.5)
+			colorPreview.Position = UDim2.new(1, -12, 0.5, 0)
+			colorPreview.Size = UDim2.new(0, 36, 0, 20)
+			colorPreview.BackgroundColor3 = defaultColor
+			colorPreview.AutoButtonColor = false
+			colorPreview.Text = ""
+			colorPreview.ZIndex = 6
+			colorPreview.Parent = cpContainer
+
+			local cpCorner = Instance.new("UICorner")
+			cpCorner.CornerRadius = UDim.new(0, 6)
+			cpCorner.Parent = colorPreview
+
+			local cpStroke = Instance.new("UIStroke")
+			cpStroke.Color = Color3.fromRGB(255, 255, 255)
+			cpStroke.Thickness = 1
+			cpStroke.Transparency = 0.6
+			cpStroke.Parent = colorPreview
+
+			local currentColor = defaultColor
+			local isOpen = false
+
+			local pickerFrame = Instance.new("Frame")
+			pickerFrame.Position = UDim2.new(0, 12, 0, 46)
+			pickerFrame.Size = UDim2.new(1, -24, 0, 110)
+			pickerFrame.BackgroundTransparency = 1
+			pickerFrame.Visible = false
+			pickerFrame.ZIndex = 5
+			pickerFrame.Parent = cpContainer
+
+			local pLayout = Instance.new("UIListLayout")
+			pLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			pLayout.Padding = UDim.new(0, 8)
+			pLayout.Parent = pickerFrame
+
+			local function createSliderBar(name, colorSeq, initVal)
+				local sliderBox = Instance.new("Frame")
+				sliderBox.Size = UDim2.new(1, 0, 0, 22)
+				sliderBox.BackgroundColor3 = Color3.fromRGB(18, 22, 30)
+				sliderBox.BackgroundTransparency = 0.3
+				sliderBox.ZIndex = 6
+				sliderBox.Parent = pickerFrame
+
+				local sbCorner = Instance.new("UICorner")
+				sbCorner.CornerRadius = UDim.new(0, 6)
+				sbCorner.Parent = sliderBox
+
+				local track = Instance.new("Frame")
+				track.AnchorPoint = Vector2.new(0.5, 0.5)
+				track.Position = UDim2.new(0.5, 0, 0.5, 0)
+				track.Size = UDim2.new(1, -16, 0, 6)
+				track.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
+				track.ZIndex = 6
+				track.Parent = sliderBox
+
+				local tCorner = Instance.new("UICorner")
+				tCorner.CornerRadius = UDim.new(1, 0)
+				tCorner.Parent = track
+
+				local fill = Instance.new("Frame")
+				fill.Size = UDim2.new(initVal, 0, 1, 0)
+				fill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+				fill.ZIndex = 7
+				fill.Parent = track
+
+				local fCorner = Instance.new("UICorner")
+				fCorner.CornerRadius = UDim.new(1, 0)
+				fCorner.Parent = fill
+
+				local grad = Instance.new("UIGradient")
+				grad.Color = colorSeq
+				grad.Parent = fill
+
+				return sliderBox, fill, track
+			end
+
+			local h, s, v = defaultColor:ToHSV()
+			_, _, _ = createSliderBar("Hue", ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Color3.fromHSV(0, 1, 1)),
+				ColorSequenceKeypoint.new(0.2, Color3.fromHSV(0.2, 1, 1)),
+				ColorSequenceKeypoint.new(0.4, Color3.fromHSV(0.4, 1, 1)),
+				ColorSequenceKeypoint.new(0.6, Color3.fromHSV(0.6, 1, 1)),
+				ColorSequenceKeypoint.new(0.8, Color3.fromHSV(0.8, 1, 1)),
+				ColorSequenceKeypoint.new(1, Color3.fromHSV(1, 1, 1))
+			}), h)
+
+			colorPreview.MouseButton1Click:Connect(function()
+				isOpen = not isOpen
+				pickerFrame.Visible = isOpen
+				local targetHeight = isOpen and 164 or 38
+				tween(cpContainer, fadeTweenInfo, { Size = UDim2.new(1, 0, 0, targetHeight) })
+			end)
+
+			return {
+				GetColor = function() return currentColor end,
+				SetColor = function(_, col)
+					currentColor = col
+					colorPreview.BackgroundColor3 = col
+					pcall(callback, col)
+				end
+			}
 		end
 
 		function TabObject:Toggle(opts, targetParent)
