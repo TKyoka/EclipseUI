@@ -469,7 +469,6 @@ function EclipseUI:CreateWindow(options)
 			end)
 		end
 
-		-- Fixed draggable & clickable interaction logic
 		local openDragging = false
 		local openDragStart = Vector2.zero
 		local openStartPos = UDim2.new()
@@ -1715,7 +1714,6 @@ function EclipseUI:CreateWindow(options)
 			tbStroke.Transparency = 0.75
 			tbStroke.Parent = textBox
 
-			-- Padding for crisp text spacing/alignment inside TextBoxes
 			local tbPadding = Instance.new("UIPadding")
 			tbPadding.PaddingLeft = UDim.new(0, 8)
 			tbPadding.PaddingRight = UDim.new(0, 8)
@@ -2240,7 +2238,7 @@ function EclipseUI:CreateWindow(options)
 						keyBtn.Text = currentKey.Name
 						keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
 						tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
-					elseif input.KeyCode == currentKey then
+						-- ONLY trigger callback when a new key is successfully bound
 						pcall(callback, currentKey)
 					end
 				end
