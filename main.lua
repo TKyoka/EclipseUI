@@ -1557,6 +1557,7 @@ function EclipseUI:CreateWindow(options)
 			boxFrame.AutomaticSize = Enum.AutomaticSize.Y
 			boxFrame.BackgroundColor3 = Color3.fromRGB(18, 22, 30)
 			boxFrame.BackgroundTransparency = 0.6
+			boxFrame.ClipsDescendants = true
 			boxFrame.ZIndex = 4
 			boxFrame.Parent = targetParent
 
@@ -1578,16 +1579,16 @@ function EclipseUI:CreateWindow(options)
 			local boxPadding = Instance.new("UIPadding")
 			boxPadding.PaddingLeft = UDim.new(0, 12)
 			boxPadding.PaddingRight = UDim.new(0, 12)
-			boxPadding.PaddingTop = UDim.new(0, 8) -- Slimmer (~33% less thick)
-			boxPadding.PaddingBottom = UDim.new(0, 8) -- Slimmer (~33% less thick)
+			boxPadding.PaddingTop = UDim.new(0, 8)
+			boxPadding.PaddingBottom = UDim.new(0, 8)
 			boxPadding.Parent = boxFrame
 
-			local contentContainer = Instance.new("CanvasGroup")
+			local contentContainer = Instance.new("Frame")
 			contentContainer.Name = "ContentContainer"
 			contentContainer.Size = UDim2.new(1, 0, 0, 0)
 			contentContainer.AutomaticSize = Enum.AutomaticSize.Y
 			contentContainer.BackgroundTransparency = 1
-			contentContainer.GroupTransparency = isFolded and 1 or 0
+			contentContainer.ClipsDescendants = true
 			contentContainer.Visible = not isFolded
 			contentContainer.ZIndex = 4
 			contentContainer.LayoutOrder = 1
@@ -1669,32 +1670,10 @@ function EclipseUI:CreateWindow(options)
 					clickBtn.ZIndex = 6
 					clickBtn.Parent = headerContainer
 
-					local isAnimating = false
 					clickBtn.MouseButton1Click:Connect(function()
-						if isAnimating then return end
-						isAnimating = true
 						isFolded = not isFolded
-
 						tween(arrowIcon, fadeTweenInfo, { Rotation = isFolded and 180 or 0 })
-
-						if isFolded then
-							local fadeOut = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-							TweenService:Create(contentContainer, fadeOut, { GroupTransparency = 1 }):Play()
-							task.delay(0.2, function()
-								if isFolded then
-									contentContainer.Visible = false
-								end
-								isAnimating = false
-							end)
-						else
-							contentContainer.Visible = true
-							contentContainer.GroupTransparency = 1
-							local fadeIn = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-							TweenService:Create(contentContainer, fadeIn, { GroupTransparency = 0 }):Play()
-							task.delay(0.2, function()
-								isAnimating = false
-							end)
-						end
+						contentContainer.Visible = not isFolded
 					end)
 				end
 			end
