@@ -1674,7 +1674,7 @@ function EclipseUI:CreateWindow(options)
 			local frame = Instance.new("Frame")
 			frame.Size = UDim2.new(1, 0, 0, height)
 			frame.BackgroundColor3 = Window.Theme.CardBg
-			frame.BackgroundTransparency = 0.95
+			frame.BackgroundTransparency = 0.4
 			frame.ZIndex = 4
 			frame.Parent = parent
 
