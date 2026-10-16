@@ -2273,7 +2273,6 @@ function EclipseUI:CreateWindow(options)
 				local h, s, v = currentColor:ToHSV()
 				local tempH, tempS, tempV, tempA = h, s, v, currentAlpha
 
-				-- Parented directly inside mainGroup so it moves with the window
 				colorWindow = Instance.new("CanvasGroup")
 				colorWindow.Name = "ColorPickerPopup"
 				colorWindow.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -2289,7 +2288,6 @@ function EclipseUI:CreateWindow(options)
 				wCorner.CornerRadius = UDim.new(0, 12)
 				wCorner.Parent = colorWindow
 
-				-- Signature EclipseUI Animated Gradient Stroke
 				local wStroke = Instance.new("UIStroke")
 				wStroke.Color = Color3.fromRGB(255, 255, 255)
 				wStroke.Thickness = 1.5
@@ -2393,30 +2391,38 @@ function EclipseUI:CreateWindow(options)
 				Instance.new("UICorner", hueKnob).CornerRadius = UDim.new(1, 0)
 				Instance.new("UIStroke", hueKnob).Color = Color3.fromRGB(255, 255, 255)
 
-				-- 3. Inputs (Right Side)
+				-- 3. Inputs (Right Side - High Contrast & Pop out style)
 				local inputStartX = 134
 				local function createInputRow(labelName, defaultVal, yPos)
 					local box = Instance.new("TextBox", colorWindow)
 					box.Position = UDim2.new(0, inputStartX, 0, yPos)
-					box.Size = UDim2.new(0, 75, 0, 20)
-					box.BackgroundColor3 = Color3.fromRGB(18, 22, 30)
-					box.BackgroundTransparency = 0.2
+					box.Size = UDim2.new(0, 75, 0, 22)
+					box.BackgroundColor3 = Color3.fromRGB(22, 27, 38)
+					box.BackgroundTransparency = 0.1
 					box.Text = tostring(defaultVal)
-					box.TextColor3 = Color3.fromRGB(230, 238, 250)
+					box.TextColor3 = Color3.fromRGB(240, 245, 250)
 					box.TextSize = 10
 					box.Font = Enum.Font.GothamMedium
 					box.ZIndex = 101
-					Instance.new("UICorner", box).CornerRadius = UDim.new(0, 4)
+					Instance.new("UICorner", box).CornerRadius = UDim.new(0, 5)
+					
 					local bSt = Instance.new("UIStroke", box)
 					bSt.Color = Color3.fromRGB(255, 255, 255)
-					bSt.Transparency = 0.8
+					bSt.Transparency = 0.55
+
+					box.Focused:Connect(function()
+						TweenService:Create(bSt, TweenInfo.new(0.15), { Transparency = 0.2 }):Play()
+					end)
+					box.FocusLost:Connect(function()
+						TweenService:Create(bSt, TweenInfo.new(0.15), { Transparency = 0.55 }):Play()
+					end)
 
 					local tag = Instance.new("TextLabel", colorWindow)
 					tag.Position = UDim2.new(0, inputStartX + 79, 0, yPos)
-					tag.Size = UDim2.new(0, 65, 0, 20)
+					tag.Size = UDim2.new(0, 65, 0, 22)
 					tag.BackgroundTransparency = 1
 					tag.Text = labelName
-					tag.TextColor3 = Color3.fromRGB(130, 140, 160)
+					tag.TextColor3 = Color3.fromRGB(150, 160, 180)
 					tag.TextSize = 10
 					tag.Font = Enum.Font.Gotham
 					tag.TextXAlignment = Enum.TextXAlignment.Left
@@ -2426,9 +2432,9 @@ function EclipseUI:CreateWindow(options)
 				end
 
 				local hexBox = createInputRow("Hex", "#" .. currentColor:ToHex(), 40)
-				local rBox = createInputRow("Red", math.floor(currentColor.R * 255 + 0.5), 63)
-				local gBox = createInputRow("Green", math.floor(currentColor.G * 255 + 0.5), 86)
-				local bBox = createInputRow("Blue", math.floor(currentColor.B * 255 + 0.5), 109)
+				local rBox = createInputRow("Red", math.floor(currentColor.R * 255 + 0.5), 65)
+				local gBox = createInputRow("Green", math.floor(currentColor.G * 255 + 0.5), 90)
+				local bBox = createInputRow("Blue", math.floor(currentColor.B * 255 + 0.5), 115)
 
 				local function updatePicker(skipInputs)
 					local activeColor = Color3.fromHSV(tempH, tempS, tempV)
