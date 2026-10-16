@@ -2275,21 +2275,19 @@ function EclipseUI:CreateWindow(options)
 				local h, s, v = currentColor:ToHSV()
 				local tempH, tempS, tempV, tempA = h, s, v, currentAlpha
 
-				-- Full-height side panel anchored to the right edge of the contents area
+				-- Parented to screenGui so it sits outside the main window boundary without getting clipped
 				drawerFrame = Instance.new("Frame")
 				drawerFrame.Name = "ColorpickerDrawer"
-				drawerFrame.AnchorPoint = Vector2.new(0, 0)
-				drawerFrame.Position = UDim2.new(1, 10, 0, 0) -- Starts hidden off to the right
-				drawerFrame.Size = UDim2.new(0, 220, 1, 0)
+				drawerFrame.Size = UDim2.new(0, 210, 0, 290)
 				drawerFrame.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
 				drawerFrame.BackgroundTransparency = 0.05
-				drawerFrame.ZIndex = 50
-				drawerFrame.Parent = contents
+				drawerFrame.ZIndex = 100
+				drawerFrame.Parent = screenGui
 
 				local dCorner = Instance.new("UICorner", drawerFrame)
-				dCorner.CornerRadius = UDim.new(0, 8)
+				dCorner.CornerRadius = UDim.new(0, 10)
 
-				-- Animated Gradient Border Stroke matching EclipseUI style
+				-- Animated Gradient Border Stroke
 				local dStroke = Instance.new("UIStroke", drawerFrame)
 				dStroke.Color = Color3.fromRGB(255, 255, 255)
 				dStroke.Thickness = 1.5
@@ -2302,26 +2300,31 @@ function EclipseUI:CreateWindow(options)
 					ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 90, 120))
 				})
 
-				local strokeConn
-				strokeConn = RunService.RenderStepped:Connect(function()
-					if not drawerFrame:IsDescendantOf(game) then
-						strokeConn:Disconnect()
+				-- Position and movement tracker loop (stays attached to the right side of mainGroup even when dragged)
+				local trackConn
+				trackConn = RunService.RenderStepped:Connect(function()
+					if not drawerFrame:IsDescendantOf(game) or not mainGroup:IsDescendantOf(game) then
+						if trackConn then trackConn:Disconnect() end
 						return
 					end
 					strokeGradient.Rotation = (tick() * 60) % 360
+					
+					local mainPos = mainGroup.AbsolutePosition
+					local mainSize = mainGroup.AbsoluteSize
+					drawerFrame.Position = UDim2.new(0, mainPos.X + mainSize.X + 8, 0, mainPos.Y)
 				end)
 
 				-- Drawer Header Title & Close Button
 				local dTitle = Instance.new("TextLabel", drawerFrame)
-				dTitle.Size = UDim2.new(1, -40, 0, 36)
-				dTitle.Position = UDim2.new(0, 12, 0, 4)
+				dTitle.Size = UDim2.new(1, -36, 0, 32)
+				dTitle.Position = UDim2.new(0, 12, 0, 8)
 				dTitle.BackgroundTransparency = 1
 				dTitle.Text = title
 				dTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-				dTitle.TextSize = 11
+				dTitle.TextSize = 12
 				dTitle.Font = Enum.Font.GothamBold
 				dTitle.TextXAlignment = Enum.TextXAlignment.Left
-				dTitle.ZIndex = 51
+				dTitle.ZIndex = 101
 
 				local closeBtn = Instance.new("TextButton", drawerFrame)
 				closeBtn.AnchorPoint = Vector2.new(1, 0)
@@ -2332,22 +2335,22 @@ function EclipseUI:CreateWindow(options)
 				closeBtn.TextColor3 = Color3.fromRGB(150, 160, 180)
 				closeBtn.TextSize = 11
 				closeBtn.Font = Enum.Font.GothamBold
-				closeBtn.ZIndex = 51
+				closeBtn.ZIndex = 101
 
 				-- 1. Saturation & Value Box
 				local svBox = Instance.new("Frame", drawerFrame)
-				svBox.Position = UDim2.new(0, 12, 0, 42)
-				svBox.Size = UDim2.new(0, 130, 0, 110)
+				svBox.Position = UDim2.new(0, 12, 0, 44)
+				svBox.Size = UDim2.new(0, 124, 0, 124)
 				svBox.BackgroundColor3 = Color3.fromHSV(tempH, 1, 1)
 				svBox.BorderSizePixel = 0
-				svBox.ZIndex = 51
+				svBox.ZIndex = 101
 				Instance.new("UICorner", svBox).CornerRadius = UDim.new(0, 6)
 
 				local satGrad = Instance.new("Frame", svBox)
 				satGrad.Size = UDim2.new(1, 0, 1, 0)
 				satGrad.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 				satGrad.BorderSizePixel = 0
-				satGrad.ZIndex = 52
+				satGrad.ZIndex = 102
 				Instance.new("UICorner", satGrad).CornerRadius = UDim.new(0, 6)
 				local sGr = Instance.new("UIGradient", satGrad)
 				sGr.Transparency = NumberSequence.new({NumberSequenceKeypoint.new(0, 0), NumberSequenceKeypoint.new(1, 1)})
@@ -2356,7 +2359,7 @@ function EclipseUI:CreateWindow(options)
 				valGrad.Size = UDim2.new(1, 0, 1, 0)
 				valGrad.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 				valGrad.BorderSizePixel = 0
-				valGrad.ZIndex = 53
+				valGrad.ZIndex = 103
 				Instance.new("UICorner", valGrad).CornerRadius = UDim.new(0, 6)
 				local vGr = Instance.new("UIGradient", valGrad)
 				vGr.Rotation = 90
@@ -2367,17 +2370,17 @@ function EclipseUI:CreateWindow(options)
 				svKnob.Size = UDim2.new(0, 10, 0, 10)
 				svKnob.Position = UDim2.new(tempS, 0, 1 - tempV, 0)
 				svKnob.BackgroundColor3 = Color3.fromHSV(tempH, tempS, tempV)
-				svKnob.ZIndex = 55
+				svKnob.ZIndex = 105
 				Instance.new("UICorner", svKnob).CornerRadius = UDim.new(1, 0)
 				Instance.new("UIStroke", svKnob).Color = Color3.fromRGB(255, 255, 255)
 
 				-- 2. Hue Bar
 				local hueBar = Instance.new("Frame", drawerFrame)
-				hueBar.Position = UDim2.new(0, 148, 0, 42)
-				hueBar.Size = UDim2.new(0, 10, 0, 110)
+				hueBar.Position = UDim2.new(0, 142, 0, 44)
+				hueBar.Size = UDim2.new(0, 10, 0, 124)
 				hueBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 				hueBar.BorderSizePixel = 0
-				hueBar.ZIndex = 51
+				hueBar.ZIndex = 101
 				Instance.new("UICorner", hueBar).CornerRadius = UDim.new(1, 0)
 
 				local hGr = Instance.new("UIGradient", hueBar)
@@ -2397,11 +2400,11 @@ function EclipseUI:CreateWindow(options)
 				hueKnob.Position = UDim2.new(0.5, 0, tempH, 0)
 				hueKnob.Size = UDim2.new(0, 12, 0, 12)
 				hueKnob.BackgroundColor3 = Color3.fromHSV(tempH, 1, 1)
-				hueKnob.ZIndex = 54
+				hueKnob.ZIndex = 104
 				Instance.new("UICorner", hueKnob).CornerRadius = UDim.new(1, 0)
 				Instance.new("UIStroke", hueKnob).Color = Color3.fromRGB(255, 255, 255)
 
-				-- 3. Inputs (Hex & RGB Vertical Stack)
+				-- 3. Inputs (Hex & RGB)
 				local inputStartX = 12
 				local function createInputRow(labelName, defaultVal, yPos)
 					local box = Instance.new("TextBox", drawerFrame)
@@ -2413,7 +2416,7 @@ function EclipseUI:CreateWindow(options)
 					box.TextColor3 = Color3.fromRGB(240, 245, 250)
 					box.TextSize = 10
 					box.Font = Enum.Font.GothamMedium
-					box.ZIndex = 51
+					box.ZIndex = 101
 					Instance.new("UICorner", box).CornerRadius = UDim.new(0, 5)
 
 					local bSt = Instance.new("UIStroke", box)
@@ -2429,22 +2432,22 @@ function EclipseUI:CreateWindow(options)
 
 					local tag = Instance.new("TextLabel", drawerFrame)
 					tag.Position = UDim2.new(0, inputStartX + 102, 0, yPos)
-					tag.Size = UDim2.new(0, 80, 0, 22)
+					tag.Size = UDim2.new(0, 84, 0, 22)
 					tag.BackgroundTransparency = 1
 					tag.Text = labelName
 					tag.TextColor3 = Color3.fromRGB(130, 140, 160)
 					tag.TextSize = 10
 					tag.Font = Enum.Font.Gotham
 					tag.TextXAlignment = Enum.TextXAlignment.Left
-					tag.ZIndex = 51
+					tag.ZIndex = 101
 
 					return box
 				end
 
-				local hexBox = createInputRow("Hex", "#" .. currentColor:ToHex(), 160)
-				local rBox = createInputRow("Red", math.floor(currentColor.R * 255 + 0.5), 188)
-				local gBox = createInputRow("Green", math.floor(currentColor.G * 255 + 0.5), 216)
-				local bBox = createInputRow("Blue", math.floor(currentColor.B * 255 + 0.5), 244)
+				local hexBox = createInputRow("Hex", "#" .. currentColor:ToHex(), 178)
+				local rBox = createInputRow("Red", math.floor(currentColor.R * 255 + 0.5), 204)
+				local gBox = createInputRow("Green", math.floor(currentColor.G * 255 + 0.5), 230)
+				local bBox = createInputRow("Blue", math.floor(currentColor.B * 255 + 0.5), 256)
 
 				local function updatePicker(skipInputs)
 					local activeColor = Color3.fromHSV(tempH, tempS, tempV)
@@ -2534,56 +2537,13 @@ function EclipseUI:CreateWindow(options)
 				gBox.FocusLost:Connect(rgbLost)
 				bBox.FocusLost:Connect(rgbLost)
 
-				-- 4. Action Buttons (Cancel & Apply)
-				local cancelBtn = Instance.new("TextButton", drawerFrame)
-				cancelBtn.Position = UDim2.new(0, 12, 1, -38)
-				cancelBtn.Size = UDim2.new(0, 92, 0, 26)
-				cancelBtn.BackgroundColor3 = Color3.fromRGB(25, 30, 42)
-				cancelBtn.BackgroundTransparency = 0.3
-				cancelBtn.Text = "Cancel"
-				cancelBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-				cancelBtn.TextSize = 11
-				cancelBtn.Font = Enum.Font.GothamBold
-				cancelBtn.ZIndex = 51
-				Instance.new("UICorner", cancelBtn).CornerRadius = UDim.new(0, 6)
-
-				local applyBtn = Instance.new("TextButton", drawerFrame)
-				applyBtn.Position = UDim2.new(0, 112, 1, -38)
-				applyBtn.Size = UDim2.new(0, 92, 0, 26)
-				applyBtn.BackgroundColor3 = Color3.fromRGB(65, 85, 130)
-				applyBtn.BackgroundTransparency = 0.2
-				applyBtn.Text = "Apply"
-				applyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-				applyBtn.TextSize = 11
-				applyBtn.Font = Enum.Font.GothamBold
-				applyBtn.ZIndex = 51
-				Instance.new("UICorner", applyBtn).CornerRadius = UDim.new(0, 6)
-
 				local function closeDrawer()
-					if strokeConn then strokeConn:Disconnect() end
-					local slideOut = TweenService:Create(drawerFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
-						Position = UDim2.new(1, 230, 0, 0)
-					})
-					slideOut:Play()
-					slideOut.Completed:Wait()
+					if trackConn then trackConn:Disconnect() end
 					drawerFrame:Destroy()
 					isDrawerOpen = false
 				end
 
 				closeBtn.MouseButton1Click:Connect(closeDrawer)
-				cancelBtn.MouseButton1Click:Connect(closeDrawer)
-
-				applyBtn.MouseButton1Click:Connect(function()
-					currentColor = Color3.fromHSV(tempH, tempS, tempV)
-					colorPreview.BackgroundColor3 = currentColor
-					pcall(callback, currentColor)
-					closeDrawer()
-				end)
-
-				-- Slide In Animation from the right edge
-				TweenService:Create(drawerFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-					Position = UDim2.new(1, -228, 0, 0)
-				}):Play()
 
 				updatePicker()
 			end)
