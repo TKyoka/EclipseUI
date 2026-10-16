@@ -3,6 +3,7 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
+local HttpService = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -200,6 +201,12 @@ function EclipseUI:CreateWindow(options)
 	local loadAnimEnabled = options.LoadAnim or false
 	local openButtonEnabled = options.OpenButton or false
 	local userOptions = options.User
+	local folderName = options.Folder or "EclipseUIConfigs"
+
+	-- WindUI-Style Workspace Config Folder Setup
+	if makefolder and not isfolder(folderName) then
+		pcall(function() makefolder(folderName) end)
+	end
 
 	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -217,6 +224,83 @@ function EclipseUI:CreateWindow(options)
 	function Window:Cleanup(item)
 		table.insert(self.CleanupItems, item)
 		return item
+	end
+
+	-- WindUI-Style Built-in Config Manager Integration
+	Window.ConfigManager = {}
+
+	function Window.ConfigManager:CreateConfig(configName)
+		configName = configName or "default"
+		local fullPath = folderName .. "/" .. configName .. ".json"
+		local registeredElements = {}
+
+		local configObj = {}
+
+		function configObj:Register(flag, element)
+			registeredElements[flag] = element[cite: 1]
+		end
+
+		function configObj:Save()
+			if not writefile then return end
+			local data = {}
+			for flag, element in pairs(registeredElements) do
+				if element.Value ~= nil then
+					data[flag] = element.Value
+				elseif element.Get then
+					data[flag] = element:Get()
+				elseif element.GetText then
+					data[flag] = element:GetText()
+				elseif element.GetColor then
+					data[flag] = element:GetColor()
+				elseif element.GetKey then
+					data[flag] = element:GetKey()
+				elseif element.GetSelected then
+					data[flag] = element:GetSelected()
+				end
+			end
+			pcall(function()
+				writefile(fullPath, HttpService:JSONEncode(data))
+			end)
+		end
+
+		function configObj:Load()
+			if not readfile or not isfile or not isfile(fullPath) then return end
+			local success, decoded = pcall(function()
+				return HttpService:JSONDecode(readfile(fullPath))
+			end)
+			if success and typeof(decoded) == "table" then
+				for flag, val in pairs(decoded) do
+					local element = registeredElements[flag]
+					if element and element.Set then
+						element:Set(val)
+					end
+				end
+			end
+		end
+
+		function configObj:Delete()
+			if delfile and isfile and isfile(fullPath) then
+				pcall(function() delfile(fullPath) end)
+			end
+		end
+
+		return configObj[cite: 1]
+	end
+
+	function Window.ConfigManager:AllConfigs()
+		local configs = {}
+		if listfiles then
+			local success, files = pcall(function() return listfiles(folderName) end)
+			if success then
+				for _, file in ipairs(files) do
+					if file:match("%.json$") then
+						local name = file:match("([^/\\]+)%.json$")
+						table.insert(configs, name)
+					end
+				end
+			end
+		end
+		return configs[cite: 1]
 	end
 
 	local mainGroup = Instance.new("CanvasGroup")
@@ -328,7 +412,7 @@ function EclipseUI:CreateWindow(options)
 		label.Text = "INITIALIZING " .. string.upper(windowName)
 		label.TextColor3 = Color3.fromRGB(255, 255, 255)
 		label.TextTransparency = 1
-		label.TextSize = 15
+		label.TextSize = 16 -- Increased by +1
 		label.Font = Enum.Font.GothamBold
 		label.TextXAlignment = Enum.TextXAlignment.Center
 		label.Parent = container
@@ -663,14 +747,15 @@ function EclipseUI:CreateWindow(options)
 	textLayout.Padding = UDim.new(0, 1)
 	textLayout.Parent = textBlock
 
+	-- Title font size increased by +1 (13 -> 14)
 	local titleLabel = Instance.new("TextLabel")
 	titleLabel.Name = "Title"
-	titleLabel.Size = UDim2.new(0, 0, 0, 15)
+	titleLabel.Size = UDim2.new(0, 0, 0, 16)
 	titleLabel.AutomaticSize = Enum.AutomaticSize.X
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Text = windowName
 	titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-	titleLabel.TextSize = 13
+	titleLabel.TextSize = 14
 	titleLabel.Font = Enum.Font.GothamBold
 	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 	titleLabel.LayoutOrder = 1
@@ -678,14 +763,15 @@ function EclipseUI:CreateWindow(options)
 	titleLabel.Parent = textBlock
 
 	if windowSubtitle then
+		-- Subtitle font size increased by +1 (10 -> 11)
 		local subtitleLabel = Instance.new("TextLabel")
 		subtitleLabel.Name = "Subtitle"
-		subtitleLabel.Size = UDim2.new(0, 0, 0, 12)
+		subtitleLabel.Size = UDim2.new(0, 0, 0, 13)
 		subtitleLabel.AutomaticSize = Enum.AutomaticSize.X
 		subtitleLabel.BackgroundTransparency = 1
 		subtitleLabel.Text = windowSubtitle
 		subtitleLabel.TextColor3 = Color3.fromRGB(150, 160, 180)
-		subtitleLabel.TextSize = 10
+		subtitleLabel.TextSize = 11
 		subtitleLabel.Font = Enum.Font.Gotham
 		subtitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 		subtitleLabel.LayoutOrder = 2
@@ -743,13 +829,14 @@ function EclipseUI:CreateWindow(options)
 			tagPadding.PaddingRight = UDim.new(0, 8)
 			tagPadding.Parent = tagPill
 
+			-- Tags font size increased by +2 (10 -> 12)
 			local tagText = Instance.new("TextLabel")
 			tagText.Size = UDim2.new(0, 0, 1, 0)
 			tagText.AutomaticSize = Enum.AutomaticSize.X
 			tagText.BackgroundTransparency = 1
 			tagText.Text = tostring(tagName)
 			tagText.TextColor3 = Color3.fromRGB(220, 228, 240)
-			tagText.TextSize = 10
+			tagText.TextSize = 12
 			tagText.Font = Enum.Font.GothamBold
 			tagText.TextXAlignment = Enum.TextXAlignment.Left
 			tagText.ZIndex = 4
@@ -1313,7 +1400,8 @@ function EclipseUI:CreateWindow(options)
 			iconImage = Instance.new("ImageLabel")
 			iconImage.Name = "Icon"
 			iconImage.Size = UDim2.new(0, 16, 0, 16)
-			iconImage.Position = UDim2.new(0, 12, 0.5, -8)
+			-- Tab Icon shifted slightly to the left (8px instead of 12px)
+			iconImage.Position = UDim2.new(0, 8, 0.5, -8)
 			iconImage.BackgroundTransparency = 1
 			iconImage.Image = getIconAsset(tabIcon)
 			iconImage.ImageColor3 = Color3.fromRGB(140, 148, 165)
@@ -1330,7 +1418,7 @@ function EclipseUI:CreateWindow(options)
 				end)
 			end
 
-			textOffsetX = 34
+			textOffsetX = 32
 		end
 
 		local tabText = Instance.new("TextLabel")
@@ -1453,10 +1541,16 @@ function EclipseUI:CreateWindow(options)
 			return frame, stroke
 		end
 
+		-- Fixed Space Component (defaults to 0 if nil)
 		function TabObject:Space(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
-			local spaceHeight = typeof(opts) == "number" and opts or (opts.Height or opts.Size or 3)
+			local spaceHeight = 0
+			if typeof(opts) == "number" then
+				spaceHeight = opts
+			elseif typeof(opts) == "table" then
+				spaceHeight = opts.Height or opts.Size or 0
+			end
 
 			local spaceFrame = Instance.new("Frame")
 			spaceFrame.Name = "Space"
@@ -1590,10 +1684,12 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
+		-- Button Component updated with Icon Support
 		function TabObject:Button(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
 			local btnName = opts.Title or opts.Name or "Button"
+			local btnIcon = opts.Icon
 			local callback = opts.Callback or function() end
 
 			local btn, stroke = createContainer(targetParent, 38)
@@ -1621,9 +1717,31 @@ function EclipseUI:CreateWindow(options)
 				end
 			end)
 
+			local textOffsetLeft = 14
+			if btnIcon then
+				local iconImg = Instance.new("ImageLabel")
+				iconImg.Size = UDim2.new(0, 16, 0, 16)
+				iconImg.Position = UDim2.new(0, 12, 0.5, -8)
+				iconImg.BackgroundTransparency = 1
+				iconImg.Image = getIconAsset(btnIcon)
+				iconImg.ImageColor3 = Color3.fromRGB(255, 255, 255)
+				iconImg.ZIndex = 5
+				iconImg.Parent = btn
+				textOffsetLeft = 34
+
+				if not iconsLoaded and not string.find(tostring(btnIcon), "rbxassetid://") then
+					task.spawn(function()
+						repeat task.wait() until iconsLoaded or not iconImg:IsDescendantOf(game)
+						if iconImg:IsDescendantOf(game) then
+							iconImg.Image = getIconAsset(btnIcon)
+						end
+					end)
+				end
+			end
+
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, -28, 1, 0)
-			label.Position = UDim2.new(0, 14, 0, 0)
+			label.Size = UDim2.new(1, -(textOffsetLeft + 14), 1, 0)
+			label.Position = UDim2.new(0, textOffsetLeft, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = btnName
 			label.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1730,7 +1848,7 @@ function EclipseUI:CreateWindow(options)
 
 			return {
 				GetText = function() return textBox.Text end,
-				SetText = function(_, val)
+				Set = function(_, val)
 					textBox.Text = tostring(val)
 					pcall(callback, textBox.Text)
 				end
@@ -1855,7 +1973,7 @@ function EclipseUI:CreateWindow(options)
 
 			return {
 				GetColor = function() return currentColor end,
-				SetColor = function(_, col)
+				Set = function(_, col)
 					currentColor = col
 					colorPreview.BackgroundColor3 = col
 					pcall(callback, col)
@@ -2154,7 +2272,9 @@ function EclipseUI:CreateWindow(options)
 			return {
 				Set = function(_, val)
 					updateSliderVal(val)
-				end
+					pcall(callback, tonumber(valBox.Text) or default)
+				end,
+				Get = function() return tonumber(valBox.Text) or default end
 			}
 		end
 
@@ -2238,14 +2358,20 @@ function EclipseUI:CreateWindow(options)
 						keyBtn.Text = currentKey.Name
 						keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
 						tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
-						-- ONLY trigger callback when a new key is successfully bound
+					elseif input.KeyCode == currentKey then
 						pcall(callback, currentKey)
 					end
 				end
 			end)
 
 			return {
-				GetKey = function() return currentKey end
+				GetKey = function() return currentKey end,
+				Set = function(_, newKey)
+					if typeof(newKey) == "EnumItem" then
+						currentKey = newKey
+						keyBtn.Text = currentKey.Name
+					end
+				end
 			}
 		end
 
