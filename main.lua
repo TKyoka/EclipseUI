@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.7.2
+--// EclipseUI Roblox Library Version 1.7.5
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -11,42 +11,77 @@ local LocalPlayer = Players.LocalPlayer
 local LucideIcons = {}
 local iconsLoaded = false
 
---// Comprehensive Theme Palettes (WindUI Style)
+--// Comprehensive Theme Palettes (Matching original Eclipse style + Dark, Light, Emerald, Crimson)
 local Themes = {
 	["Eclipse"] = {
 		MainBg = Color3.fromRGB(15, 16, 20),
 		CardBg = Color3.fromRGB(18, 22, 30),
+		ContainerBg = Color3.fromRGB(255, 255, 255),
+		ContainerTrans = 0.88,
 		Accent = Color3.fromRGB(65, 85, 140),
+		AccentSecondary = Color3.fromRGB(35, 42, 60),
 		Text = Color3.fromRGB(255, 255, 255),
 		SubText = Color3.fromRGB(150, 160, 180),
+		InactiveText = Color3.fromRGB(140, 148, 165),
+		InputBg = Color3.fromRGB(18, 22, 30),
+		ToggleBg = Color3.fromRGB(25, 30, 40),
+		SliderTrack = Color3.fromRGB(20, 24, 32),
 	},
 	["Dark"] = {
 		MainBg = Color3.fromRGB(12, 12, 14),
 		CardBg = Color3.fromRGB(20, 20, 24),
+		ContainerBg = Color3.fromRGB(35, 35, 42),
+		ContainerTrans = 0.75,
 		Accent = Color3.fromRGB(70, 70, 80),
+		AccentSecondary = Color3.fromRGB(40, 40, 48),
 		Text = Color3.fromRGB(240, 240, 240),
 		SubText = Color3.fromRGB(140, 140, 150),
+		InactiveText = Color3.fromRGB(110, 110, 120),
+		InputBg = Color3.fromRGB(24, 24, 28),
+		ToggleBg = Color3.fromRGB(30, 30, 36),
+		SliderTrack = Color3.fromRGB(24, 24, 28),
 	},
 	["Light"] = {
 		MainBg = Color3.fromRGB(240, 242, 245),
 		CardBg = Color3.fromRGB(255, 255, 255),
+		ContainerBg = Color3.fromRGB(230, 234, 242),
+		ContainerTrans = 0.5,
 		Accent = Color3.fromRGB(50, 100, 220),
+		AccentSecondary = Color3.fromRGB(180, 200, 240),
 		Text = Color3.fromRGB(20, 25, 35),
 		SubText = Color3.fromRGB(90, 100, 115),
+		InactiveText = Color3.fromRGB(120, 130, 145),
+		InputBg = Color3.fromRGB(225, 230, 238),
+		ToggleBg = Color3.fromRGB(210, 218, 228),
+		SliderTrack = Color3.fromRGB(215, 220, 230),
 	},
 	["Emerald"] = {
 		MainBg = Color3.fromRGB(14, 18, 16),
 		CardBg = Color3.fromRGB(20, 28, 24),
+		ContainerBg = Color3.fromRGB(30, 45, 38),
+		ContainerTrans = 0.7,
 		Accent = Color3.fromRGB(40, 160, 100),
+		AccentSecondary = Color3.fromRGB(20, 60, 40),
 		Text = Color3.fromRGB(240, 255, 245),
 		SubText = Color3.fromRGB(130, 160, 145),
+		InactiveText = Color3.fromRGB(100, 130, 115),
+		InputBg = Color3.fromRGB(18, 26, 22),
+		ToggleBg = Color3.fromRGB(22, 32, 26),
+		SliderTrack = Color3.fromRGB(18, 26, 22),
 	},
 	["Crimson"] = {
 		MainBg = Color3.fromRGB(18, 14, 14),
 		CardBg = Color3.fromRGB(26, 20, 20),
+		ContainerBg = Color3.fromRGB(45, 30, 30),
+		ContainerTrans = 0.7,
 		Accent = Color3.fromRGB(180, 50, 50),
+		AccentSecondary = Color3.fromRGB(70, 25, 25),
 		Text = Color3.fromRGB(255, 240, 240),
 		SubText = Color3.fromRGB(170, 130, 130),
+		InactiveText = Color3.fromRGB(140, 100, 100),
+		InputBg = Color3.fromRGB(24, 18, 18),
+		ToggleBg = Color3.fromRGB(30, 22, 22),
+		SliderTrack = Color3.fromRGB(24, 18, 18),
 	},
 }
 
@@ -1051,7 +1086,6 @@ function EclipseUI:CreateWindow(options)
 		local fastFadeInfo = TweenInfo.new(0.08, Enum.EasingStyle.Linear)
 
 		if isMinimized then
-			namespaces = {}
 			TweenService:Create(bodyGroup, fastFadeInfo, { GroupTransparency = 1 }):Play()
 			TweenService:Create(linesCanvasGroup, fastFadeInfo, { GroupTransparency = 1 }):Play()
 
@@ -1169,8 +1203,8 @@ function EclipseUI:CreateWindow(options)
 	local pillGradient = Instance.new("UIGradient")
 	pillGradient.Color = ColorSequence.new({
 		ColorSequenceKeypoint.new(0, currentThemeData.Accent),
-		ColorSequenceKeypoint.new(0.5, currentThemeData.CardBg),
-		ColorSequenceKeypoint.new(1, currentThemeData.MainBg)
+		ColorSequenceKeypoint.new(0.5, currentThemeData.AccentSecondary),
+		ColorSequenceKeypoint.new(1, currentThemeData.CardBg)
 	})
 	pillGradient.Rotation = 90
 	pillGradient.Parent = activePill
@@ -1178,8 +1212,8 @@ function EclipseUI:CreateWindow(options)
 	table.insert(Window.ThemeConnections, function(theme)
 		pillGradient.Color = ColorSequence.new({
 			ColorSequenceKeypoint.new(0, theme.Accent),
-			ColorSequenceKeypoint.new(0.5, theme.CardBg),
-			ColorSequenceKeypoint.new(1, theme.MainBg)
+			ColorSequenceKeypoint.new(0.5, theme.AccentSecondary),
+			ColorSequenceKeypoint.new(1, theme.CardBg)
 		})
 	end)
 
@@ -1493,9 +1527,9 @@ function EclipseUI:CreateWindow(options)
 					GroupTransparency = 0
 				})
 			else
-				tween(tab.Label, fadeTweenInfo, { TextColor3 = Window.Theme.SubText })
+				tween(tab.Label, fadeTweenInfo, { TextColor3 = Window.Theme.InactiveText })
 				if tab.Icon then
-					tween(tab.Icon, fadeTweenInfo, { ImageColor3 = Window.Theme.SubText, ImageTransparency = 0.3 })
+					tween(tab.Icon, fadeTweenInfo, { ImageColor3 = Window.Theme.InactiveText, ImageTransparency = 0.3 })
 				end
 
 				tab.PageGroup.Visible = false
@@ -1534,14 +1568,14 @@ function EclipseUI:CreateWindow(options)
 			iconImage.Position = UDim2.new(0, 8, 0.5, -8)
 			iconImage.BackgroundTransparency = 1
 			iconImage.Image = getIconAsset(tabIcon)
-			iconImage.ImageColor3 = currentThemeData.SubText
+			iconImage.ImageColor3 = currentThemeData.InactiveText
 			iconImage.ImageTransparency = 0.3
 			iconImage.ZIndex = 5
 			iconImage.Parent = tabFrame
 
 			table.insert(Window.ThemeConnections, function(theme)
 				if Window.ActiveTab ~= TabObject then
-					TweenService:Create(iconImage, TweenInfo.new(0.3), { ImageColor3 = theme.SubText }):Play()
+					TweenService:Create(iconImage, TweenInfo.new(0.3), { ImageColor3 = theme.InactiveText }):Play()
 				else
 					TweenService:Create(iconImage, TweenInfo.new(0.3), { ImageColor3 = theme.Text }):Play()
 				end
@@ -1565,7 +1599,7 @@ function EclipseUI:CreateWindow(options)
 		tabText.Position = UDim2.new(0, textOffsetX, 0, 0)
 		tabText.BackgroundTransparency = 1
 		tabText.Text = tabTitle
-		tabText.TextColor3 = currentThemeData.SubText
+		tabText.TextColor3 = currentThemeData.InactiveText
 		tabText.TextSize = 12
 		tabText.Font = Enum.Font.GothamBold
 		tabText.TextXAlignment = Enum.TextXAlignment.Left
@@ -1574,7 +1608,7 @@ function EclipseUI:CreateWindow(options)
 
 		table.insert(Window.ThemeConnections, function(theme)
 			if Window.ActiveTab ~= TabObject then
-				TweenService:Create(tabText, TweenInfo.new(0.3), { TextColor3 = theme.SubText }):Play()
+				TweenService:Create(tabText, TweenInfo.new(0.3), { TextColor3 = theme.InactiveText }):Play()
 			else
 				TweenService:Create(tabText, TweenInfo.new(0.3), { TextColor3 = theme.Text }):Play()
 			end
@@ -1640,7 +1674,7 @@ function EclipseUI:CreateWindow(options)
 
 		clickBtn.MouseLeave:Connect(function()
 			if Window.ActiveTab ~= TabObject then
-				tween(tabText, fadeTweenInfo, { TextColor3 = Window.Theme.SubText })
+				tween(tabText, fadeTweenInfo, { TextColor3 = Window.Theme.InactiveText })
 				if iconImage then
 					tween(iconImage, fadeTweenInfo, { ImageTransparency = 0.3 })
 				end
@@ -1673,13 +1707,13 @@ function EclipseUI:CreateWindow(options)
 		local function createContainer(parent, height)
 			local frame = Instance.new("Frame")
 			frame.Size = UDim2.new(1, 0, 0, height)
-			frame.BackgroundColor3 = Window.Theme.CardBg
-			frame.BackgroundTransparency = 0.4
+			frame.BackgroundColor3 = Window.Theme.ContainerBg
+			frame.BackgroundTransparency = Window.Theme.ContainerTrans
 			frame.ZIndex = 4
 			frame.Parent = parent
 
 			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(frame, TweenInfo.new(0.3), { BackgroundColor3 = theme.CardBg }):Play()
+				TweenService:Create(frame, TweenInfo.new(0.3), { BackgroundColor3 = theme.ContainerBg, BackgroundTransparency = theme.ContainerTrans }):Play()
 			end)
 
 			local corner = Instance.new("UICorner")
@@ -2094,7 +2128,7 @@ function EclipseUI:CreateWindow(options)
 			local btnGradient = Instance.new("UIGradient")
 			btnGradient.Color = ColorSequence.new({
 				ColorSequenceKeypoint.new(0, currentThemeData.Accent),
-				ColorSequenceKeypoint.new(0.5, currentThemeData.CardBg),
+				ColorSequenceKeypoint.new(0.5, currentThemeData.AccentSecondary),
 				ColorSequenceKeypoint.new(1, currentThemeData.Accent)
 			})
 			btnGradient.Rotation = 0
@@ -2103,7 +2137,7 @@ function EclipseUI:CreateWindow(options)
 			table.insert(Window.ThemeConnections, function(theme)
 				btnGradient.Color = ColorSequence.new({
 					ColorSequenceKeypoint.new(0, theme.Accent),
-					ColorSequenceKeypoint.new(0.5, theme.CardBg),
+					ColorSequenceKeypoint.new(0.5, theme.AccentSecondary),
 					ColorSequenceKeypoint.new(1, theme.Accent)
 				})
 			end)
@@ -2241,7 +2275,7 @@ function EclipseUI:CreateWindow(options)
 				local btnGradient = Instance.new("UIGradient")
 				btnGradient.Color = ColorSequence.new({
 					ColorSequenceKeypoint.new(0, currentThemeData.Accent),
-					ColorSequenceKeypoint.new(0.5, currentThemeData.CardBg),
+					ColorSequenceKeypoint.new(0.5, currentThemeData.AccentSecondary),
 					ColorSequenceKeypoint.new(1, currentThemeData.Accent)
 				})
 				btnGradient.Rotation = 0
@@ -2250,7 +2284,7 @@ function EclipseUI:CreateWindow(options)
 				table.insert(Window.ThemeConnections, function(theme)
 					btnGradient.Color = ColorSequence.new({
 						ColorSequenceKeypoint.new(0, theme.Accent),
-						ColorSequenceKeypoint.new(0.5, theme.CardBg),
+						ColorSequenceKeypoint.new(0.5, theme.AccentSecondary),
 						ColorSequenceKeypoint.new(1, theme.Accent)
 					})
 				end)
@@ -2372,7 +2406,7 @@ function EclipseUI:CreateWindow(options)
 			textBox.AnchorPoint = Vector2.new(1, 0.5)
 			textBox.Position = UDim2.new(1, -12, 0.5, 0)
 			textBox.Size = UDim2.new(0, 130, 0, 24)
-			textBox.BackgroundColor3 = currentThemeData.CardBg
+			textBox.BackgroundColor3 = currentThemeData.InputBg
 			textBox.BackgroundTransparency = 0.2
 			textBox.Text = tostring(default)
 			textBox.PlaceholderText = placeholder
@@ -2386,7 +2420,7 @@ function EclipseUI:CreateWindow(options)
 			textBox.Parent = inputContainer
 
 			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(textBox, TweenInfo.new(0.3), { BackgroundColor3 = theme.CardBg, TextColor3 = theme.Text, PlaceholderColor3 = theme.SubText }):Play()
+				TweenService:Create(textBox, TweenInfo.new(0.3), { BackgroundColor3 = theme.InputBg, TextColor3 = theme.Text, PlaceholderColor3 = theme.SubText }):Play()
 			end)
 
 			local tbCorner = Instance.new("UICorner")
@@ -2459,13 +2493,13 @@ function EclipseUI:CreateWindow(options)
 			toggleFrame.AnchorPoint = Vector2.new(1, 0.5)
 			toggleFrame.Position = UDim2.new(1, -12, 0.5, 0)
 			toggleFrame.Size = UDim2.new(0, 44, 0, 22)
-			toggleFrame.BackgroundColor3 = currentThemeData.CardBg
+			toggleFrame.BackgroundColor3 = currentThemeData.ToggleBg
 			toggleFrame.BackgroundTransparency = 0.4
 			toggleFrame.ZIndex = 5
 			toggleFrame.Parent = toggleContainer
 
 			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(toggleFrame, TweenInfo.new(0.3), { BackgroundColor3 = theme.CardBg }):Play()
+				TweenService:Create(toggleFrame, TweenInfo.new(0.3), { BackgroundColor3 = theme.ToggleBg }):Play()
 			end)
 
 			local tfCorner = Instance.new("UICorner")
@@ -2475,18 +2509,29 @@ function EclipseUI:CreateWindow(options)
 			local gradientOverlay = Instance.new("Frame")
 			gradientOverlay.Name = "GradientOverlay"
 			gradientOverlay.Size = UDim2.new(1, 0, 1, 0)
-			gradientOverlay.BackgroundColor3 = currentThemeData.Accent
+			gradientOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 			gradientOverlay.BackgroundTransparency = state and 0 or 1
 			gradientOverlay.ZIndex = 6
 			gradientOverlay.Parent = toggleFrame
 
-			table.insert(Window.ThemeConnections, function(theme)
-				gradientOverlay.BackgroundColor3 = theme.Accent
-			end)
-
 			local goCorner = Instance.new("UICorner")
 			goCorner.CornerRadius = UDim.new(1, 0)
 			goCorner.Parent = gradientOverlay
+
+			local toggleGradient = Instance.new("UIGradient")
+			toggleGradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, currentThemeData.Accent),
+				ColorSequenceKeypoint.new(1, currentThemeData.SubText)
+			})
+			toggleGradient.Rotation = 45
+			toggleGradient.Parent = gradientOverlay
+
+			table.insert(Window.ThemeConnections, function(theme)
+				toggleGradient.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, theme.Accent),
+					ColorSequenceKeypoint.new(1, theme.SubText)
+				})
+			end)
 
 			local tfStroke = Instance.new("UIStroke")
 			tfStroke.Color = Color3.fromRGB(255, 255, 255)
@@ -2594,7 +2639,7 @@ function EclipseUI:CreateWindow(options)
 			valBox.AnchorPoint = Vector2.new(1, 0)
 			valBox.Position = UDim2.new(1, -12, 0, 8)
 			valBox.Size = UDim2.new(0, 56, 0, 22)
-			valBox.BackgroundColor3 = currentThemeData.CardBg
+			valBox.BackgroundColor3 = currentThemeData.InputBg
 			valBox.BackgroundTransparency = 0.2
 			valBox.Text = tostring(default)
 			valBox.TextColor3 = currentThemeData.Text
@@ -2606,7 +2651,7 @@ function EclipseUI:CreateWindow(options)
 			valBox.Parent = sliderContainer
 
 			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(valBox, TweenInfo.new(0.3), { BackgroundColor3 = theme.CardBg, TextColor3 = theme.Text }):Play()
+				TweenService:Create(valBox, TweenInfo.new(0.3), { BackgroundColor3 = theme.InputBg, TextColor3 = theme.Text }):Play()
 			end)
 
 			local valBoxCorner = Instance.new("UICorner")
@@ -2623,13 +2668,13 @@ function EclipseUI:CreateWindow(options)
 			track.AnchorPoint = Vector2.new(0.5, 0)
 			track.Position = UDim2.new(0.5, 0, 0, 38)
 			track.Size = UDim2.new(1, -32, 0, 6)
-			track.BackgroundColor3 = currentThemeData.CardBg
+			track.BackgroundColor3 = currentThemeData.SliderTrack
 			track.BorderSizePixel = 0
 			track.ZIndex = 5
 			track.Parent = sliderContainer
 
 			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(track, TweenInfo.new(0.3), { BackgroundColor3 = theme.CardBg }):Play()
+				TweenService:Create(track, TweenInfo.new(0.3), { BackgroundColor3 = theme.SliderTrack }):Play()
 			end)
 
 			local trackCorner = Instance.new("UICorner")
@@ -2638,18 +2683,28 @@ function EclipseUI:CreateWindow(options)
 
 			local fill = Instance.new("Frame")
 			fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
-			fill.BackgroundColor3 = currentThemeData.Accent
+			fill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 			fill.BorderSizePixel = 0
 			fill.ZIndex = 6
 			fill.Parent = track
 
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(fill, TweenInfo.new(0.3), { BackgroundColor3 = theme.Accent }):Play()
-			end)
-
 			local fillCorner = Instance.new("UICorner")
 			fillCorner.CornerRadius = UDim.new(1, 0)
 			fillCorner.Parent = fill
+
+			local fillGradient = Instance.new("UIGradient")
+			fillGradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, currentThemeData.Accent),
+				ColorSequenceKeypoint.new(1, currentThemeData.SubText)
+			})
+			fillGradient.Parent = fill
+
+			table.insert(Window.ThemeConnections, function(theme)
+				fillGradient.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, theme.Accent),
+					ColorSequenceKeypoint.new(1, theme.SubText)
+				})
+			end)
 
 			local thumb = Instance.new("Frame")
 			thumb.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -2780,7 +2835,7 @@ function EclipseUI:CreateWindow(options)
 			keyBtn.AnchorPoint = Vector2.new(1, 0.5)
 			keyBtn.Position = UDim2.new(1, -12, 0.5, 0)
 			keyBtn.Size = UDim2.new(0, 90, 0, 24)
-			keyBtn.BackgroundColor3 = currentThemeData.CardBg
+			keyBtn.BackgroundColor3 = currentThemeData.InputBg
 			keyBtn.BackgroundTransparency = 0.2
 			keyBtn.Text = currentKey.Name
 			keyBtn.TextColor3 = currentThemeData.Text
@@ -2791,7 +2846,7 @@ function EclipseUI:CreateWindow(options)
 			keyBtn.Parent = kbFrame
 
 			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(keyBtn, TweenInfo.new(0.3), { BackgroundColor3 = theme.CardBg, TextColor3 = theme.Text }):Play()
+				TweenService:Create(keyBtn, TweenInfo.new(0.3), { BackgroundColor3 = theme.InputBg, TextColor3 = theme.Text }):Play()
 			end)
 
 			local keyCorner = Instance.new("UICorner")
@@ -2901,13 +2956,13 @@ function EclipseUI:CreateWindow(options)
 			selBox.AnchorPoint = Vector2.new(1, 0.5)
 			selBox.Position = UDim2.new(1, -12, 0.5, 0)
 			selBox.Size = UDim2.new(0, 104, 0, 24)
-			selBox.BackgroundColor3 = currentThemeData.CardBg
+			selBox.BackgroundColor3 = currentThemeData.InputBg
 			selBox.BackgroundTransparency = 0.2
 			selBox.ZIndex = 6
 			selBox.Parent = headerBtn
 
 			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(selBox, TweenInfo.new(0.3), { BackgroundColor3 = theme.CardBg }):Play()
+				TweenService:Create(selBox, TweenInfo.new(0.3), { BackgroundColor3 = theme.InputBg }):Play()
 			end)
 
 			local selBoxCorner = Instance.new("UICorner")
@@ -3192,13 +3247,13 @@ function EclipseUI:CreateWindow(options)
 			selBox.AnchorPoint = Vector2.new(1, 0.5)
 			selBox.Position = UDim2.new(1, -12, 0.5, 0)
 			selBox.Size = UDim2.new(0, 104, 0, 24)
-			selBox.BackgroundColor3 = currentThemeData.CardBg
+			selBox.BackgroundColor3 = currentThemeData.InputBg
 			selBox.BackgroundTransparency = 0.2
 			selBox.ZIndex = 6
 			selBox.Parent = headerBtn
 
 			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(selBox, TweenInfo.new(0.3), { BackgroundColor3 = theme.CardBg }):Play()
+				TweenService:Create(selBox, TweenInfo.new(0.3), { BackgroundColor3 = theme.InputBg }):Play()
 			end)
 
 			local selBoxCorner = Instance.new("UICorner")
