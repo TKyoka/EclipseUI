@@ -225,7 +225,6 @@ function EclipseUI:CreateWindow(options)
 		return item
 	end
 
-	-- WindUI-Style Built-in Config Manager Integration
 	Window.ConfigManager = {}
 
 	function Window.ConfigManager:CreateConfig(configName)
@@ -711,7 +710,6 @@ function EclipseUI:CreateWindow(options)
 			end)
 		end
 
-		-- Increased left offset for more breathing room from the title
 		titleOffsetLeft = 42
 	end
 
@@ -827,7 +825,6 @@ function EclipseUI:CreateWindow(options)
 			tagPadding.PaddingRight = UDim.new(0, 8)
 			tagPadding.Parent = tagPill
 
-			-- Tags font size decreased by 1 (12 -> 11)
 			local tagText = Instance.new("TextLabel")
 			tagText.Size = UDim2.new(0, 0, 1, 0)
 			tagText.AutomaticSize = Enum.AutomaticSize.X
@@ -1538,7 +1535,6 @@ function EclipseUI:CreateWindow(options)
 			return frame, stroke
 		end
 
-		-- Fixed Space Component (defaults to 0 if nil)
 		function TabObject:Space(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1630,6 +1626,66 @@ function EclipseUI:CreateWindow(options)
 			return SectionObj
 		end
 
+		function TabObject:GroupBox(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local boxTitle = opts.Title or "Group"
+
+			local boxFrame = Instance.new("Frame")
+			boxFrame.Size = UDim2.new(1, 0, 0, 0)
+			boxFrame.AutomaticSize = Enum.AutomaticSize.Y
+			boxFrame.BackgroundColor3 = Color3.fromRGB(18, 22, 30)
+			boxFrame.BackgroundTransparency = 0.6
+			boxFrame.ZIndex = 4
+			boxFrame.Parent = targetParent
+
+			local boxCorner = Instance.new("UICorner")
+			boxCorner.CornerRadius = UDim.new(0, 8)
+			boxCorner.Parent = boxFrame
+
+			local boxStroke = Instance.new("UIStroke")
+			boxStroke.Color = Color3.fromRGB(255, 255, 255)
+			boxStroke.Thickness = 1
+			boxStroke.Transparency = 0.88
+			boxStroke.Parent = boxFrame
+
+			local boxLayout = Instance.new("UIListLayout")
+			boxLayout.Padding = UDim.new(0, 6)
+			boxLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			boxLayout.Parent = boxFrame
+
+			local boxPadding = Instance.new("UIPadding")
+			boxPadding.PaddingLeft = UDim.new(0, 12)
+			boxPadding.PaddingRight = UDim.new(0, 12)
+			boxPadding.PaddingTop = UDim.new(0, 12)
+			boxPadding.PaddingBottom = UDim.new(0, 12)
+			boxPadding.Parent = boxFrame
+
+			if boxTitle ~= "" then
+				local titleLabel = Instance.new("TextLabel")
+				titleLabel.Size = UDim2.new(1, 0, 0, 16)
+				titleLabel.BackgroundTransparency = 1
+				titleLabel.Text = string.upper(boxTitle)
+				titleLabel.TextColor3 = Color3.fromRGB(160, 170, 190)
+				titleLabel.TextSize = 10
+				titleLabel.Font = Enum.Font.GothamBold
+				titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+				titleLabel.ZIndex = 5
+				titleLabel.Parent = boxFrame
+			end
+
+			local GroupObj = {}
+			for k, v in pairs(TabObject) do
+				if typeof(v) == "function" and k ~= "GroupBox" then
+					GroupObj[k] = function(self, elementOpts)
+						return v(TabObject, elementOpts, boxFrame)
+					end
+				end
+			end
+
+			return GroupObj
+		end
+
 		function TabObject:Paragraph(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1681,7 +1737,6 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
-		-- Button Component updated with Right-Side Icon Support
 		function TabObject:Button(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
