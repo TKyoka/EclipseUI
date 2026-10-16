@@ -2268,26 +2268,44 @@ function EclipseUI:CreateWindow(options)
 			local drawerFrame = nil
 			local isDrawerOpen = false
 
+			local function closeDrawer()
+				if not drawerFrame or not drawerFrame.Parent then return end
+				isDrawerOpen = false
+				
+				local tw = TweenService:Create(drawerFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {
+					GroupTransparency = 1
+				})
+				tw:Play()
+				tw.Completed:Wait()
+				if drawerFrame then
+					drawerFrame:Destroy()
+					drawerFrame = nil
+				end
+			end
+
 			colorPreview.MouseButton1Click:Connect(function()
-				if isDrawerOpen and drawerFrame and drawerFrame.Parent then return end
+				if isDrawerOpen and drawerFrame and drawerFrame.Parent then
+					closeDrawer()
+					return
+				end
 				isDrawerOpen = true
 
 				local h, s, v = currentColor:ToHSV()
 				local tempH, tempS, tempV, tempA = h, s, v, currentAlpha
 
 				-- Parented to screenGui so it sits outside the main window boundary without getting clipped
-				drawerFrame = Instance.new("Frame")
+				drawerFrame = Instance.new("CanvasGroup")
 				drawerFrame.Name = "ColorpickerDrawer"
-				drawerFrame.Size = UDim2.new(0, 210, 0, 290)
-				drawerFrame.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
-				drawerFrame.BackgroundTransparency = 0.05
+				drawerFrame.GroupTransparency = 1
+				drawerFrame.BackgroundColor3 = mainGroup.BackgroundColor3
+				drawerFrame.BackgroundTransparency = mainGroup.BackgroundTransparency
 				drawerFrame.ZIndex = 100
 				drawerFrame.Parent = screenGui
 
 				local dCorner = Instance.new("UICorner", drawerFrame)
 				dCorner.CornerRadius = UDim.new(0, 10)
 
-				-- Animated Gradient Border Stroke
+				-- Animated Gradient Border Stroke matching Main Window style
 				local dStroke = Instance.new("UIStroke", drawerFrame)
 				dStroke.Color = Color3.fromRGB(255, 255, 255)
 				dStroke.Thickness = 1.5
@@ -2300,47 +2318,58 @@ function EclipseUI:CreateWindow(options)
 					ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 90, 120))
 				})
 
-				-- Position and movement tracker loop (stays attached to the right side of mainGroup even when dragged)
+				-- Position, height, and visibility sync loop (follows main window & closes if main window hides)
 				local trackConn
 				trackConn = RunService.RenderStepped:Connect(function()
-					if not drawerFrame:IsDescendantOf(game) or not mainGroup:IsDescendantOf(game) then
+					if not drawerFrame or not drawerFrame.Parent or not mainGroup:IsDescendantOf(game) then
 						if trackConn then trackConn:Disconnect() end
 						return
 					end
+
+					-- Auto close if main window becomes invisible or minimized
+					if not mainGroup.Visible or mainGroup.GroupTransparency >= 0.99 then
+						closeDrawer()
+						if trackConn then trackConn:Disconnect() end
+						return
+					end
+
 					strokeGradient.Rotation = (tick() * 60) % 360
 					
 					local mainPos = mainGroup.AbsolutePosition
 					local mainSize = mainGroup.AbsoluteSize
+					
+					-- Match main window height & stick to the right side
+					drawerFrame.Size = UDim2.new(0, 172, 0, mainSize.Y)
 					drawerFrame.Position = UDim2.new(0, mainPos.X + mainSize.X + 8, 0, mainPos.Y)
 				end)
 
-				-- Drawer Header Title & Close Button
+				-- Drawer Header Title & Lucide X Close Button
 				local dTitle = Instance.new("TextLabel", drawerFrame)
 				dTitle.Size = UDim2.new(1, -36, 0, 32)
 				dTitle.Position = UDim2.new(0, 12, 0, 8)
 				dTitle.BackgroundTransparency = 1
 				dTitle.Text = title
 				dTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-				dTitle.TextSize = 12
+				dTitle.TextSize = 11
 				dTitle.Font = Enum.Font.GothamBold
 				dTitle.TextXAlignment = Enum.TextXAlignment.Left
 				dTitle.ZIndex = 101
 
-				local closeBtn = Instance.new("TextButton", drawerFrame)
+				local closeBtn = Instance.new("ImageButton", drawerFrame)
 				closeBtn.AnchorPoint = Vector2.new(1, 0)
-				closeBtn.Position = UDim2.new(1, -8, 0, 8)
-				closeBtn.Size = UDim2.new(0, 20, 0, 20)
+				closeBtn.Position = UDim2.new(1, -10, 0, 10)
+				closeBtn.Size = UDim2.new(0, 16, 0, 16)
 				closeBtn.BackgroundTransparency = 1
-				closeBtn.Text = "✕"
-				closeBtn.TextColor3 = Color3.fromRGB(150, 160, 180)
-				closeBtn.TextSize = 11
-				closeBtn.Font = Enum.Font.GothamBold
+				closeBtn.Image = "rbxassetid://10709791437" -- Lucide X Icon
+				closeBtn.ImageColor3 = Color3.fromRGB(160, 170, 190)
 				closeBtn.ZIndex = 101
 
-				-- 1. Saturation & Value Box
+				closeBtn.MouseButton1Click:Connect(closeDrawer)
+
+				-- 1. Saturation & Value Box (Thinner layout width: 104px)
 				local svBox = Instance.new("Frame", drawerFrame)
 				svBox.Position = UDim2.new(0, 12, 0, 44)
-				svBox.Size = UDim2.new(0, 124, 0, 124)
+				svBox.Size = UDim2.new(0, 104, 0, 104)
 				svBox.BackgroundColor3 = Color3.fromHSV(tempH, 1, 1)
 				svBox.BorderSizePixel = 0
 				svBox.ZIndex = 101
@@ -2376,8 +2405,8 @@ function EclipseUI:CreateWindow(options)
 
 				-- 2. Hue Bar
 				local hueBar = Instance.new("Frame", drawerFrame)
-				hueBar.Position = UDim2.new(0, 142, 0, 44)
-				hueBar.Size = UDim2.new(0, 10, 0, 124)
+				hueBar.Position = UDim2.new(0, 122, 0, 44)
+				hueBar.Size = UDim2.new(0, 10, 0, 104)
 				hueBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 				hueBar.BorderSizePixel = 0
 				hueBar.ZIndex = 101
@@ -2409,7 +2438,7 @@ function EclipseUI:CreateWindow(options)
 				local function createInputRow(labelName, defaultVal, yPos)
 					local box = Instance.new("TextBox", drawerFrame)
 					box.Position = UDim2.new(0, inputStartX, 0, yPos)
-					box.Size = UDim2.new(0, 96, 0, 22)
+					box.Size = UDim2.new(0, 80, 0, 20)
 					box.BackgroundColor3 = Color3.fromRGB(22, 27, 38)
 					box.BackgroundTransparency = 0.1
 					box.Text = tostring(defaultVal)
@@ -2431,8 +2460,8 @@ function EclipseUI:CreateWindow(options)
 					end)
 
 					local tag = Instance.new("TextLabel", drawerFrame)
-					tag.Position = UDim2.new(0, inputStartX + 102, 0, yPos)
-					tag.Size = UDim2.new(0, 84, 0, 22)
+					tag.Position = UDim2.new(0, inputStartX + 84, 0, yPos)
+					tag.Size = UDim2.new(0, 60, 0, 20)
 					tag.BackgroundTransparency = 1
 					tag.Text = labelName
 					tag.TextColor3 = Color3.fromRGB(130, 140, 160)
@@ -2444,10 +2473,10 @@ function EclipseUI:CreateWindow(options)
 					return box
 				end
 
-				local hexBox = createInputRow("Hex", "#" .. currentColor:ToHex(), 178)
-				local rBox = createInputRow("Red", math.floor(currentColor.R * 255 + 0.5), 204)
-				local gBox = createInputRow("Green", math.floor(currentColor.G * 255 + 0.5), 230)
-				local bBox = createInputRow("Blue", math.floor(currentColor.B * 255 + 0.5), 256)
+				local hexBox = createInputRow("Hex", "#" .. currentColor:ToHex(), 156)
+				local rBox = createInputRow("Red", math.floor(currentColor.R * 255 + 0.5), 180)
+				local gBox = createInputRow("Green", math.floor(currentColor.G * 255 + 0.5), 204)
+				local bBox = createInputRow("Blue", math.floor(currentColor.B * 255 + 0.5), 228)
 
 				local function updatePicker(skipInputs)
 					local activeColor = Color3.fromHSV(tempH, tempS, tempV)
@@ -2537,23 +2566,44 @@ function EclipseUI:CreateWindow(options)
 				gBox.FocusLost:Connect(rgbLost)
 				bBox.FocusLost:Connect(rgbLost)
 
-				local function closeDrawer()
-					if trackConn then trackConn:Disconnect() end
-					drawerFrame:Destroy()
-					isDrawerOpen = false
-				end
+				-- Apply Button at the bottom
+				local applyBtn = Instance.new("TextButton", drawerFrame)
+				applyBtn.AnchorPoint = Vector2.new(0, 1)
+				applyBtn.Position = UDim2.new(0, 12, 1, -12)
+				applyBtn.Size = UDim2.new(1, -24, 0, 28)
+				applyBtn.BackgroundColor3 = Color3.fromRGB(65, 85, 130)
+				applyBtn.BackgroundTransparency = 0.2
+				applyBtn.Text = "Apply"
+				applyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+				applyBtn.TextSize = 11
+				applyBtn.Font = Enum.Font.GothamBold
+				applyBtn.ZIndex = 101
+				Instance.new("UICorner", applyBtn).CornerRadius = UDim.new(0, 6)
 
-				closeBtn.MouseButton1Click:Connect(closeDrawer)
+				applyBtn.MouseButton1Click:Connect(function()
+					currentColor = Color3.fromHSV(tempH, tempS, tempV)
+					currentAlpha = tempA
+					colorPreview.BackgroundColor3 = currentColor
+					pcall(callback, currentColor, currentAlpha)
+					closeDrawer()
+				end)
+
+				-- Smooth Appearance Tween Animation
+				TweenService:Create(drawerFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+					GroupTransparency = 0
+				}):Play()
 
 				updatePicker()
 			end)
 
 			local obj = {
 				GetColor = function() return currentColor end,
-				Set = function(_, col)
+				GetAlpha = function() return currentAlpha end,
+				Set = function(_, col, alpha)
 					currentColor = col or currentColor
+					currentAlpha = alpha or currentAlpha
 					colorPreview.BackgroundColor3 = currentColor
-					pcall(callback, currentColor)
+					pcall(callback, currentColor, currentAlpha)
 				end
 			}
 
