@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.6.04
+--// EclipseUI Roblox Library Version 1.6.04 (Eclipse Theme)
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -2603,7 +2603,6 @@ function EclipseUI:CreateWindow(options)
 					keyBtn.Text = currentKey.Name
 					keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
 					tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
-					-- Fire callback only when the key is actually changed/rebound
 					pcall(callback, currentKey)
 				end
 			end)
