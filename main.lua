@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.6.04 (Emerald Theme)[cite: 8]
+--// EclipseUI Roblox Library Version 1.6.04 (Multi-Theme Support)[cite: 8]
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -41,6 +41,36 @@ local function getIconAsset(iconInput)
 	return LucideIcons[iconName] or ""
 end
 
+--// Theme Configurations
+local Themes = {
+	Eclipse = {
+		MainBg = Color3.fromRGB(15, 16, 20),
+		StrokeColors = {Color3.fromRGB(80, 90, 120), Color3.fromRGB(255, 255, 255), Color3.fromRGB(80, 90, 120)},
+		MainGradient = {Color3.fromRGB(15, 16, 22), Color3.fromRGB(45, 55, 80), Color3.fromRGB(15, 16, 22)},
+		PillGradient = {Color3.fromRGB(65, 85, 140), Color3.fromRGB(35, 42, 60), Color3.fromRGB(25, 28, 38)},
+		ButtonGradient = {Color3.fromRGB(65, 85, 130), Color3.fromRGB(35, 45, 65), Color3.fromRGB(65, 85, 130)},
+		ToggleGradient = {Color3.fromRGB(210, 218, 230), Color3.fromRGB(150, 160, 175)},
+		TextMuted = Color3.fromRGB(150, 160, 180),
+		TextDim = Color3.fromRGB(140, 148, 165),
+		ContainerBg = Color3.fromRGB(18, 22, 30),
+		LoaderBg = Color3.fromRGB(10, 11, 15),
+		LoaderBar = {Color3.fromRGB(100, 130, 200), Color3.fromRGB(255, 255, 255)},
+	},
+	Emerald = {
+		MainBg = Color3.fromRGB(15, 20, 18),
+		StrokeColors = {Color3.fromRGB(60, 130, 95), Color3.fromRGB(255, 255, 255), Color3.fromRGB(60, 130, 95)},
+		MainGradient = {Color3.fromRGB(15, 20, 18), Color3.fromRGB(30, 70, 50), Color3.fromRGB(15, 20, 18)},
+		PillGradient = {Color3.fromRGB(45, 140, 90), Color3.fromRGB(25, 65, 45), Color3.fromRGB(18, 30, 22)},
+		ButtonGradient = {Color3.fromRGB(45, 130, 85), Color3.fromRGB(25, 65, 45), Color3.fromRGB(45, 130, 85)},
+		ToggleGradient = {Color3.fromRGB(150, 230, 190), Color3.fromRGB(90, 175, 130)},
+		TextMuted = Color3.fromRGB(150, 180, 165),
+		TextDim = Color3.fromRGB(140, 165, 150),
+		ContainerBg = Color3.fromRGB(18, 25, 21),
+		LoaderBg = Color3.fromRGB(10, 15, 12),
+		LoaderBar = {Color3.fromRGB(60, 180, 110), Color3.fromRGB(255, 255, 255)},
+	}
+}
+
 local EclipseUI = {}
 EclipseUI.__index = EclipseUI
 
@@ -50,6 +80,8 @@ function EclipseUI:Notify(opts)
 	local content = opts.Content or ""
 	local duration = opts.Duration or 4
 	local iconName = opts.Icon
+	local themeName = opts.Theme and Themes[opts.Theme] and opts.Theme or "Eclipse"
+	local Theme = Themes[themeName]
 
 	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 	local notifGui = playerGui:FindFirstChild("EclipseNotifications")
@@ -90,7 +122,7 @@ function EclipseUI:Notify(opts)
 
 	local cardGroup = Instance.new("CanvasGroup")
 	cardGroup.Size = UDim2.new(1, 0, 1, 0)
-	cardGroup.BackgroundColor3 = Color3.fromRGB(15, 20, 18)
+	cardGroup.BackgroundColor3 = Theme.MainBg
 	cardGroup.BackgroundTransparency = 0.2
 	cardGroup.GroupTransparency = 1
 	cardGroup.Position = UDim2.new(0, 60, 0, 0)
@@ -109,9 +141,9 @@ function EclipseUI:Notify(opts)
 
 	local strokeGradient = Instance.new("UIGradient")
 	strokeGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(60, 130, 95)),
-		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(60, 130, 95))
+		ColorSequenceKeypoint.new(0, Theme.StrokeColors[1]),
+		ColorSequenceKeypoint.new(0.5, Theme.StrokeColors[2]),
+		ColorSequenceKeypoint.new(1, Theme.StrokeColors[3])
 	})
 	strokeGradient.Parent = cardStroke
 
@@ -133,7 +165,7 @@ function EclipseUI:Notify(opts)
 		iconImg.Position = UDim2.new(0, 14, 0.5, -9)
 		iconImg.BackgroundTransparency = 1
 		iconImg.Image = getIconAsset(iconName)
-		iconImg.ImageColor3 = Color3.fromRGB(180, 230, 200)
+		iconImg.ImageColor3 = Theme.TextMuted
 		iconImg.ZIndex = 101
 		iconImg.Parent = cardGroup
 		textOffsetLeft = 40
@@ -163,7 +195,7 @@ function EclipseUI:Notify(opts)
 	contentLabel.Position = UDim2.new(0, 0, 0, 28)
 	contentLabel.BackgroundTransparency = 1
 	contentLabel.Text = content
-	contentLabel.TextColor3 = Color3.fromRGB(150, 180, 165)
+	contentLabel.TextColor3 = Theme.TextMuted
 	contentLabel.TextSize = 11
 	contentLabel.Font = Enum.Font.Gotham
 	contentLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -193,7 +225,7 @@ end
 
 function EclipseUI:CreateWindow(options)
 	options = options or {}
-	local windowName = options.Title or options.Name or "Emerald UI"
+	local windowName = options.Title or options.Name or "UI Library"
 	local windowSubtitle = options.Subtitle
 	local windowIcon = options.Icon
 	local initialToggleKey = options.ToggleKey or Enum.KeyCode.RightControl
@@ -202,6 +234,8 @@ function EclipseUI:CreateWindow(options)
 	local loadAnimEnabled = options.LoadAnim or false
 	local openButtonEnabled = options.OpenButton or false
 	local userOptions = options.User
+	local themeName = options.Theme and Themes[options.Theme] and options.Theme or "Eclipse"
+	local Theme = Themes[themeName]
 
 	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -324,7 +358,7 @@ function EclipseUI:CreateWindow(options)
 	mainGroup.AnchorPoint = Vector2.new(0.5, 0.5)
 	mainGroup.Position = defaultPos
 	mainGroup.Size = defaultSize
-	mainGroup.BackgroundColor3 = Color3.fromRGB(15, 20, 18)
+	mainGroup.BackgroundColor3 = Theme.MainBg
 	mainGroup.BackgroundTransparency = 0.2
 	mainGroup.BorderSizePixel = 0
 	mainGroup.GroupTransparency = loadAnimEnabled and 1 or 0
@@ -346,9 +380,9 @@ function EclipseUI:CreateWindow(options)
 
 	local mainBgGradient = Instance.new("UIGradient")
 	mainBgGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(15, 20, 18)),
-		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(30, 70, 50)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 20, 18))
+		ColorSequenceKeypoint.new(0, Theme.MainGradient[1]),
+		ColorSequenceKeypoint.new(0.5, Theme.MainGradient[2]),
+		ColorSequenceKeypoint.new(1, Theme.MainGradient[3])
 	})
 	mainBgGradient.Rotation = 45
 	mainBgGradient.Offset = Vector2.new(-1, 0)
@@ -363,9 +397,9 @@ function EclipseUI:CreateWindow(options)
 
 	local strokeGradient = Instance.new("UIGradient")
 	strokeGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(60, 130, 95)),
-		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(60, 130, 95))
+		ColorSequenceKeypoint.new(0, Theme.StrokeColors[1]),
+		ColorSequenceKeypoint.new(0.5, Theme.StrokeColors[2]),
+		ColorSequenceKeypoint.new(1, Theme.StrokeColors[3])
 	})
 	strokeGradient.Parent = uiStroke
 
@@ -408,7 +442,7 @@ function EclipseUI:CreateWindow(options)
 
 		local overlay = Instance.new("Frame")
 		overlay.Size = UDim2.new(1, 0, 1, 0)
-		overlay.BackgroundColor3 = Color3.fromRGB(10, 15, 12)
+		overlay.BackgroundColor3 = Theme.LoaderBg
 		overlay.BackgroundTransparency = 1
 		overlay.BorderSizePixel = 0
 		overlay.Parent = loaderGui
@@ -437,7 +471,7 @@ function EclipseUI:CreateWindow(options)
 		barBg.AnchorPoint = Vector2.new(0.5, 0.5)
 		barBg.Position = UDim2.new(0.5, 0, 0.75, 0)
 		barBg.Size = UDim2.new(0, 280, 0, 6)
-		barBg.BackgroundColor3 = Color3.fromRGB(25, 42, 32)
+		barBg.BackgroundColor3 = Theme.ContainerBg
 		barBg.BackgroundTransparency = 1
 		barBg.BorderSizePixel = 0
 		barBg.Parent = container
@@ -459,8 +493,8 @@ function EclipseUI:CreateWindow(options)
 
 		local barGradient = Instance.new("UIGradient")
 		barGradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, Color3.fromRGB(60, 180, 110)),
-			ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+			ColorSequenceKeypoint.new(0, Theme.LoaderBar[1]),
+			ColorSequenceKeypoint.new(1, Theme.LoaderBar[2])
 		})
 		barGradient.Parent = bar
 
@@ -535,7 +569,7 @@ function EclipseUI:CreateWindow(options)
 		local openBtn = Instance.new("ImageButton")
 		openBtn.Size = UDim2.new(0, 44, 0, 44)
 		openBtn.Position = UDim2.new(0, 20, 0, 20)
-		openBtn.BackgroundColor3 = Color3.fromRGB(15, 20, 18)
+		openBtn.BackgroundColor3 = Theme.MainBg
 		openBtn.BackgroundTransparency = 0.2
 		openBtn.AutoButtonColor = false
 		openBtn.Image = ""
@@ -557,7 +591,7 @@ function EclipseUI:CreateWindow(options)
 		openIcon.Size = UDim2.new(0, 20, 0, 20)
 		openIcon.BackgroundTransparency = 1
 		openIcon.Image = getIconAsset(windowIcon or "sparkles")
-		openIcon.ImageColor3 = Color3.fromRGB(220, 250, 235)
+		openIcon.ImageColor3 = Color3.fromRGB(240, 245, 255)
 		openIcon.Parent = openBtn
 
 		if not iconsLoaded and windowIcon then
@@ -784,7 +818,7 @@ function EclipseUI:CreateWindow(options)
 		subtitleLabel.AutomaticSize = Enum.AutomaticSize.X
 		subtitleLabel.BackgroundTransparency = 1
 		subtitleLabel.Text = windowSubtitle
-		subtitleLabel.TextColor3 = Color3.fromRGB(150, 180, 165)
+		subtitleLabel.TextColor3 = Theme.TextMuted
 		subtitleLabel.TextSize = 11
 		subtitleLabel.Font = Enum.Font.Gotham
 		subtitleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -815,7 +849,7 @@ function EclipseUI:CreateWindow(options)
 			local tagPill = Instance.new("Frame")
 			tagPill.Size = UDim2.new(0, 0, 0, 20)
 			tagPill.AutomaticSize = Enum.AutomaticSize.X
-			tagPill.BackgroundColor3 = Color3.fromRGB(25, 42, 32)
+			tagPill.BackgroundColor3 = Theme.ContainerBg
 			tagPill.BackgroundTransparency = 0.4
 			tagPill.ZIndex = 4
 			tagPill.Parent = tagsList
@@ -833,7 +867,7 @@ function EclipseUI:CreateWindow(options)
 			local tagGradient = Instance.new("UIGradient")
 			tagGradient.Color = ColorSequence.new({
 				ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 220, 200))
+				ColorSequenceKeypoint.new(1, Theme.TextMuted)
 			})
 			tagGradient.Rotation = 90
 			tagGradient.Parent = tagPill
@@ -848,7 +882,7 @@ function EclipseUI:CreateWindow(options)
 			tagText.AutomaticSize = Enum.AutomaticSize.X
 			tagText.BackgroundTransparency = 1
 			tagText.Text = tostring(tagName)
-			tagText.TextColor3 = Color3.fromRGB(220, 248, 235)
+			tagText.TextColor3 = Color3.fromRGB(220, 240, 235)
 			tagText.TextSize = 11
 			tagText.Font = Enum.Font.GothamBold
 			tagText.TextXAlignment = Enum.TextXAlignment.Left
@@ -904,7 +938,7 @@ function EclipseUI:CreateWindow(options)
 		icon.Size = UDim2.new(0, iconSize, 0, iconSize)
 		icon.BackgroundTransparency = 1
 		icon.Image = getIconAsset(iconName)
-		icon.ImageColor3 = Color3.fromRGB(150, 180, 165)
+		icon.ImageColor3 = Theme.TextMuted
 		icon.ZIndex = 11
 		icon.Parent = btnFrame
 
@@ -924,7 +958,7 @@ function EclipseUI:CreateWindow(options)
 
 		icon.MouseLeave:Connect(function()
 			TweenService:Create(btnFrame, TweenInfo.new(0.15), { BackgroundTransparency = 1 }):Play()
-			TweenService:Create(icon, TweenInfo.new(0.15), { ImageColor3 = Color3.fromRGB(150, 180, 165) }):Play()
+			TweenService:Create(icon, TweenInfo.new(0.15), { ImageColor3 = Theme.TextMuted }):Play()
 		end)
 
 		return icon, btnFrame
@@ -1070,9 +1104,9 @@ function EclipseUI:CreateWindow(options)
 
 	local pillGradient = Instance.new("UIGradient")
 	pillGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromRGB(45, 140, 90)),
-		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(25, 65, 45)),
-		ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 30, 22))
+		ColorSequenceKeypoint.new(0, Theme.PillGradient[1]),
+		ColorSequenceKeypoint.new(0.5, Theme.PillGradient[2]),
+		ColorSequenceKeypoint.new(1, Theme.PillGradient[3])
 	})
 	pillGradient.Rotation = 90
 	pillGradient.Parent = activePill
@@ -1171,7 +1205,7 @@ function EclipseUI:CreateWindow(options)
 		displayNameLabel.Size = UDim2.new(1, -48, 0, 15)
 		displayNameLabel.Position = UDim2.new(0, 44, 0, 8)
 		displayNameLabel.BackgroundTransparency = 1
-		displayNameLabel.Text = userAnon and "Emerald" or LocalPlayer.DisplayName
+		displayNameLabel.Text = userAnon and themeName or LocalPlayer.DisplayName
 		displayNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 		displayNameLabel.TextSize = 12
 		displayNameLabel.Font = Enum.Font.GothamBold
@@ -1185,8 +1219,8 @@ function EclipseUI:CreateWindow(options)
 		usernameLabel.Size = UDim2.new(1, -48, 0, 13)
 		usernameLabel.Position = UDim2.new(0, 44, 0, 23)
 		usernameLabel.BackgroundTransparency = 1
-		usernameLabel.Text = userAnon and "@EmeraldUI" or ("@" .. LocalPlayer.Name)
-		usernameLabel.TextColor3 = Color3.fromRGB(150, 180, 165)
+		usernameLabel.Text = userAnon and ("@" .. themeName .. "UI") or ("@" .. LocalPlayer.Name)
+		usernameLabel.TextColor3 = Theme.TextMuted
 		usernameLabel.TextSize = 10
 		usernameLabel.Font = Enum.Font.GothamBold
 		usernameLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -1206,7 +1240,7 @@ function EclipseUI:CreateWindow(options)
 		userInfo.MouseLeave:Connect(function()
 			TweenService:Create(userInfo, userHoverInfo, { BackgroundTransparency = 1 }):Play()
 			TweenService:Create(userStroke, userHoverInfo, { Transparency = 1 }):Play()
-			TweenService:Create(displayNameLabel, userHoverInfo, { TextColor3 = Color3.fromRGB(240, 250, 235) }):Play()
+			TweenService:Create(displayNameLabel, userHoverInfo, { TextColor3 = Color3.fromRGB(240, 245, 255) }):Play()
 		end)
 
 		userInfo.MouseButton1Down:Connect(function()
@@ -1219,8 +1253,8 @@ function EclipseUI:CreateWindow(options)
 
 		userInfo.MouseButton1Click:Connect(function()
 			userAnon = not userAnon
-			displayNameLabel.Text = userAnon and "Emerald" or LocalPlayer.DisplayName
-			usernameLabel.Text = userAnon and "@EmeraldUI" or ("@" .. LocalPlayer.Name)
+			displayNameLabel.Text = userAnon and themeName or LocalPlayer.DisplayName
+			usernameLabel.Text = userAnon and ("@" .. themeName .. "UI") or ("@" .. LocalPlayer.Name)
 			avatarImage.Image = userAnon and "rbxassetid://11984980776" or (realThumbnail ~= "" and realThumbnail or "rbxassetid://11984980776")
 			pcall(userCallback)
 		end)
@@ -1375,9 +1409,9 @@ function EclipseUI:CreateWindow(options)
 					GroupTransparency = 0
 				})
 			else
-				tween(tab.Label, fadeTweenInfo, { TextColor3 = Color3.fromRGB(140, 165, 150) })
+				tween(tab.Label, fadeTweenInfo, { TextColor3 = Theme.TextDim })
 				if tab.Icon then
-					tween(tab.Icon, fadeTweenInfo, { ImageColor3 = Color3.fromRGB(140, 165, 150), ImageTransparency = 0.3 })
+					tween(tab.Icon, fadeTweenInfo, { ImageColor3 = Theme.TextDim, ImageTransparency = 0.3 })
 				end
 
 				tab.PageGroup.Visible = false
@@ -1416,7 +1450,7 @@ function EclipseUI:CreateWindow(options)
 			iconImage.Position = UDim2.new(0, 8, 0.5, -8)
 			iconImage.BackgroundTransparency = 1
 			iconImage.Image = getIconAsset(tabIcon)
-			iconImage.ImageColor3 = Color3.fromRGB(140, 165, 150)
+			iconImage.ImageColor3 = Theme.TextDim
 			iconImage.ImageTransparency = 0.3
 			iconImage.ZIndex = 5
 			iconImage.Parent = tabFrame
@@ -1439,7 +1473,7 @@ function EclipseUI:CreateWindow(options)
 		tabText.Position = UDim2.new(0, textOffsetX, 0, 0)
 		tabText.BackgroundTransparency = 1
 		tabText.Text = tabTitle
-		tabText.TextColor3 = Color3.fromRGB(140, 165, 150)
+		tabText.TextColor3 = Theme.TextDim
 		tabText.TextSize = 12
 		tabText.Font = Enum.Font.GothamBold
 		tabText.TextXAlignment = Enum.TextXAlignment.Left
@@ -1493,7 +1527,7 @@ function EclipseUI:CreateWindow(options)
 
 		clickBtn.MouseEnter:Connect(function()
 			if Window.ActiveTab ~= TabObject then
-				tween(tabText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(220, 240, 230) })
+				tween(tabText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(220, 225, 235) })
 				if iconImage then
 					tween(iconImage, fadeTweenInfo, { ImageTransparency = 0.1 })
 				end
@@ -1502,7 +1536,7 @@ function EclipseUI:CreateWindow(options)
 
 		clickBtn.MouseLeave:Connect(function()
 			if Window.ActiveTab ~= TabObject then
-				tween(tabText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(140, 165, 150) })
+				tween(tabText, fadeTweenInfo, { TextColor3 = Theme.TextDim })
 				if iconImage then
 					tween(iconImage, fadeTweenInfo, { ImageTransparency = 0.3 })
 				end
@@ -1633,7 +1667,7 @@ function EclipseUI:CreateWindow(options)
 				secIconImg.Position = UDim2.new(0, 0, 0.5, -7)
 				secIconImg.BackgroundTransparency = 1
 				secIconImg.Image = getIconAsset(secIcon)
-				secIconImg.ImageColor3 = Color3.fromRGB(130, 165, 145)
+				secIconImg.ImageColor3 = Theme.TextDim
 				secIconImg.ZIndex = 4
 				secIconImg.Parent = secHeaderContainer
 
@@ -1654,7 +1688,7 @@ function EclipseUI:CreateWindow(options)
 			secHeader.Position = UDim2.new(0, textOffsetX, 0, 0)
 			secHeader.BackgroundTransparency = 1
 			secHeader.Text = string.upper(secTitle)
-			secHeader.TextColor3 = Color3.fromRGB(130, 165, 145)
+			secHeader.TextColor3 = Theme.TextDim
 			secHeader.TextSize = 10
 			secHeader.Font = Enum.Font.GothamBold
 			secHeader.TextXAlignment = Enum.TextXAlignment.Left
@@ -1685,7 +1719,7 @@ function EclipseUI:CreateWindow(options)
 			local boxFrame = Instance.new("Frame")
 			boxFrame.Size = UDim2.new(1, 0, 0, 0)
 			boxFrame.AutomaticSize = Enum.AutomaticSize.Y
-			boxFrame.BackgroundColor3 = Color3.fromRGB(18, 25, 21)
+			boxFrame.BackgroundColor3 = Theme.ContainerBg
 			boxFrame.BackgroundTransparency = 0.6
 			boxFrame.ClipsDescendants = true
 			boxFrame.ZIndex = 4
@@ -1744,7 +1778,7 @@ function EclipseUI:CreateWindow(options)
 					iconImg.Position = UDim2.new(0, 0, 0.5, -7)
 					iconImg.BackgroundTransparency = 1
 					iconImg.Image = getIconAsset(boxIcon)
-					iconImg.ImageColor3 = Color3.fromRGB(160, 190, 175)
+					iconImg.ImageColor3 = Theme.TextMuted
 					iconImg.ZIndex = 5
 					iconImg.Parent = headerContainer
 
@@ -1765,7 +1799,7 @@ function EclipseUI:CreateWindow(options)
 				titleLabel.Position = UDim2.new(0, textOffsetX, 0, 0)
 				titleLabel.BackgroundTransparency = 1
 				titleLabel.Text = string.upper(boxTitle)
-				titleLabel.TextColor3 = Color3.fromRGB(160, 190, 175)
+				titleLabel.TextColor3 = Theme.TextMuted
 				titleLabel.TextSize = 10
 				titleLabel.Font = Enum.Font.GothamBold
 				titleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -1779,7 +1813,7 @@ function EclipseUI:CreateWindow(options)
 					arrowIcon.Size = UDim2.new(0, 14, 0, 14)
 					arrowIcon.BackgroundTransparency = 1
 					arrowIcon.Image = getIconAsset("chevron-down")
-					arrowIcon.ImageColor3 = Color3.fromRGB(160, 190, 175)
+					arrowIcon.ImageColor3 = Theme.TextMuted
 					arrowIcon.Rotation = isFolded and 180 or 0
 					arrowIcon.ZIndex = 5
 					arrowIcon.Parent = headerContainer
@@ -1889,7 +1923,7 @@ function EclipseUI:CreateWindow(options)
 			pText.AutomaticSize = Enum.AutomaticSize.Y
 			pText.BackgroundTransparency = 1
 			pText.Text = content
-			pText.TextColor3 = Color3.fromRGB(150, 180, 165)
+			pText.TextColor3 = Theme.TextMuted
 			pText.TextSize = 11
 			pText.Font = Enum.Font.Gotham
 			pText.TextXAlignment = Enum.TextXAlignment.Left
@@ -1919,9 +1953,9 @@ function EclipseUI:CreateWindow(options)
 
 			local btnGradient = Instance.new("UIGradient")
 			btnGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Color3.fromRGB(45, 130, 85)),
-				ColorSequenceKeypoint.new(0.5, Color3.fromRGB(25, 65, 45)),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(45, 130, 85))
+				ColorSequenceKeypoint.new(0, Theme.ButtonGradient[1]),
+				ColorSequenceKeypoint.new(0.5, Theme.ButtonGradient[2]),
+				ColorSequenceKeypoint.new(1, Theme.ButtonGradient[3])
 			})
 			btnGradient.Rotation = 0
 			btnGradient.Parent = btn
@@ -2050,9 +2084,9 @@ function EclipseUI:CreateWindow(options)
 
 				local btnGradient = Instance.new("UIGradient")
 				btnGradient.Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, Color3.fromRGB(45, 130, 85)),
-					ColorSequenceKeypoint.new(0.5, Color3.fromRGB(25, 65, 45)),
-					ColorSequenceKeypoint.new(1, Color3.fromRGB(45, 130, 85))
+					ColorSequenceKeypoint.new(0, Theme.ButtonGradient[1]),
+					ColorSequenceKeypoint.new(0.5, Theme.ButtonGradient[2]),
+					ColorSequenceKeypoint.new(1, Theme.ButtonGradient[3])
 				})
 				btnGradient.Rotation = 0
 				btnGradient.Parent = btnFrame
@@ -2151,7 +2185,7 @@ function EclipseUI:CreateWindow(options)
 			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = title
-			label.TextColor3 = Color3.fromRGB(240, 250, 235)
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
@@ -2162,12 +2196,12 @@ function EclipseUI:CreateWindow(options)
 			textBox.AnchorPoint = Vector2.new(1, 0.5)
 			textBox.Position = UDim2.new(1, -12, 0.5, 0)
 			textBox.Size = UDim2.new(0, 130, 0, 24)
-			textBox.BackgroundColor3 = Color3.fromRGB(18, 25, 21)
+			textBox.BackgroundColor3 = Theme.ContainerBg
 			textBox.BackgroundTransparency = 0.2
 			textBox.Text = tostring(default)
 			textBox.PlaceholderText = placeholder
-			textBox.PlaceholderColor3 = Color3.fromRGB(110, 140, 125)
-			textBox.TextColor3 = Color3.fromRGB(230, 248, 238)
+			textBox.PlaceholderColor3 = Color3.fromRGB(110, 120, 140)
+			textBox.TextColor3 = Color3.fromRGB(230, 238, 250)
 			textBox.TextSize = 11
 			textBox.Font = Enum.Font.GothamMedium
 			textBox.TextYAlignment = Enum.TextYAlignment.Center
@@ -2229,7 +2263,7 @@ function EclipseUI:CreateWindow(options)
 			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = title
-			label.TextColor3 = Color3.fromRGB(240, 250, 235)
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
@@ -2241,7 +2275,7 @@ function EclipseUI:CreateWindow(options)
 			toggleFrame.AnchorPoint = Vector2.new(1, 0.5)
 			toggleFrame.Position = UDim2.new(1, -12, 0.5, 0)
 			toggleFrame.Size = UDim2.new(0, 44, 0, 22)
-			toggleFrame.BackgroundColor3 = Color3.fromRGB(25, 40, 32)
+			toggleFrame.BackgroundColor3 = Theme.ContainerBg
 			toggleFrame.BackgroundTransparency = 0.4
 			toggleFrame.ZIndex = 5
 			toggleFrame.Parent = toggleContainer
@@ -2264,8 +2298,8 @@ function EclipseUI:CreateWindow(options)
 
 			local toggleGradient = Instance.new("UIGradient")
 			toggleGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Color3.fromRGB(150, 230, 190)),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(90, 175, 130))
+				ColorSequenceKeypoint.new(0, Theme.ToggleGradient[1]),
+				ColorSequenceKeypoint.new(1, Theme.ToggleGradient[2])
 			})
 			toggleGradient.Rotation = 45
 			toggleGradient.Parent = gradientOverlay
@@ -2361,7 +2395,7 @@ function EclipseUI:CreateWindow(options)
 			label.Position = UDim2.new(0, 14, 0, 10)
 			label.BackgroundTransparency = 1
 			label.Text = title
-			label.TextColor3 = Color3.fromRGB(240, 250, 235)
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
@@ -2372,10 +2406,10 @@ function EclipseUI:CreateWindow(options)
 			valBox.AnchorPoint = Vector2.new(1, 0)
 			valBox.Position = UDim2.new(1, -12, 0, 8)
 			valBox.Size = UDim2.new(0, 56, 0, 22)
-			valBox.BackgroundColor3 = Color3.fromRGB(18, 25, 21)
+			valBox.BackgroundColor3 = Theme.ContainerBg
 			valBox.BackgroundTransparency = 0.2
 			valBox.Text = tostring(default)
-			valBox.TextColor3 = Color3.fromRGB(230, 248, 238)
+			valBox.TextColor3 = Color3.fromRGB(230, 238, 250)
 			valBox.TextSize = 11
 			valBox.Font = Enum.Font.GothamMedium
 			valBox.TextYAlignment = Enum.TextYAlignment.Center
@@ -2397,7 +2431,7 @@ function EclipseUI:CreateWindow(options)
 			track.AnchorPoint = Vector2.new(0.5, 0)
 			track.Position = UDim2.new(0.5, 0, 0, 38)
 			track.Size = UDim2.new(1, -32, 0, 6)
-			track.BackgroundColor3 = Color3.fromRGB(20, 30, 25)
+			track.BackgroundColor3 = Theme.ContainerBg
 			track.BorderSizePixel = 0
 			track.ZIndex = 5
 			track.Parent = sliderContainer
@@ -2419,8 +2453,8 @@ function EclipseUI:CreateWindow(options)
 
 			local fillGradient = Instance.new("UIGradient")
 			fillGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Color3.fromRGB(150, 230, 190)),
-				ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 175, 140))
+				ColorSequenceKeypoint.new(0, Theme.ToggleGradient[1]),
+				ColorSequenceKeypoint.new(1, Theme.ToggleGradient[2])
 			})
 			fillGradient.Parent = fill
 
@@ -2538,7 +2572,7 @@ function EclipseUI:CreateWindow(options)
 			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = title
-			label.TextColor3 = Color3.fromRGB(240, 250, 235)
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
@@ -2549,10 +2583,10 @@ function EclipseUI:CreateWindow(options)
 			keyBtn.AnchorPoint = Vector2.new(1, 0.5)
 			keyBtn.Position = UDim2.new(1, -12, 0.5, 0)
 			keyBtn.Size = UDim2.new(0, 90, 0, 24)
-			keyBtn.BackgroundColor3 = Color3.fromRGB(18, 25, 21)
+			keyBtn.BackgroundColor3 = Theme.ContainerBg
 			keyBtn.BackgroundTransparency = 0.2
 			keyBtn.Text = currentKey.Name
-			keyBtn.TextColor3 = Color3.fromRGB(230, 248, 238)
+			keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
 			keyBtn.TextSize = 11
 			keyBtn.Font = Enum.Font.GothamMedium
 			keyBtn.TextYAlignment = Enum.TextYAlignment.Center
@@ -2601,7 +2635,7 @@ function EclipseUI:CreateWindow(options)
 					listening = false
 					currentKey = input.KeyCode
 					keyBtn.Text = currentKey.Name
-					keyBtn.TextColor3 = Color3.fromRGB(230, 248, 238)
+					keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
 					tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
 					pcall(callback, currentKey)
 				end
@@ -2651,7 +2685,7 @@ function EclipseUI:CreateWindow(options)
 			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = title
-			label.TextColor3 = Color3.fromRGB(240, 250, 235)
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
@@ -2662,7 +2696,7 @@ function EclipseUI:CreateWindow(options)
 			selBox.AnchorPoint = Vector2.new(1, 0.5)
 			selBox.Position = UDim2.new(1, -12, 0.5, 0)
 			selBox.Size = UDim2.new(0, 104, 0, 24)
-			selBox.BackgroundColor3 = Color3.fromRGB(18, 25, 21)
+			selBox.BackgroundColor3 = Theme.ContainerBg
 			selBox.BackgroundTransparency = 0.2
 			selBox.ZIndex = 6
 			selBox.Parent = headerBtn
@@ -2682,7 +2716,7 @@ function EclipseUI:CreateWindow(options)
 			selLabel.Position = UDim2.new(0, 8, 0, 0)
 			selLabel.BackgroundTransparency = 1
 			selLabel.Text = tostring(selected)
-			selLabel.TextColor3 = Color3.fromRGB(230, 248, 238)
+			selLabel.TextColor3 = Color3.fromRGB(230, 238, 250)
 			selLabel.TextSize = 11
 			selLabel.Font = Enum.Font.GothamMedium
 			selLabel.TextYAlignment = Enum.TextYAlignment.Center
@@ -2698,7 +2732,7 @@ function EclipseUI:CreateWindow(options)
 			arrowIcon.Size = UDim2.new(0, 12, 0, 12)
 			arrowIcon.BackgroundTransparency = 1
 			arrowIcon.Image = getIconAsset("chevron-down")
-			arrowIcon.ImageColor3 = Color3.fromRGB(170, 200, 185)
+			arrowIcon.ImageColor3 = Color3.fromRGB(170, 180, 200)
 			arrowIcon.ZIndex = 7
 			arrowIcon.Parent = selBox
 
@@ -2738,7 +2772,7 @@ function EclipseUI:CreateWindow(options)
 					tween(data.Btn, fadeTweenInfo, {
 						BackgroundTransparency = isSel and 0.82 or 0.96
 					})
-					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(150, 180, 165)
+					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Theme.TextMuted
 				end
 			end
 
@@ -2760,7 +2794,7 @@ function EclipseUI:CreateWindow(options)
 				itemText.Position = UDim2.new(0, 12, 0, 0)
 				itemText.BackgroundTransparency = 1
 				itemText.Text = tostring(item)
-				itemText.TextColor3 = Color3.fromRGB(150, 180, 165)
+				itemText.TextColor3 = Theme.TextMuted
 				itemText.TextSize = 11
 				itemText.Font = Enum.Font.Gotham
 				itemText.TextYAlignment = Enum.TextYAlignment.Center
@@ -2773,14 +2807,14 @@ function EclipseUI:CreateWindow(options)
 				itemBtn.MouseEnter:Connect(function()
 					if selected ~= item then
 						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.90 })
-						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(230, 248, 238) })
+						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(230, 238, 250) })
 					end
 				end)
 
 				itemBtn.MouseLeave:Connect(function()
 					if selected ~= item then
 						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.96 })
-						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(150, 180, 165) })
+						tween(itemText, fadeTweenInfo, { TextColor3 = Theme.TextMuted })
 					end
 				end)
 
@@ -2841,7 +2875,7 @@ function EclipseUI:CreateWindow(options)
 						itemText.Position = UDim2.new(0, 12, 0, 0)
 						itemText.BackgroundTransparency = 1
 						itemText.Text = tostring(item)
-						itemText.TextColor3 = Color3.fromRGB(150, 180, 165)
+						itemText.TextColor3 = Theme.TextMuted
 						itemText.TextSize = 11
 						itemText.Font = Enum.Font.Gotham
 						itemText.TextYAlignment = Enum.TextYAlignment.Center
@@ -2854,14 +2888,14 @@ function EclipseUI:CreateWindow(options)
 						itemBtn.MouseEnter:Connect(function()
 							if selected ~= item then
 								tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.90 })
-								tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(230, 248, 238) })
+								tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(230, 238, 250) })
 							end
 						end)
 
 						itemBtn.MouseLeave:Connect(function()
 							if selected ~= item then
 								tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.96 })
-								tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(150, 180, 165) })
+								tween(itemText, fadeTweenInfo, { TextColor3 = Theme.TextMuted })
 							end
 						end)
 
@@ -2918,7 +2952,7 @@ function EclipseUI:CreateWindow(options)
 			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = title
-			label.TextColor3 = Color3.fromRGB(240, 250, 235)
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
@@ -2929,7 +2963,7 @@ function EclipseUI:CreateWindow(options)
 			selBox.AnchorPoint = Vector2.new(1, 0.5)
 			selBox.Position = UDim2.new(1, -12, 0.5, 0)
 			selBox.Size = UDim2.new(0, 104, 0, 24)
-			selBox.BackgroundColor3 = Color3.fromRGB(18, 25, 21)
+			selBox.BackgroundColor3 = Theme.ContainerBg
 			selBox.BackgroundTransparency = 0.2
 			selBox.ZIndex = 6
 			selBox.Parent = headerBtn
@@ -2948,7 +2982,7 @@ function EclipseUI:CreateWindow(options)
 			selLabel.Size = UDim2.new(1, -26, 1, 0)
 			selLabel.Position = UDim2.new(0, 8, 0, 0)
 			selLabel.BackgroundTransparency = 1
-			selLabel.TextColor3 = Color3.fromRGB(230, 248, 238)
+			selLabel.TextColor3 = Color3.fromRGB(230, 238, 250)
 			selLabel.TextSize = 11
 			selLabel.Font = Enum.Font.GothamMedium
 			selLabel.TextYAlignment = Enum.TextYAlignment.Center
@@ -2964,7 +2998,7 @@ function EclipseUI:CreateWindow(options)
 			arrowIcon.Size = UDim2.new(0, 12, 0, 12)
 			arrowIcon.BackgroundTransparency = 1
 			arrowIcon.Image = getIconAsset("chevron-down")
-			arrowIcon.ImageColor3 = Color3.fromRGB(170, 200, 185)
+			arrowIcon.ImageColor3 = Color3.fromRGB(170, 180, 200)
 			arrowIcon.ZIndex = 7
 			arrowIcon.Parent = selBox
 
@@ -3025,7 +3059,7 @@ function EclipseUI:CreateWindow(options)
 					tween(data.Btn, fadeTweenInfo, {
 						BackgroundTransparency = isSel and 0.82 or 0.96
 					})
-					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(150, 180, 165)
+					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Theme.TextMuted
 				end
 				updateDisplay()
 			end
@@ -3048,7 +3082,7 @@ function EclipseUI:CreateWindow(options)
 				itemText.Position = UDim2.new(0, 12, 0, 0)
 				itemText.BackgroundTransparency = 1
 				itemText.Text = tostring(item)
-				itemText.TextColor3 = Color3.fromRGB(150, 180, 165)
+				itemText.TextColor3 = Theme.TextMuted
 				itemText.TextSize = 11
 				itemText.Font = Enum.Font.Gotham
 				itemText.TextYAlignment = Enum.TextYAlignment.Center
@@ -3061,14 +3095,14 @@ function EclipseUI:CreateWindow(options)
 				itemBtn.MouseEnter:Connect(function()
 					if not selectedMap[item] then
 						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.90 })
-						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(230, 248, 238) })
+						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(230, 238, 250) })
 					end
 				end)
 
 				itemBtn.MouseLeave:Connect(function()
 					if not selectedMap[item] then
 						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.96 })
-						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(150, 180, 165) })
+						tween(itemText, fadeTweenInfo, { TextColor3 = Theme.TextMuted })
 					end
 				end)
 
