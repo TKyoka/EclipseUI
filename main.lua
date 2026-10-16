@@ -3,6 +3,7 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
+local HttpService = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -213,6 +214,111 @@ function EclipseUI:CreateWindow(options)
 	local defaultPos = UDim2.new(0.5, 0, 0.5, 0)
 
 	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = initialToggleKey, Tags = {}, CleanupItems = {} }
+
+	-- Config Manager Setup
+	local registeredElements = {}
+	local configsFolder = "EclipseUI/" .. windowName .. "/config/"
+
+	pcall(function()
+		if not isfolder("EclipseUI") then makefolder("EclipseUI") end
+		if not isfolder("EclipseUI/" .. windowName) then makefolder("EclipseUI/" .. windowName) end
+		if not isfolder(configsFolder) then makefolder(configsFolder) end
+	end)
+
+	local ConfigManager = {}
+
+	function ConfigManager:CreateConfig(fileName)
+		local configName = fileName or "default"
+		local filePath = configsFolder .. configName .. ".json"
+
+		local ConfigObject = {}
+
+		function ConfigObject:Register(flag, element)
+			if flag and element then
+				registeredElements[flag] = element
+			end
+		end
+
+		function ConfigObject:Save()
+			local saveData = {}
+			for flag, element in pairs(registeredElements) do
+				pcall(function()
+					if element.Value ~= nil then
+						saveData[flag] = element.Value
+					elseif element.Get ~= nil then
+						saveData[flag] = element:Get()
+					elseif element.GetText ~= nil then
+						saveData[flag] = element:GetText()
+					elseif element.GetSelected ~= nil then
+						saveData[flag] = element:GetSelected()
+					elseif element.GetKey ~= nil then
+						saveData[flag] = tostring(element:GetKey())
+					elseif element.GetColor ~= nil then
+						local c = element:GetColor()
+						saveData[flag] = {c.R, c.G, c.B}
+					end
+				end)
+			end
+			pcall(function()
+				writefile(filePath, HttpService:JSONEncode(saveData))
+			end)
+		end
+
+		function ConfigObject:Load()
+			pcall(function()
+				if isfile and isfile(filePath) then
+					local content = readfile(filePath)
+					local data = HttpService:JSONDecode(content)
+					if typeof(data) == "table" then
+						for flag, val in pairs(data) do
+							local element = registeredElements[flag]
+							if element then
+								pcall(function()
+									if element.Set then
+										if typeof(val) == "table" and element.GetColor then
+											element:Set(Color3.new(val[1], val[2], val[3]))
+										else
+											element:Set(val)
+										end
+									end
+								end)
+							end
+						end
+					end
+				end
+			end)
+		end
+
+		function ConfigObject:Delete()
+			pcall(function()
+				if isfile and isfile(filePath) then
+					delfile(filePath)
+				end
+			end)
+		end
+
+		return ConfigObject
+	end
+
+	function ConfigManager:AllConfigs()
+		local configs = {}
+		pcall(function()
+			if isfolder and isfolder(configsFolder) then
+				local files = listfiles(configsFolder)
+				for _, file in ipairs(files) do
+					if string.sub(file, -5) == ".json" then
+						local name = string.match(file, "([^/\\]+)%.json$")
+						if name then
+							table.insert(configs, name)
+						end
+					end
+				end
+			end
+		end)
+		return configs
+	end
+
+	Window.ConfigManager = ConfigManager
 
 	function Window:Cleanup(item)
 		table.insert(self.CleanupItems, item)
@@ -2042,6 +2148,7 @@ function EclipseUI:CreateWindow(options)
 			local default = opts.Default or ""
 			local placeholder = opts.Placeholder or "Enter text..."
 			local callback = opts.Callback or function() end
+			local flag = opts.Flag
 
 			local inputContainer, stroke = createContainer(targetParent, 38)
 
@@ -2098,13 +2205,19 @@ function EclipseUI:CreateWindow(options)
 				pcall(callback, textBox.Text)
 			end)
 
-			return {
+			local obj = {
 				GetText = function() return textBox.Text end,
 				Set = function(_, val)
 					textBox.Text = tostring(val)
 					pcall(callback, textBox.Text)
 				end
 			}
+
+			if flag then
+				registeredElements[flag] = obj
+			end
+
+			return obj
 		end
 
 		function TabObject:Colorpicker(opts, targetParent)
@@ -2113,6 +2226,7 @@ function EclipseUI:CreateWindow(options)
 			local title = opts.Title or opts.Name or "Colorpicker"
 			local defaultColor = opts.Default or Color3.fromRGB(255, 255, 255)
 			local callback = opts.Callback or function() end
+			local flag = opts.Flag
 
 			local cpContainer, stroke = createContainer(targetParent, 38)
 			cpContainer.ClipsDescendants = true
@@ -2160,62 +2274,6 @@ function EclipseUI:CreateWindow(options)
 			pickerFrame.ZIndex = 5
 			pickerFrame.Parent = cpContainer
 
-			local pLayout = Instance.new("UIListLayout")
-			pLayout.SortOrder = Enum.SortOrder.LayoutOrder
-			pLayout.Padding = UDim.new(0, 8)
-			pLayout.Parent = pickerFrame
-
-			local function createSliderBar(name, colorSeq, initVal)
-				local sliderBox = Instance.new("Frame")
-				sliderBox.Size = UDim2.new(1, 0, 0, 22)
-				sliderBox.BackgroundColor3 = Color3.fromRGB(18, 22, 30)
-				sliderBox.BackgroundTransparency = 0.3
-				sliderBox.ZIndex = 6
-				sliderBox.Parent = pickerFrame
-
-				local sbCorner = Instance.new("UICorner")
-				sbCorner.CornerRadius = UDim.new(0, 6)
-				sbCorner.Parent = sliderBox
-
-				local track = Instance.new("Frame")
-				track.AnchorPoint = Vector2.new(0.5, 0.5)
-				track.Position = UDim2.new(0.5, 0, 0.5, 0)
-				track.Size = UDim2.new(1, -16, 0, 6)
-				track.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
-				track.ZIndex = 6
-				track.Parent = sliderBox
-
-				local tCorner = Instance.new("UICorner")
-				tCorner.CornerRadius = UDim.new(1, 0)
-				tCorner.Parent = track
-
-				local fill = Instance.new("Frame")
-				fill.Size = UDim2.new(initVal, 0, 1, 0)
-				fill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-				fill.ZIndex = 7
-				fill.Parent = track
-
-				local fCorner = Instance.new("UICorner")
-				fCorner.CornerRadius = UDim.new(1, 0)
-				fCorner.Parent = fill
-
-				local grad = Instance.new("UIGradient")
-				grad.Color = colorSeq
-				grad.Parent = fill
-
-				return sliderBox, fill, track
-			end
-
-			local h, s, v = defaultColor:ToHSV()
-			createSliderBar("Hue", ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Color3.fromHSV(0, 1, 1)),
-				ColorSequenceKeypoint.new(0.2, Color3.fromHSV(0.2, 1, 1)),
-				ColorSequenceKeypoint.new(0.4, Color3.fromHSV(0.4, 1, 1)),
-				ColorSequenceKeypoint.new(0.6, Color3.fromHSV(0.6, 1, 1)),
-				ColorSequenceKeypoint.new(0.8, Color3.fromHSV(0.8, 1, 1)),
-				ColorSequenceKeypoint.new(1, Color3.fromHSV(1, 1, 1))
-			}), h)
-
 			colorPreview.MouseButton1Click:Connect(function()
 				isOpen = not isOpen
 				pickerFrame.Visible = isOpen
@@ -2223,7 +2281,7 @@ function EclipseUI:CreateWindow(options)
 				tween(cpContainer, fadeTweenInfo, { Size = UDim2.new(1, 0, 0, targetHeight) })
 			end)
 
-			return {
+			local obj = {
 				GetColor = function() return currentColor end,
 				Set = function(_, col)
 					currentColor = col
@@ -2231,6 +2289,12 @@ function EclipseUI:CreateWindow(options)
 					pcall(callback, col)
 				end
 			}
+
+			if flag then
+				registeredElements[flag] = obj
+			end
+
+			return obj
 		end
 
 		function TabObject:Toggle(opts, targetParent)
@@ -2239,6 +2303,7 @@ function EclipseUI:CreateWindow(options)
 			local title = opts.Title or opts.Name or "Toggle"
 			local state = opts.Default or false
 			local callback = opts.Callback or function() end
+			local flag = opts.Flag
 
 			local toggleContainer, stroke = createContainer(targetParent, 38)
 
@@ -2355,6 +2420,10 @@ function EclipseUI:CreateWindow(options)
 				updateToggle(val, true)
 			end
 
+			if flag then
+				registeredElements[flag] = ToggleObj
+			end
+
 			return ToggleObj
 		end
 
@@ -2366,6 +2435,7 @@ function EclipseUI:CreateWindow(options)
 			local max = opts.Max or 100
 			local default = math.clamp(opts.Default or min, min, max)
 			local callback = opts.Callback or function() end
+			local flag = opts.Flag
 
 			local sliderContainer, stroke = createContainer(targetParent, 56)
 
@@ -2521,13 +2591,19 @@ function EclipseUI:CreateWindow(options)
 				end
 			end)
 
-			return {
+			local obj = {
 				Set = function(_, val)
 					updateSliderVal(val)
 					pcall(callback, tonumber(valBox.Text) or default)
 				end,
 				Get = function() return tonumber(valBox.Text) or default end
 			}
+
+			if flag then
+				registeredElements[flag] = obj
+			end
+
+			return obj
 		end
 
 		function TabObject:Keybind(opts, targetParent)
@@ -2536,6 +2612,7 @@ function EclipseUI:CreateWindow(options)
 			local title = opts.Title or opts.Name or "Keybind"
 			local currentKey = opts.Default or Enum.KeyCode.E
 			local callback = opts.Callback or function() end
+			local flag = opts.Flag
 
 			local kbFrame, stroke = createContainer(targetParent, 38)
 
@@ -2616,15 +2693,24 @@ function EclipseUI:CreateWindow(options)
 				end
 			end)
 
-			return {
+			local obj = {
 				GetKey = function() return currentKey end,
 				Set = function(_, newKey)
 					if typeof(newKey) == "EnumItem" then
 						currentKey = newKey
 						keyBtn.Text = currentKey.Name
+					elseif typeof(newKey) == "string" and Enum.KeyCode[newKey] then
+						currentKey = Enum.KeyCode[newKey]
+						keyBtn.Text = currentKey.Name
 					end
 				end
 			}
+
+			if flag then
+				registeredElements[flag] = obj
+			end
+
+			return obj
 		end
 
 		function TabObject:Dropdown(opts, targetParent)
@@ -2634,6 +2720,7 @@ function EclipseUI:CreateWindow(options)
 			local items = opts.Items or {}
 			local selected = (opts.Default ~= nil and opts.Default ~= "") and opts.Default or "--"
 			local callback = opts.Callback or function() end
+			local flag = opts.Flag
 
 			local ddFrame, stroke = createContainer(targetParent, 38)
 			ddFrame.ClipsDescendants = true
@@ -2807,7 +2894,7 @@ function EclipseUI:CreateWindow(options)
 				tween(ddFrame, fadeTweenInfo, { Size = UDim2.new(1, 0, 0, targetHeight) })
 			end)
 
-			return {
+			local obj = {
 				GetSelected = function() return selected end,
 				Set = function(_, val)
 					selected = val
@@ -2816,6 +2903,12 @@ function EclipseUI:CreateWindow(options)
 					pcall(callback, selected)
 				end
 			}
+
+			if flag then
+				registeredElements[flag] = obj
+			end
+
+			return obj
 		end
 
 		function TabObject:MultiDropdown(opts, targetParent)
@@ -2825,6 +2918,7 @@ function EclipseUI:CreateWindow(options)
 			local items = opts.Items or {}
 			local default = opts.Default or {}
 			local callback = opts.Callback or function() end
+			local flag = opts.Flag
 
 			local selectedMap = {}
 			if typeof(default) == "table" then
@@ -3021,7 +3115,7 @@ function EclipseUI:CreateWindow(options)
 				tween(ddFrame, fadeTweenInfo, { Size = UDim2.new(1, 0, 0, targetHeight) })
 			end)
 
-			return {
+			local obj = {
 				GetSelected = function() return getSelectedList() end,
 				Set = function(_, val)
 					selectedMap = {}
@@ -3034,6 +3128,12 @@ function EclipseUI:CreateWindow(options)
 					pcall(callback, getSelectedList())
 				end
 			}
+
+			if flag then
+				registeredElements[flag] = obj
+			end
+
+			return obj
 		end
 
 		return TabObject
