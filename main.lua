@@ -2229,7 +2229,6 @@ function EclipseUI:CreateWindow(options)
 			local flag = opts.Flag
 
 			local cpContainer, stroke = createContainer(targetParent, 38)
-			cpContainer.ClipsDescendants = true
 
 			local label = Instance.new("TextLabel")
 			label.Size = UDim2.new(1, -60, 1, 0)
@@ -2264,21 +2263,172 @@ function EclipseUI:CreateWindow(options)
 			cpStroke.Parent = colorPreview
 
 			local currentColor = defaultColor
-			local isOpen = false
-
-			local pickerFrame = Instance.new("Frame")
-			pickerFrame.Position = UDim2.new(0, 12, 0, 46)
-			pickerFrame.Size = UDim2.new(1, -24, 0, 110)
-			pickerFrame.BackgroundTransparency = 1
-			pickerFrame.Visible = false
-			pickerFrame.ZIndex = 5
-			pickerFrame.Parent = cpContainer
+			local tempColor = defaultColor
+			local popupGui = nil
 
 			colorPreview.MouseButton1Click:Connect(function()
-				isOpen = not isOpen
-				pickerFrame.Visible = isOpen
-				local targetHeight = isOpen and 164 or 38
-				tween(cpContainer, fadeTweenInfo, { Size = UDim2.new(1, 0, 0, targetHeight) })
+				if popupGui and popupGui.Parent then return end
+				tempColor = currentColor
+
+				local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+				popupGui = Instance.new("ScreenGui")
+				popupGui.Name = "EclipseColorPickerPopup"
+				popupGui.IgnoreGuiInset = true
+				popupGui.ResetOnSpawn = false
+				popupGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+				popupGui.Parent = playerGui
+
+				local overlay = Instance.new("Frame")
+				overlay.Size = UDim2.new(1, 0, 1, 0)
+				overlay.BackgroundColor3 = Color3.fromRGB(10, 11, 15)
+				overlay.BackgroundTransparency = 0.5
+				overlay.BorderSizePixel = 0
+				overlay.ZIndex = 50
+				overlay.Parent = popupGui
+
+				local window = Instance.new("CanvasGroup")
+				window.AnchorPoint = Vector2.new(0.5, 0.5)
+				window.Position = UDim2.new(0.5, 0, 0.5, 0)
+				window.Size = UDim2.new(0, 340, 0, 240)
+				window.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
+				window.BackgroundTransparency = 0.1
+				window.GroupTransparency = 1
+				window.ZIndex = 51
+				window.Parent = popupGui
+
+				local wCorner = Instance.new("UICorner")
+				wCorner.CornerRadius = UDim.new(0, 12)
+				wCorner.Parent = window
+
+				local wStroke = Instance.new("UIStroke")
+				wStroke.Color = Color3.fromRGB(255, 255, 255)
+				wStroke.Thickness = 1.5
+				wStroke.Transparency = 0.4
+				wStroke.Parent = window
+
+				local wTitle = Instance.new("TextLabel")
+				wTitle.Size = UDim2.new(1, -20, 0, 32)
+				wTitle.Position = UDim2.new(0, 16, 0, 12)
+				wTitle.BackgroundTransparency = 1
+				wTitle.Text = title
+				wTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+				wTitle.TextSize = 14
+				wTitle.Font = Enum.Font.GothamBold
+				wTitle.TextXAlignment = Enum.TextXAlignment.Left
+				wTitle.ZIndex = 52
+				wTitle.Parent = window
+
+				-- Color Picker Main Box area (Visual placeholder matching design)
+				local pickerBox = Instance.new("Frame")
+				pickerBox.Position = UDim2.new(0, 16, 0, 52)
+				pickerBox.Size = UDim2.new(0, 140, 0, 120)
+				pickerBox.BackgroundColor3 = tempColor
+				pickerBox.BorderSizePixel = 0
+				pickerBox.ZIndex = 52
+				pickerBox.Parent = window
+
+				local pbCorner = Instance.new("UICorner")
+				pbCorner.CornerRadius = UDim.new(0, 8)
+				pbCorner.Parent = pickerBox
+
+				-- RGB/Hex Inputs on the right side
+				local inputStartX = 168
+				local function createColorInput(name, defaultVal, yPos)
+					local lbl = Instance.new("TextLabel")
+					lbl.Position = UDim2.new(0, inputStartX, 0, yPos)
+					lbl.Size = UDim2.new(0, 90, 0, 24)
+					lbl.BackgroundTransparency = 1
+					lbl.Text = name
+					lbl.TextColor3 = Color3.fromRGB(150, 160, 180)
+					lbl.TextSize = 11
+					lbl.Font = Enum.Font.Gotham
+					lbl.TextXAlignment = Enum.TextXAlignment.Right
+					lbl.ZIndex = 52
+					lbl.Parent = window
+
+					local box = Instance.new("TextBox")
+					box.Position = UDim2.new(0, inputStartX + 96, 0, yPos)
+					box.Size = UDim2.new(0, 60, 0, 24)
+					box.BackgroundColor3 = Color3.fromRGB(22, 26, 36)
+					box.BackgroundTransparency = 0.2
+					box.Text = tostring(defaultVal)
+					box.TextColor3 = Color3.fromRGB(230, 238, 250)
+					box.TextSize = 11
+					box.Font = Enum.Font.GothamMedium
+					box.ZIndex = 52
+					box.Parent = window
+
+					local bCorner = Instance.new("UICorner")
+					bCorner.CornerRadius = UDim.new(0, 6)
+					bCorner.Parent = box
+
+					local bStroke = Instance.new("UIStroke")
+					bStroke.Color = Color3.fromRGB(255, 255, 255)
+					bStroke.Thickness = 1
+					bStroke.Transparency = 0.8
+					bStroke.Parent = box
+					return box
+				end
+
+				local rBox = createColorInput("Red", math.floor(tempColor.R * 255), 52)
+				local gBox = createColorInput("Green", math.floor(tempColor.G * 255), 82)
+				local bBox = createColorInput("Blue", math.floor(tempColor.B * 255), 112)
+
+				-- Cancel & Apply Buttons
+				local cancelBtn = Instance.new("TextButton")
+				cancelBtn.Position = UDim2.new(0, 16, 1, -48)
+				cancelBtn.Size = UDim2.new(0, 148, 0, 32)
+				cancelBtn.BackgroundColor3 = Color3.fromRGB(30, 35, 48)
+				cancelBtn.BackgroundTransparency = 0.2
+				cancelBtn.Text = "Cancel"
+				cancelBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+				cancelBtn.TextSize = 12
+				cancelBtn.Font = Enum.Font.GothamBold
+				cancelBtn.ZIndex = 52
+				cancelBtn.Parent = window
+
+				local cCorner = Instance.new("UICorner")
+				cCorner.CornerRadius = UDim.new(0, 8)
+				cCorner.Parent = cancelBtn
+
+				local applyBtn = Instance.new("TextButton")
+				applyBtn.Position = UDim2.new(0, 176, 1, -48)
+				applyBtn.Size = UDim2.new(0, 148, 0, 32)
+				applyBtn.BackgroundColor3 = Color3.fromRGB(65, 85, 130)
+				applyBtn.BackgroundTransparency = 0.2
+				applyBtn.Text = "Apply"
+				applyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+				applyBtn.TextSize = 12
+				applyBtn.Font = Enum.Font.GothamBold
+				applyBtn.ZIndex = 52
+				applyBtn.Parent = window
+
+				local aCorner = Instance.new("UICorner")
+				aCorner.CornerRadius = UDim.new(0, 8)
+				aCorner.Parent = applyBtn
+
+				TweenService:Create(window, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { GroupTransparency = 0 }):Play()
+
+				cancelBtn.MouseButton1Click:Connect(function()
+					local outTween = TweenService:Create(window, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In), { GroupTransparency = 1 })
+					outTween:Play()
+					outTween.Completed:Wait()
+					popupGui:Destroy()
+				end)
+
+				applyBtn.MouseButton1Click:Connect(function()
+					local r = tonumber(rBox.Text) or math.floor(tempColor.R * 255)
+					local g = tonumber(gBox.Text) or math.floor(tempColor.G * 255)
+					local b = tonumber(bBox.Text) or math.floor(tempColor.B * 255)
+					currentColor = Color3.fromRGB(math.clamp(r, 0, 255), math.clamp(g, 0, 255), math.clamp(b, 0, 255))
+					colorPreview.BackgroundColor3 = currentColor
+					pcall(callback, currentColor)
+
+					local outTween = TweenService:Create(window, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In), { GroupTransparency = 1 })
+					outTween:Play()
+					outTween.Completed:Wait()
+					popupGui:Destroy()
+				end)
 			end)
 
 			local obj = {
