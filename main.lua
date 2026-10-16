@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.6.04 (Multi-Theme Support)[cite: 8]
+--// EclipseUI Roblox Library Version 1.6.05 (Dynamic Multi-Theme Support)
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -41,7 +41,7 @@ local function getIconAsset(iconInput)
 	return LucideIcons[iconName] or ""
 end
 
---// Theme Configurations
+--// Built-in Themes Repository
 local Themes = {
 	Eclipse = {
 		MainBg = Color3.fromRGB(15, 16, 20),
@@ -73,6 +73,13 @@ local Themes = {
 
 local EclipseUI = {}
 EclipseUI.__index = EclipseUI
+EclipseUI.Themes = Themes
+
+function EclipseUI:AddTheme(name, themeData)
+	if typeof(name) == "string" and typeof(themeData) == "table" then
+		Themes[name] = themeData
+	end
+end
 
 function EclipseUI:Notify(opts)
 	opts = opts or {}
@@ -234,8 +241,7 @@ function EclipseUI:CreateWindow(options)
 	local loadAnimEnabled = options.LoadAnim or false
 	local openButtonEnabled = options.OpenButton or false
 	local userOptions = options.User
-	local themeName = options.Theme and Themes[options.Theme] and options.Theme or "Eclipse"
-	local Theme = Themes[themeName]
+	local initialThemeName = options.Theme and Themes[options.Theme] and options.Theme or "Eclipse"
 
 	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -248,9 +254,10 @@ function EclipseUI:CreateWindow(options)
 	local defaultSize = UDim2.new(0, 480, 0, 320)
 	local defaultPos = UDim2.new(0.5, 0, 0.5, 0)
 
-	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = initialToggleKey, Tags = {}, CleanupItems = {} }
+	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = initialToggleKey, Tags = {}, CleanupItems = {}, ThemeUpdaters = {}, ThemeName = initialThemeName }
+	Window.Theme = Themes[initialThemeName]
 
-	-- Config Manager Setup[cite: 8]
+	-- Config Manager Setup
 	local registeredElements = {}
 	local configsFolder = "EclipseUI/" .. windowName .. "/config/"
 
@@ -358,7 +365,7 @@ function EclipseUI:CreateWindow(options)
 	mainGroup.AnchorPoint = Vector2.new(0.5, 0.5)
 	mainGroup.Position = defaultPos
 	mainGroup.Size = defaultSize
-	mainGroup.BackgroundColor3 = Theme.MainBg
+	mainGroup.BackgroundColor3 = Window.Theme.MainBg
 	mainGroup.BackgroundTransparency = 0.2
 	mainGroup.BorderSizePixel = 0
 	mainGroup.GroupTransparency = loadAnimEnabled and 1 or 0
@@ -380,9 +387,9 @@ function EclipseUI:CreateWindow(options)
 
 	local mainBgGradient = Instance.new("UIGradient")
 	mainBgGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Theme.MainGradient[1]),
-		ColorSequenceKeypoint.new(0.5, Theme.MainGradient[2]),
-		ColorSequenceKeypoint.new(1, Theme.MainGradient[3])
+		ColorSequenceKeypoint.new(0, Window.Theme.MainGradient[1]),
+		ColorSequenceKeypoint.new(0.5, Window.Theme.MainGradient[2]),
+		ColorSequenceKeypoint.new(1, Window.Theme.MainGradient[3])
 	})
 	mainBgGradient.Rotation = 45
 	mainBgGradient.Offset = Vector2.new(-1, 0)
@@ -397,11 +404,26 @@ function EclipseUI:CreateWindow(options)
 
 	local strokeGradient = Instance.new("UIGradient")
 	strokeGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Theme.StrokeColors[1]),
-		ColorSequenceKeypoint.new(0.5, Theme.StrokeColors[2]),
-		ColorSequenceKeypoint.new(1, Theme.StrokeColors[3])
+		ColorSequenceKeypoint.new(0, Window.Theme.StrokeColors[1]),
+		ColorSequenceKeypoint.new(0.5, Window.Theme.StrokeColors[2]),
+		ColorSequenceKeypoint.new(1, Window.Theme.StrokeColors[3])
 	})
 	strokeGradient.Parent = uiStroke
+
+	-- Register Main Window Theme Updater
+	table.insert(Window.ThemeUpdaters, function(t)
+		mainGroup.BackgroundColor3 = t.MainBg
+		mainBgGradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, t.MainGradient[1]),
+			ColorSequenceKeypoint.new(0.5, t.MainGradient[2]),
+			ColorSequenceKeypoint.new(1, t.MainGradient[3])
+		})
+		strokeGradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, t.StrokeColors[1]),
+			ColorSequenceKeypoint.new(0.5, t.StrokeColors[2]),
+			ColorSequenceKeypoint.new(1, t.StrokeColors[3])
+		})
+	end)
 
 	local mainTimeAcc = 0
 	local mainAnimConnection
@@ -420,6 +442,17 @@ function EclipseUI:CreateWindow(options)
 			uiStroke.Transparency = 0.35 + (pulse * 0.2)
 		end
 	end)
+
+	-- Dynamic SetTheme Method
+	function Window:SetTheme(newThemeName)
+		if Themes[newThemeName] then
+			Window.ThemeName = newThemeName
+			Window.Theme = Themes[newThemeName]
+			for _, updateFunc in ipairs(Window.ThemeUpdaters) do
+				pcall(updateFunc, Window.Theme)
+			end
+		end
+	end
 
 	local loaderGuiRef = nil
 	local blurRef = nil
@@ -442,7 +475,7 @@ function EclipseUI:CreateWindow(options)
 
 		local overlay = Instance.new("Frame")
 		overlay.Size = UDim2.new(1, 0, 1, 0)
-		overlay.BackgroundColor3 = Theme.LoaderBg
+		overlay.BackgroundColor3 = Window.Theme.LoaderBg
 		overlay.BackgroundTransparency = 1
 		overlay.BorderSizePixel = 0
 		overlay.Parent = loaderGui
@@ -471,7 +504,7 @@ function EclipseUI:CreateWindow(options)
 		barBg.AnchorPoint = Vector2.new(0.5, 0.5)
 		barBg.Position = UDim2.new(0.5, 0, 0.75, 0)
 		barBg.Size = UDim2.new(0, 280, 0, 6)
-		barBg.BackgroundColor3 = Theme.ContainerBg
+		barBg.BackgroundColor3 = Window.Theme.ContainerBg
 		barBg.BackgroundTransparency = 1
 		barBg.BorderSizePixel = 0
 		barBg.Parent = container
@@ -493,8 +526,8 @@ function EclipseUI:CreateWindow(options)
 
 		local barGradient = Instance.new("UIGradient")
 		barGradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, Theme.LoaderBar[1]),
-			ColorSequenceKeypoint.new(1, Theme.LoaderBar[2])
+			ColorSequenceKeypoint.new(0, Window.Theme.LoaderBar[1]),
+			ColorSequenceKeypoint.new(1, Window.Theme.LoaderBar[2])
 		})
 		barGradient.Parent = bar
 
@@ -569,11 +602,15 @@ function EclipseUI:CreateWindow(options)
 		local openBtn = Instance.new("ImageButton")
 		openBtn.Size = UDim2.new(0, 44, 0, 44)
 		openBtn.Position = UDim2.new(0, 20, 0, 20)
-		openBtn.BackgroundColor3 = Theme.MainBg
+		openBtn.BackgroundColor3 = Window.Theme.MainBg
 		openBtn.BackgroundTransparency = 0.2
 		openBtn.AutoButtonColor = false
 		openBtn.Image = ""
 		openBtn.Parent = openBtnGui
+
+		table.insert(Window.ThemeUpdaters, function(t)
+			openBtn.BackgroundColor3 = t.MainBg
+		end)
 
 		local openCorner = Instance.new("UICorner")
 		openCorner.CornerRadius = UDim.new(0, 10)
@@ -818,13 +855,17 @@ function EclipseUI:CreateWindow(options)
 		subtitleLabel.AutomaticSize = Enum.AutomaticSize.X
 		subtitleLabel.BackgroundTransparency = 1
 		subtitleLabel.Text = windowSubtitle
-		subtitleLabel.TextColor3 = Theme.TextMuted
+		subtitleLabel.TextColor3 = Window.Theme.TextMuted
 		subtitleLabel.TextSize = 11
 		subtitleLabel.Font = Enum.Font.Gotham
 		subtitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 		subtitleLabel.LayoutOrder = 2
 		subtitleLabel.ZIndex = 4
 		subtitleLabel.Parent = textBlock
+
+		table.insert(Window.ThemeUpdaters, function(t)
+			subtitleLabel.TextColor3 = t.TextMuted
+		end)
 	end
 
 	local TagsObj = {}
@@ -849,10 +890,14 @@ function EclipseUI:CreateWindow(options)
 			local tagPill = Instance.new("Frame")
 			tagPill.Size = UDim2.new(0, 0, 0, 20)
 			tagPill.AutomaticSize = Enum.AutomaticSize.X
-			tagPill.BackgroundColor3 = Theme.ContainerBg
+			tagPill.BackgroundColor3 = Window.Theme.ContainerBg
 			tagPill.BackgroundTransparency = 0.4
 			tagPill.ZIndex = 4
 			tagPill.Parent = tagsList
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				tagPill.BackgroundColor3 = t.ContainerBg
+			end)
 
 			local tagCorner = Instance.new("UICorner")
 			tagCorner.CornerRadius = UDim.new(1, 0)
@@ -867,10 +912,17 @@ function EclipseUI:CreateWindow(options)
 			local tagGradient = Instance.new("UIGradient")
 			tagGradient.Color = ColorSequence.new({
 				ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-				ColorSequenceKeypoint.new(1, Theme.TextMuted)
+				ColorSequenceKeypoint.new(1, Window.Theme.TextMuted)
 			})
 			tagGradient.Rotation = 90
 			tagGradient.Parent = tagPill
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				tagGradient.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+					ColorSequenceKeypoint.new(1, t.TextMuted)
+				})
+			end)
 
 			local tagPadding = Instance.new("UIPadding")
 			tagPadding.PaddingLeft = UDim.new(0, 8)
@@ -938,9 +990,13 @@ function EclipseUI:CreateWindow(options)
 		icon.Size = UDim2.new(0, iconSize, 0, iconSize)
 		icon.BackgroundTransparency = 1
 		icon.Image = getIconAsset(iconName)
-		icon.ImageColor3 = Theme.TextMuted
+		icon.ImageColor3 = Window.Theme.TextMuted
 		icon.ZIndex = 11
 		icon.Parent = btnFrame
+
+		table.insert(Window.ThemeUpdaters, function(t)
+			icon.ImageColor3 = t.TextMuted
+		end)
 
 		if not iconsLoaded then
 			task.spawn(function()
@@ -958,7 +1014,7 @@ function EclipseUI:CreateWindow(options)
 
 		icon.MouseLeave:Connect(function()
 			TweenService:Create(btnFrame, TweenInfo.new(0.15), { BackgroundTransparency = 1 }):Play()
-			TweenService:Create(icon, TweenInfo.new(0.15), { ImageColor3 = Theme.TextMuted }):Play()
+			TweenService:Create(icon, TweenInfo.new(0.15), { ImageColor3 = Window.Theme.TextMuted }):Play()
 		end)
 
 		return icon, btnFrame
@@ -1104,12 +1160,20 @@ function EclipseUI:CreateWindow(options)
 
 	local pillGradient = Instance.new("UIGradient")
 	pillGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Theme.PillGradient[1]),
-		ColorSequenceKeypoint.new(0.5, Theme.PillGradient[2]),
-		ColorSequenceKeypoint.new(1, Theme.PillGradient[3])
+		ColorSequenceKeypoint.new(0, Window.Theme.PillGradient[1]),
+		ColorSequenceKeypoint.new(0.5, Window.Theme.PillGradient[2]),
+		ColorSequenceKeypoint.new(1, Window.Theme.PillGradient[3])
 	})
 	pillGradient.Rotation = 90
 	pillGradient.Parent = activePill
+
+	table.insert(Window.ThemeUpdaters, function(t)
+		pillGradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, t.PillGradient[1]),
+			ColorSequenceKeypoint.new(0.5, t.PillGradient[2]),
+			ColorSequenceKeypoint.new(1, t.PillGradient[3])
+		})
+	end)
 
 	local tabs = Instance.new("ScrollingFrame")
 	tabs.Name = "Tabs"
@@ -1205,7 +1269,7 @@ function EclipseUI:CreateWindow(options)
 		displayNameLabel.Size = UDim2.new(1, -48, 0, 15)
 		displayNameLabel.Position = UDim2.new(0, 44, 0, 8)
 		displayNameLabel.BackgroundTransparency = 1
-		displayNameLabel.Text = userAnon and themeName or LocalPlayer.DisplayName
+		displayNameLabel.Text = userAnon and Window.ThemeName or LocalPlayer.DisplayName
 		displayNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 		displayNameLabel.TextSize = 12
 		displayNameLabel.Font = Enum.Font.GothamBold
@@ -1219,14 +1283,22 @@ function EclipseUI:CreateWindow(options)
 		usernameLabel.Size = UDim2.new(1, -48, 0, 13)
 		usernameLabel.Position = UDim2.new(0, 44, 0, 23)
 		usernameLabel.BackgroundTransparency = 1
-		usernameLabel.Text = userAnon and ("@" .. themeName .. "UI") or ("@" .. LocalPlayer.Name)
-		usernameLabel.TextColor3 = Theme.TextMuted
+		usernameLabel.Text = userAnon and ("@" .. Window.ThemeName .. "UI") or ("@" .. LocalPlayer.Name)
+		usernameLabel.TextColor3 = Window.Theme.TextMuted
 		usernameLabel.TextSize = 10
 		usernameLabel.Font = Enum.Font.GothamBold
 		usernameLabel.TextXAlignment = Enum.TextXAlignment.Left
 		usernameLabel.TextTruncate = Enum.TextTruncate.AtEnd
 		usernameLabel.ZIndex = 4
 		usernameLabel.Parent = userContentGroup
+
+		table.insert(Window.ThemeUpdaters, function(t)
+			usernameLabel.TextColor3 = t.TextMuted
+			if userAnon then
+				displayNameLabel.Text = Window.ThemeName
+				usernameLabel.Text = "@" .. Window.ThemeName .. "UI"
+			end
+		end)
 
 		local userHoverInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 		local userPressInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
@@ -1253,8 +1325,8 @@ function EclipseUI:CreateWindow(options)
 
 		userInfo.MouseButton1Click:Connect(function()
 			userAnon = not userAnon
-			displayNameLabel.Text = userAnon and themeName or LocalPlayer.DisplayName
-			usernameLabel.Text = userAnon and ("@" .. themeName .. "UI") or ("@" .. LocalPlayer.Name)
+			displayNameLabel.Text = userAnon and Window.ThemeName or LocalPlayer.DisplayName
+			usernameLabel.Text = userAnon and ("@" .. Window.ThemeName .. "UI") or ("@" .. LocalPlayer.Name)
 			avatarImage.Image = userAnon and "rbxassetid://11984980776" or (realThumbnail ~= "" and realThumbnail or "rbxassetid://11984980776")
 			pcall(userCallback)
 		end)
@@ -1409,9 +1481,9 @@ function EclipseUI:CreateWindow(options)
 					GroupTransparency = 0
 				})
 			else
-				tween(tab.Label, fadeTweenInfo, { TextColor3 = Theme.TextDim })
+				tween(tab.Label, fadeTweenInfo, { TextColor3 = Window.Theme.TextDim })
 				if tab.Icon then
-					tween(tab.Icon, fadeTweenInfo, { ImageColor3 = Theme.TextDim, ImageTransparency = 0.3 })
+					tween(tab.Icon, fadeTweenInfo, { ImageColor3 = Window.Theme.TextDim, ImageTransparency = 0.3 })
 				end
 
 				tab.PageGroup.Visible = false
@@ -1450,10 +1522,16 @@ function EclipseUI:CreateWindow(options)
 			iconImage.Position = UDim2.new(0, 8, 0.5, -8)
 			iconImage.BackgroundTransparency = 1
 			iconImage.Image = getIconAsset(tabIcon)
-			iconImage.ImageColor3 = Theme.TextDim
+			iconImage.ImageColor3 = Window.Theme.TextDim
 			iconImage.ImageTransparency = 0.3
 			iconImage.ZIndex = 5
 			iconImage.Parent = tabFrame
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				if Window.ActiveTab ~= TabObject then
+					iconImage.ImageColor3 = t.TextDim
+				end
+			end)
 
 			if not iconsLoaded and not string.find(tostring(tabIcon), "rbxassetid://") then
 				task.spawn(function()
@@ -1473,12 +1551,18 @@ function EclipseUI:CreateWindow(options)
 		tabText.Position = UDim2.new(0, textOffsetX, 0, 0)
 		tabText.BackgroundTransparency = 1
 		tabText.Text = tabTitle
-		tabText.TextColor3 = Theme.TextDim
+		tabText.TextColor3 = Window.Theme.TextDim
 		tabText.TextSize = 12
 		tabText.Font = Enum.Font.GothamBold
 		tabText.TextXAlignment = Enum.TextXAlignment.Left
 		tabText.ZIndex = 5
 		tabText.Parent = tabFrame
+
+		table.insert(Window.ThemeUpdaters, function(t)
+			if Window.ActiveTab ~= TabObject then
+				tabText.TextColor3 = t.TextDim
+			end
+		end)
 
 		local pageGroup = Instance.new("CanvasGroup")
 		pageGroup.Name = tabTitle .. "PageGroup"
@@ -1536,7 +1620,7 @@ function EclipseUI:CreateWindow(options)
 
 		clickBtn.MouseLeave:Connect(function()
 			if Window.ActiveTab ~= TabObject then
-				tween(tabText, fadeTweenInfo, { TextColor3 = Theme.TextDim })
+				tween(tabText, fadeTweenInfo, { TextColor3 = Window.Theme.TextDim })
 				if iconImage then
 					tween(iconImage, fadeTweenInfo, { ImageTransparency = 0.3 })
 				end
@@ -1667,9 +1751,13 @@ function EclipseUI:CreateWindow(options)
 				secIconImg.Position = UDim2.new(0, 0, 0.5, -7)
 				secIconImg.BackgroundTransparency = 1
 				secIconImg.Image = getIconAsset(secIcon)
-				secIconImg.ImageColor3 = Theme.TextDim
+				secIconImg.ImageColor3 = Window.Theme.TextDim
 				secIconImg.ZIndex = 4
 				secIconImg.Parent = secHeaderContainer
+
+				table.insert(Window.ThemeUpdaters, function(t)
+					secIconImg.ImageColor3 = t.TextDim
+				end)
 
 				if not iconsLoaded and not string.find(tostring(secIcon), "rbxassetid://") then
 					task.spawn(function()
@@ -1688,12 +1776,16 @@ function EclipseUI:CreateWindow(options)
 			secHeader.Position = UDim2.new(0, textOffsetX, 0, 0)
 			secHeader.BackgroundTransparency = 1
 			secHeader.Text = string.upper(secTitle)
-			secHeader.TextColor3 = Theme.TextDim
+			secHeader.TextColor3 = Window.Theme.TextDim
 			secHeader.TextSize = 10
 			secHeader.Font = Enum.Font.GothamBold
 			secHeader.TextXAlignment = Enum.TextXAlignment.Left
 			secHeader.ZIndex = 4
 			secHeader.Parent = secHeaderContainer
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				secHeader.TextColor3 = t.TextDim
+			end)
 
 			local SectionObj = {}
 
@@ -1719,11 +1811,15 @@ function EclipseUI:CreateWindow(options)
 			local boxFrame = Instance.new("Frame")
 			boxFrame.Size = UDim2.new(1, 0, 0, 0)
 			boxFrame.AutomaticSize = Enum.AutomaticSize.Y
-			boxFrame.BackgroundColor3 = Theme.ContainerBg
+			boxFrame.BackgroundColor3 = Window.Theme.ContainerBg
 			boxFrame.BackgroundTransparency = 0.6
 			boxFrame.ClipsDescendants = true
 			boxFrame.ZIndex = 4
 			boxFrame.Parent = targetParent
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				boxFrame.BackgroundColor3 = t.ContainerBg
+			end)
 
 			local boxCorner = Instance.new("UICorner")
 			boxCorner.CornerRadius = UDim.new(0, 8)
@@ -1778,9 +1874,13 @@ function EclipseUI:CreateWindow(options)
 					iconImg.Position = UDim2.new(0, 0, 0.5, -7)
 					iconImg.BackgroundTransparency = 1
 					iconImg.Image = getIconAsset(boxIcon)
-					iconImg.ImageColor3 = Theme.TextMuted
+					iconImg.ImageColor3 = Window.Theme.TextMuted
 					iconImg.ZIndex = 5
 					iconImg.Parent = headerContainer
+
+					table.insert(Window.ThemeUpdaters, function(t)
+						iconImg.ImageColor3 = t.TextMuted
+					end)
 
 					if not iconsLoaded and not string.find(tostring(boxIcon), "rbxassetid://") then
 						task.spawn(function()
@@ -1799,12 +1899,16 @@ function EclipseUI:CreateWindow(options)
 				titleLabel.Position = UDim2.new(0, textOffsetX, 0, 0)
 				titleLabel.BackgroundTransparency = 1
 				titleLabel.Text = string.upper(boxTitle)
-				titleLabel.TextColor3 = Theme.TextMuted
+				titleLabel.TextColor3 = Window.Theme.TextMuted
 				titleLabel.TextSize = 10
 				titleLabel.Font = Enum.Font.GothamBold
 				titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 				titleLabel.ZIndex = 5
 				titleLabel.Parent = headerContainer
+
+				table.insert(Window.ThemeUpdaters, function(t)
+					titleLabel.TextColor3 = t.TextMuted
+				end)
 
 				if isFoldable then
 					local arrowIcon = Instance.new("ImageLabel")
@@ -1813,10 +1917,14 @@ function EclipseUI:CreateWindow(options)
 					arrowIcon.Size = UDim2.new(0, 14, 0, 14)
 					arrowIcon.BackgroundTransparency = 1
 					arrowIcon.Image = getIconAsset("chevron-down")
-					arrowIcon.ImageColor3 = Theme.TextMuted
+					arrowIcon.ImageColor3 = Window.Theme.TextMuted
 					arrowIcon.Rotation = isFolded and 180 or 0
 					arrowIcon.ZIndex = 5
 					arrowIcon.Parent = headerContainer
+
+					table.insert(Window.ThemeUpdaters, function(t)
+						arrowIcon.ImageColor3 = t.TextMuted
+					end)
 
 					if not iconsLoaded then
 						task.spawn(function()
@@ -1923,13 +2031,17 @@ function EclipseUI:CreateWindow(options)
 			pText.AutomaticSize = Enum.AutomaticSize.Y
 			pText.BackgroundTransparency = 1
 			pText.Text = content
-			pText.TextColor3 = Theme.TextMuted
+			pText.TextColor3 = Window.Theme.TextMuted
 			pText.TextSize = 11
 			pText.Font = Enum.Font.Gotham
 			pText.TextXAlignment = Enum.TextXAlignment.Left
 			pText.TextWrapped = true
 			pText.ZIndex = 5
 			pText.Parent = pFrame
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				pText.TextColor3 = t.TextMuted
+			end)
 
 			return {
 				SetTitle = function(_, newTitle) pTitle.Text = newTitle end,
@@ -1953,12 +2065,20 @@ function EclipseUI:CreateWindow(options)
 
 			local btnGradient = Instance.new("UIGradient")
 			btnGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Theme.ButtonGradient[1]),
-				ColorSequenceKeypoint.new(0.5, Theme.ButtonGradient[2]),
-				ColorSequenceKeypoint.new(1, Theme.ButtonGradient[3])
+				ColorSequenceKeypoint.new(0, Window.Theme.ButtonGradient[1]),
+				ColorSequenceKeypoint.new(0.5, Window.Theme.ButtonGradient[2]),
+				ColorSequenceKeypoint.new(1, Window.Theme.ButtonGradient[3])
 			})
 			btnGradient.Rotation = 0
 			btnGradient.Parent = btn
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				btnGradient.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, t.ButtonGradient[1]),
+					ColorSequenceKeypoint.new(0.5, t.ButtonGradient[2]),
+					ColorSequenceKeypoint.new(1, t.ButtonGradient[3])
+				})
+			end)
 
 			task.spawn(function()
 				local tAcc = 0
@@ -2084,12 +2204,20 @@ function EclipseUI:CreateWindow(options)
 
 				local btnGradient = Instance.new("UIGradient")
 				btnGradient.Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, Theme.ButtonGradient[1]),
-					ColorSequenceKeypoint.new(0.5, Theme.ButtonGradient[2]),
-					ColorSequenceKeypoint.new(1, Theme.ButtonGradient[3])
+					ColorSequenceKeypoint.new(0, Window.Theme.ButtonGradient[1]),
+					ColorSequenceKeypoint.new(0.5, Window.Theme.ButtonGradient[2]),
+					ColorSequenceKeypoint.new(1, Window.Theme.ButtonGradient[3])
 				})
 				btnGradient.Rotation = 0
 				btnGradient.Parent = btnFrame
+
+				table.insert(Window.ThemeUpdaters, function(t)
+					btnGradient.Color = ColorSequence.new({
+						ColorSequenceKeypoint.new(0, t.ButtonGradient[1]),
+						ColorSequenceKeypoint.new(0.5, t.ButtonGradient[2]),
+						ColorSequenceKeypoint.new(1, t.ButtonGradient[3])
+					})
+				end)
 
 				task.spawn(function()
 					local tAcc = 0
@@ -2196,7 +2324,7 @@ function EclipseUI:CreateWindow(options)
 			textBox.AnchorPoint = Vector2.new(1, 0.5)
 			textBox.Position = UDim2.new(1, -12, 0.5, 0)
 			textBox.Size = UDim2.new(0, 130, 0, 24)
-			textBox.BackgroundColor3 = Theme.ContainerBg
+			textBox.BackgroundColor3 = Window.Theme.ContainerBg
 			textBox.BackgroundTransparency = 0.2
 			textBox.Text = tostring(default)
 			textBox.PlaceholderText = placeholder
@@ -2208,6 +2336,10 @@ function EclipseUI:CreateWindow(options)
 			textBox.ClearTextOnFocus = false
 			textBox.ZIndex = 6
 			textBox.Parent = inputContainer
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				textBox.BackgroundColor3 = t.ContainerBg
+			end)
 
 			local tbCorner = Instance.new("UICorner")
 			tbCorner.CornerRadius = UDim.new(0, 6)
@@ -2275,10 +2407,14 @@ function EclipseUI:CreateWindow(options)
 			toggleFrame.AnchorPoint = Vector2.new(1, 0.5)
 			toggleFrame.Position = UDim2.new(1, -12, 0.5, 0)
 			toggleFrame.Size = UDim2.new(0, 44, 0, 22)
-			toggleFrame.BackgroundColor3 = Theme.ContainerBg
+			toggleFrame.BackgroundColor3 = Window.Theme.ContainerBg
 			toggleFrame.BackgroundTransparency = 0.4
 			toggleFrame.ZIndex = 5
 			toggleFrame.Parent = toggleContainer
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				toggleFrame.BackgroundColor3 = t.ContainerBg
+			end)
 
 			local tfCorner = Instance.new("UICorner")
 			tfCorner.CornerRadius = UDim.new(1, 0)
@@ -2298,11 +2434,18 @@ function EclipseUI:CreateWindow(options)
 
 			local toggleGradient = Instance.new("UIGradient")
 			toggleGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Theme.ToggleGradient[1]),
-				ColorSequenceKeypoint.new(1, Theme.ToggleGradient[2])
+				ColorSequenceKeypoint.new(0, Window.Theme.ToggleGradient[1]),
+				ColorSequenceKeypoint.new(1, Window.Theme.ToggleGradient[2])
 			})
 			toggleGradient.Rotation = 45
 			toggleGradient.Parent = gradientOverlay
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				toggleGradient.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, t.ToggleGradient[1]),
+					ColorSequenceKeypoint.new(1, t.ToggleGradient[2])
+				})
+			end)
 
 			local tfStroke = Instance.new("UIStroke")
 			tfStroke.Color = Color3.fromRGB(255, 255, 255)
@@ -2406,7 +2549,7 @@ function EclipseUI:CreateWindow(options)
 			valBox.AnchorPoint = Vector2.new(1, 0)
 			valBox.Position = UDim2.new(1, -12, 0, 8)
 			valBox.Size = UDim2.new(0, 56, 0, 22)
-			valBox.BackgroundColor3 = Theme.ContainerBg
+			valBox.BackgroundColor3 = Window.Theme.ContainerBg
 			valBox.BackgroundTransparency = 0.2
 			valBox.Text = tostring(default)
 			valBox.TextColor3 = Color3.fromRGB(230, 238, 250)
@@ -2416,6 +2559,10 @@ function EclipseUI:CreateWindow(options)
 			valBox.ClearTextOnFocus = false
 			valBox.ZIndex = 6
 			valBox.Parent = sliderContainer
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				valBox.BackgroundColor3 = t.ContainerBg
+			end)
 
 			local valBoxCorner = Instance.new("UICorner")
 			valBoxCorner.CornerRadius = UDim.new(0, 6)
@@ -2431,10 +2578,14 @@ function EclipseUI:CreateWindow(options)
 			track.AnchorPoint = Vector2.new(0.5, 0)
 			track.Position = UDim2.new(0.5, 0, 0, 38)
 			track.Size = UDim2.new(1, -32, 0, 6)
-			track.BackgroundColor3 = Theme.ContainerBg
+			track.BackgroundColor3 = Window.Theme.ContainerBg
 			track.BorderSizePixel = 0
 			track.ZIndex = 5
 			track.Parent = sliderContainer
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				track.BackgroundColor3 = t.ContainerBg
+			end)
 
 			local trackCorner = Instance.new("UICorner")
 			trackCorner.CornerRadius = UDim.new(1, 0)
@@ -2453,10 +2604,17 @@ function EclipseUI:CreateWindow(options)
 
 			local fillGradient = Instance.new("UIGradient")
 			fillGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Theme.ToggleGradient[1]),
-				ColorSequenceKeypoint.new(1, Theme.ToggleGradient[2])
+				ColorSequenceKeypoint.new(0, Window.Theme.ToggleGradient[1]),
+				ColorSequenceKeypoint.new(1, Window.Theme.ToggleGradient[2])
 			})
 			fillGradient.Parent = fill
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				fillGradient.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, t.ToggleGradient[1]),
+					ColorSequenceKeypoint.new(1, t.ToggleGradient[2])
+				})
+			end)
 
 			local thumb = Instance.new("Frame")
 			thumb.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -2583,7 +2741,7 @@ function EclipseUI:CreateWindow(options)
 			keyBtn.AnchorPoint = Vector2.new(1, 0.5)
 			keyBtn.Position = UDim2.new(1, -12, 0.5, 0)
 			keyBtn.Size = UDim2.new(0, 90, 0, 24)
-			keyBtn.BackgroundColor3 = Theme.ContainerBg
+			keyBtn.BackgroundColor3 = Window.Theme.ContainerBg
 			keyBtn.BackgroundTransparency = 0.2
 			keyBtn.Text = currentKey.Name
 			keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
@@ -2592,6 +2750,10 @@ function EclipseUI:CreateWindow(options)
 			keyBtn.TextYAlignment = Enum.TextYAlignment.Center
 			keyBtn.ZIndex = 6
 			keyBtn.Parent = kbFrame
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				keyBtn.BackgroundColor3 = t.ContainerBg
+			end)
 
 			local keyCorner = Instance.new("UICorner")
 			keyCorner.CornerRadius = UDim.new(0, 6)
@@ -2696,10 +2858,14 @@ function EclipseUI:CreateWindow(options)
 			selBox.AnchorPoint = Vector2.new(1, 0.5)
 			selBox.Position = UDim2.new(1, -12, 0.5, 0)
 			selBox.Size = UDim2.new(0, 104, 0, 24)
-			selBox.BackgroundColor3 = Theme.ContainerBg
+			selBox.BackgroundColor3 = Window.Theme.ContainerBg
 			selBox.BackgroundTransparency = 0.2
 			selBox.ZIndex = 6
 			selBox.Parent = headerBtn
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				selBox.BackgroundColor3 = t.ContainerBg
+			end)
 
 			local selBoxCorner = Instance.new("UICorner")
 			selBoxCorner.CornerRadius = UDim.new(0, 6)
@@ -2772,9 +2938,13 @@ function EclipseUI:CreateWindow(options)
 					tween(data.Btn, fadeTweenInfo, {
 						BackgroundTransparency = isSel and 0.82 or 0.96
 					})
-					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Theme.TextMuted
+					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Window.Theme.TextMuted
 				end
 			end
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				refreshSelectionStates()
+			end)
 
 			for _, item in ipairs(items) do
 				local itemBtn = Instance.new("TextButton")
@@ -2794,13 +2964,19 @@ function EclipseUI:CreateWindow(options)
 				itemText.Position = UDim2.new(0, 12, 0, 0)
 				itemText.BackgroundTransparency = 1
 				itemText.Text = tostring(item)
-				itemText.TextColor3 = Theme.TextMuted
+				itemText.TextColor3 = Window.Theme.TextMuted
 				itemText.TextSize = 11
 				itemText.Font = Enum.Font.Gotham
 				itemText.TextYAlignment = Enum.TextYAlignment.Center
 				itemText.TextXAlignment = Enum.TextXAlignment.Left
 				itemText.ZIndex = 7
 				itemText.Parent = itemBtn
+
+				table.insert(Window.ThemeUpdaters, function(t)
+					if selected ~= item then
+						itemText.TextColor3 = t.TextMuted
+					end
+				end)
 
 				table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText })
 
@@ -2814,7 +2990,7 @@ function EclipseUI:CreateWindow(options)
 				itemBtn.MouseLeave:Connect(function()
 					if selected ~= item then
 						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.96 })
-						tween(itemText, fadeTweenInfo, { TextColor3 = Theme.TextMuted })
+						tween(itemText, fadeTweenInfo, { TextColor3 = Window.Theme.TextMuted })
 					end
 				end)
 
@@ -2875,7 +3051,7 @@ function EclipseUI:CreateWindow(options)
 						itemText.Position = UDim2.new(0, 12, 0, 0)
 						itemText.BackgroundTransparency = 1
 						itemText.Text = tostring(item)
-						itemText.TextColor3 = Theme.TextMuted
+						itemText.TextColor3 = Window.Theme.TextMuted
 						itemText.TextSize = 11
 						itemText.Font = Enum.Font.Gotham
 						itemText.TextYAlignment = Enum.TextYAlignment.Center
@@ -2895,7 +3071,7 @@ function EclipseUI:CreateWindow(options)
 						itemBtn.MouseLeave:Connect(function()
 							if selected ~= item then
 								tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.96 })
-								tween(itemText, fadeTweenInfo, { TextColor3 = Theme.TextMuted })
+								tween(itemText, fadeTweenInfo, { TextColor3 = Window.Theme.TextMuted })
 							end
 						end)
 
@@ -2963,10 +3139,14 @@ function EclipseUI:CreateWindow(options)
 			selBox.AnchorPoint = Vector2.new(1, 0.5)
 			selBox.Position = UDim2.new(1, -12, 0.5, 0)
 			selBox.Size = UDim2.new(0, 104, 0, 24)
-			selBox.BackgroundColor3 = Theme.ContainerBg
+			selBox.BackgroundColor3 = Window.Theme.ContainerBg
 			selBox.BackgroundTransparency = 0.2
 			selBox.ZIndex = 6
 			selBox.Parent = headerBtn
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				selBox.BackgroundColor3 = t.ContainerBg
+			end)
 
 			local selBoxCorner = Instance.new("UICorner")
 			selBoxCorner.CornerRadius = UDim.new(0, 6)
@@ -3059,10 +3239,14 @@ function EclipseUI:CreateWindow(options)
 					tween(data.Btn, fadeTweenInfo, {
 						BackgroundTransparency = isSel and 0.82 or 0.96
 					})
-					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Theme.TextMuted
+					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Window.Theme.TextMuted
 				end
 				updateDisplay()
 			end
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				refreshSelectionStates()
+			end)
 
 			for _, item in ipairs(items) do
 				local itemBtn = Instance.new("TextButton")
@@ -3082,7 +3266,7 @@ function EclipseUI:CreateWindow(options)
 				itemText.Position = UDim2.new(0, 12, 0, 0)
 				itemText.BackgroundTransparency = 1
 				itemText.Text = tostring(item)
-				itemText.TextColor3 = Theme.TextMuted
+				itemText.TextColor3 = Window.Theme.TextMuted
 				itemText.TextSize = 11
 				itemText.Font = Enum.Font.Gotham
 				itemText.TextYAlignment = Enum.TextYAlignment.Center
@@ -3102,7 +3286,7 @@ function EclipseUI:CreateWindow(options)
 				itemBtn.MouseLeave:Connect(function()
 					if not selectedMap[item] then
 						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.96 })
-						tween(itemText, fadeTweenInfo, { TextColor3 = Theme.TextMuted })
+						tween(itemText, fadeTweenInfo, { TextColor3 = Window.Theme.TextMuted })
 					end
 				end)
 
