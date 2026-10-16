@@ -2596,16 +2596,14 @@ function EclipseUI:CreateWindow(options)
 					return
 				end
 				if gpe then return end
-				if input.UserInputType == Enum.UserInputType.Keyboard then
-					if listening then
-						listening = false
-						currentKey = input.KeyCode
-						keyBtn.Text = currentKey.Name
-						keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
-						tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
-					elseif input.KeyCode == currentKey then
-						pcall(callback, currentKey)
-					end
+				if input.UserInputType == Enum.UserInputType.Keyboard and listening then
+					listening = false
+					currentKey = input.KeyCode
+					keyBtn.Text = currentKey.Name
+					keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
+					tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
+					-- Fire callback only when the key is actually changed/rebound
+					pcall(callback, currentKey)
 				end
 			end)
 
