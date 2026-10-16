@@ -2225,6 +2225,7 @@ function EclipseUI:CreateWindow(options)
 			targetParent = targetParent or page
 			local title = opts.Title or opts.Name or "Colorpicker"
 			local defaultColor = opts.Default or Color3.fromRGB(255, 255, 255)
+			local defaultAlpha = opts.Alpha or 1
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
 
@@ -2263,12 +2264,17 @@ function EclipseUI:CreateWindow(options)
 			cpStroke.Parent = colorPreview
 
 			local currentColor = defaultColor
-			local tempColor = defaultColor
+			local currentAlpha = defaultAlpha
 			local popupGui = nil
 
 			colorPreview.MouseButton1Click:Connect(function()
 				if popupGui and popupGui.Parent then return end
-				tempColor = currentColor
+
+				local startColor = currentColor
+				local startAlpha = currentAlpha
+
+				local h, s, v = currentColor:ToHSV()
+				local tempH, tempS, tempV, tempA = h, s, v, currentAlpha
 
 				local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 				popupGui = Instance.new("ScreenGui")
@@ -2280,8 +2286,8 @@ function EclipseUI:CreateWindow(options)
 
 				local overlay = Instance.new("Frame")
 				overlay.Size = UDim2.new(1, 0, 1, 0)
-				overlay.BackgroundColor3 = Color3.fromRGB(10, 11, 15)
-				overlay.BackgroundTransparency = 0.5
+				overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+				overlay.BackgroundTransparency = 0.6
 				overlay.BorderSizePixel = 0
 				overlay.ZIndex = 50
 				overlay.Parent = popupGui
@@ -2289,26 +2295,25 @@ function EclipseUI:CreateWindow(options)
 				local window = Instance.new("CanvasGroup")
 				window.AnchorPoint = Vector2.new(0.5, 0.5)
 				window.Position = UDim2.new(0.5, 0, 0.5, 0)
-				window.Size = UDim2.new(0, 340, 0, 240)
-				window.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
-				window.BackgroundTransparency = 0.1
+				window.Size = UDim2.new(0, 380, 0, 290)
+				window.BackgroundColor3 = Color3.fromRGB(18, 19, 26)
 				window.GroupTransparency = 1
 				window.ZIndex = 51
 				window.Parent = popupGui
 
 				local wCorner = Instance.new("UICorner")
-				wCorner.CornerRadius = UDim.new(0, 12)
+				wCorner.CornerRadius = UDim.new(0, 14)
 				wCorner.Parent = window
 
 				local wStroke = Instance.new("UIStroke")
 				wStroke.Color = Color3.fromRGB(255, 255, 255)
 				wStroke.Thickness = 1.5
-				wStroke.Transparency = 0.4
+				wStroke.Transparency = 0.8
 				wStroke.Parent = window
 
 				local wTitle = Instance.new("TextLabel")
-				wTitle.Size = UDim2.new(1, -20, 0, 32)
-				wTitle.Position = UDim2.new(0, 16, 0, 12)
+				wTitle.Size = UDim2.new(1, -32, 0, 24)
+				wTitle.Position = UDim2.new(0, 16, 0, 14)
 				wTitle.BackgroundTransparency = 1
 				wTitle.Text = title
 				wTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -2318,67 +2323,394 @@ function EclipseUI:CreateWindow(options)
 				wTitle.ZIndex = 52
 				wTitle.Parent = window
 
-				-- Color Picker Main Box area (Visual placeholder matching design)
-				local pickerBox = Instance.new("Frame")
-				pickerBox.Position = UDim2.new(0, 16, 0, 52)
-				pickerBox.Size = UDim2.new(0, 140, 0, 120)
-				pickerBox.BackgroundColor3 = tempColor
-				pickerBox.BorderSizePixel = 0
-				pickerBox.ZIndex = 52
-				pickerBox.Parent = window
+				-- 1. Saturation & Value Box (SV Box)
+				local svBox = Instance.new("Frame")
+				svBox.Position = UDim2.new(0, 16, 0, 48)
+				svBox.Size = UDim2.new(0, 150, 0, 150)
+				svBox.BackgroundColor3 = Color3.fromHSV(tempH, 1, 1)
+				svBox.BorderSizePixel = 0
+				svBox.ZIndex = 52
+				svBox.Parent = window
 
-				local pbCorner = Instance.new("UICorner")
-				pbCorner.CornerRadius = UDim.new(0, 8)
-				pbCorner.Parent = pickerBox
+				local svCorner = Instance.new("UICorner")
+				svCorner.CornerRadius = UDim.new(0, 8)
+				svCorner.Parent = svBox
 
-				-- RGB/Hex Inputs on the right side
-				local inputStartX = 168
-				local function createColorInput(name, defaultVal, yPos)
-					local lbl = Instance.new("TextLabel")
-					lbl.Position = UDim2.new(0, inputStartX, 0, yPos)
-					lbl.Size = UDim2.new(0, 90, 0, 24)
-					lbl.BackgroundTransparency = 1
-					lbl.Text = name
-					lbl.TextColor3 = Color3.fromRGB(150, 160, 180)
-					lbl.TextSize = 11
-					lbl.Font = Enum.Font.Gotham
-					lbl.TextXAlignment = Enum.TextXAlignment.Right
-					lbl.ZIndex = 52
-					lbl.Parent = window
+				-- White saturation gradient overlay (Horizontal)
+				local satGradFrame = Instance.new("Frame")
+				satGradFrame.Size = UDim2.new(1, 0, 1, 0)
+				satGradFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+				satGradFrame.BorderSizePixel = 0
+				satGradFrame.ZIndex = 53
+				satGradFrame.Parent = svBox
+
+				local satCorner = Instance.new("UICorner")
+				satCorner.CornerRadius = UDim.new(0, 8)
+				satCorner.Parent = satGradFrame
+
+				local satGradient = Instance.new("UIGradient")
+				satGradient.Transparency = NumberSequence.new({
+					NumberSequenceKeypoint.new(0, 0),
+					NumberSequenceKeypoint.new(1, 1)
+				})
+				satGradient.Parent = satGradFrame
+
+				-- Black value gradient overlay (Vertical)
+				local valGradFrame = Instance.new("Frame")
+				valGradFrame.Size = UDim2.new(1, 0, 1, 0)
+				valGradFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+				valGradFrame.BorderSizePixel = 0
+				valGradFrame.ZIndex = 54
+				valGradFrame.Parent = svBox
+
+				local valCorner = Instance.new("UICorner")
+				valCorner.CornerRadius = UDim.new(0, 8)
+				valCorner.Parent = valGradFrame
+
+				local valGradient = Instance.new("UIGradient")
+				valGradient.Rotation = 90
+				valGradient.Transparency = NumberSequence.new({
+					NumberSequenceKeypoint.new(0, 1),
+					NumberSequenceKeypoint.new(1, 0)
+				})
+				valGradient.Parent = valGradFrame
+
+				-- SV Selector Ring Knob
+				local svKnob = Instance.new("Frame")
+				svKnob.AnchorPoint = Vector2.new(0.5, 0.5)
+				svKnob.Size = UDim2.new(0, 14, 0, 14)
+				svKnob.Position = UDim2.new(tempS, 0, 1 - tempV, 0)
+				svKnob.BackgroundColor3 = Color3.fromHSV(tempH, tempS, tempV)
+				svKnob.ZIndex = 56
+				svKnob.Parent = svBox
+
+				local knobCorner = Instance.new("UICorner")
+				knobCorner.CornerRadius = UDim.new(1, 0)
+				knobCorner.Parent = svKnob
+
+				local knobStroke = Instance.new("UIStroke")
+				knobStroke.Color = Color3.fromRGB(255, 255, 255)
+				knobStroke.Thickness = 2
+				knobStroke.Parent = svKnob
+
+				-- 2. Hue Slider (Vertical Rainbow Bar)
+				local hueBar = Instance.new("Frame")
+				hueBar.Position = UDim2.new(0, 176, 0, 48)
+				hueBar.Size = UDim2.new(0, 12, 0, 150)
+				hueBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+				hueBar.BorderSizePixel = 0
+				hueBar.ZIndex = 52
+				hueBar.Parent = window
+
+				local hbCorner = Instance.new("UICorner")
+				hbCorner.CornerRadius = UDim.new(1, 0)
+				hbCorner.Parent = hueBar
+
+				local hueGradient = Instance.new("UIGradient")
+				hueGradient.Rotation = 90
+				hueGradient.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 0, 0)),
+					ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 255, 0)),
+					ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),
+					ColorSequenceKeypoint.new(0.50, Color3.fromRGB(0, 255, 255)),
+					ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 0, 255)),
+					ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),
+					ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 0, 0))
+				})
+				hueGradient.Parent = hueBar
+
+				local hueKnob = Instance.new("Frame")
+				hueKnob.AnchorPoint = Vector2.new(0.5, 0.5)
+				hueKnob.Position = UDim2.new(0.5, 0, tempH, 0)
+				hueKnob.Size = UDim2.new(0, 16, 0, 16)
+				hueKnob.BackgroundColor3 = Color3.fromHSV(tempH, 1, 1)
+				hueKnob.ZIndex = 55
+				hueKnob.Parent = hueBar
+
+				local hkCorner = Instance.new("UICorner")
+				hkCorner.CornerRadius = UDim.new(1, 0)
+				hkCorner.Parent = hueKnob
+
+				local hkStroke = Instance.new("UIStroke")
+				hkStroke.Color = Color3.fromRGB(255, 255, 255)
+				hkStroke.Thickness = 2
+				hkStroke.Parent = hueKnob
+
+				-- 3. Alpha Slider (Vertical Transparency Bar)
+				local alphaBar = Instance.new("Frame")
+				alphaBar.Position = UDim2.new(0, 196, 0, 48)
+				alphaBar.Size = UDim2.new(0, 12, 0, 150)
+				alphaBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+				alphaBar.BorderSizePixel = 0
+				alphaBar.ZIndex = 52
+				alphaBar.Parent = window
+
+				local abCorner = Instance.new("UICorner")
+				abCorner.CornerRadius = UDim.new(1, 0)
+				abCorner.Parent = alphaBar
+
+				local alphaGradient = Instance.new("UIGradient")
+				alphaGradient.Rotation = 90
+				alphaGradient.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, Color3.fromHSV(tempH, tempS, tempV)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 22, 28))
+				})
+				alphaGradient.Parent = alphaBar
+
+				local alphaKnob = Instance.new("Frame")
+				alphaKnob.AnchorPoint = Vector2.new(0.5, 0.5)
+				alphaKnob.Position = UDim2.new(0.5, 0, 1 - tempA, 0)
+				alphaKnob.Size = UDim2.new(0, 16, 0, 16)
+				alphaKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+				alphaKnob.ZIndex = 55
+				alphaKnob.Parent = alphaBar
+
+				local akCorner = Instance.new("UICorner")
+				akCorner.CornerRadius = UDim.new(1, 0)
+				akCorner.Parent = alphaKnob
+
+				local akStroke = Instance.new("UIStroke")
+				akStroke.Color = Color3.fromRGB(255, 255, 255)
+				akStroke.Thickness = 2
+				akStroke.Parent = alphaKnob
+
+				-- 4. Text Inputs (Right Side: Hex, R, G, B, Alpha)
+				local inputStartX = 220
+				local function createInputRow(labelName, defaultVal, yPos)
+					local boxContainer = Instance.new("Frame")
+					boxContainer.Position = UDim2.new(0, inputStartX, 0, yPos)
+					boxContainer.Size = UDim2.new(0, 144, 0, 26)
+					boxContainer.BackgroundColor3 = Color3.fromRGB(25, 28, 38)
+					boxContainer.ZIndex = 52
+					boxContainer.Parent = window
+
+					local bcCorner = Instance.new("UICorner")
+					bcCorner.CornerRadius = UDim.new(0, 6)
+					bcCorner.Parent = boxContainer
+
+					local bcStroke = Instance.new("UIStroke")
+					bcStroke.Color = Color3.fromRGB(255, 255, 255)
+					bcStroke.Thickness = 1
+					bcStroke.Transparency = 0.88
+					bcStroke.Parent = boxContainer
 
 					local box = Instance.new("TextBox")
-					box.Position = UDim2.new(0, inputStartX + 96, 0, yPos)
-					box.Size = UDim2.new(0, 60, 0, 24)
-					box.BackgroundColor3 = Color3.fromRGB(22, 26, 36)
-					box.BackgroundTransparency = 0.2
+					box.Position = UDim2.new(0, 10, 0, 0)
+					box.Size = UDim2.new(0, 75, 1, 0)
+					box.BackgroundTransparency = 1
 					box.Text = tostring(defaultVal)
 					box.TextColor3 = Color3.fromRGB(230, 238, 250)
 					box.TextSize = 11
 					box.Font = Enum.Font.GothamMedium
-					box.ZIndex = 52
-					box.Parent = window
+					box.TextXAlignment = Enum.TextXAlignment.Left
+					box.ClearTextOnFocus = false
+					box.ZIndex = 53
+					box.Parent = boxContainer
 
-					local bCorner = Instance.new("UICorner")
-					bCorner.CornerRadius = UDim.new(0, 6)
-					bCorner.Parent = box
+					local tag = Instance.new("TextLabel")
+					tag.Position = UDim2.new(1, -50, 0, 0)
+					tag.Size = UDim2.new(0, 42, 1, 0)
+					tag.BackgroundTransparency = 1
+					tag.Text = labelName
+					tag.TextColor3 = Color3.fromRGB(110, 120, 140)
+					tag.TextSize = 10
+					tag.Font = Enum.Font.Gotham
+					tag.TextXAlignment = Enum.TextXAlignment.Right
+					tag.ZIndex = 53
+					tag.Parent = boxContainer
 
-					local bStroke = Instance.new("UIStroke")
-					bStroke.Color = Color3.fromRGB(255, 255, 255)
-					bStroke.Thickness = 1
-					bStroke.Transparency = 0.8
-					bStroke.Parent = box
-					return box
+					return box, boxContainer
 				end
 
-				local rBox = createColorInput("Red", math.floor(tempColor.R * 255), 52)
-				local gBox = createColorInput("Green", math.floor(tempColor.G * 255), 82)
-				local bBox = createColorInput("Blue", math.floor(tempColor.B * 255), 112)
+				local hexBox = createInputRow("Hex", "#" .. currentColor:ToHex(), 48)
+				local rBox = createInputRow("Red", math.floor(currentColor.R * 255 + 0.5), 79)
+				local gBox = createInputRow("Green", math.floor(currentColor.G * 255 + 0.5), 110)
+				local bBox = createInputRow("Blue", math.floor(currentColor.B * 255 + 0.5), 141)
+				local aBox = createInputRow("Alpha", math.floor(tempA * 100) .. "%", 172)
 
-				-- Cancel & Apply Buttons
+				-- Preview Swatches below SV Box
+				local curPreview = Instance.new("Frame")
+				curPreview.Position = UDim2.new(0, 16, 0, 206)
+				curPreview.Size = UDim2.new(0, 70, 0, 24)
+				curPreview.BackgroundColor3 = Color3.fromHSV(tempH, tempS, tempV)
+				curPreview.BackgroundTransparency = 1 - tempA
+				curPreview.ZIndex = 52
+				curPreview.Parent = window
+
+				local cpCorn = Instance.new("UICorner")
+				cpCorn.CornerRadius = UDim.new(0, 6)
+				cpCorn.Parent = curPreview
+
+				local newPreview = Instance.new("Frame")
+				newPreview.Position = UDim2.new(0, 94, 0, 206)
+				newPreview.Size = UDim2.new(0, 72, 0, 24)
+				newPreview.BackgroundColor3 = Color3.fromHSV(tempH, tempS, tempV)
+				newPreview.BackgroundTransparency = 1 - tempA
+				newPreview.ZIndex = 52
+				newPreview.Parent = window
+
+				local npCorn = Instance.new("UICorner")
+				npCorn.CornerRadius = UDim.new(0, 6)
+				npCorn.Parent = newPreview
+
+				-- Central Update Refresh Handler
+				local function updatePicker(skipInputs)
+					local activeColor = Color3.fromHSV(tempH, tempS, tempV)
+
+					svBox.BackgroundColor3 = Color3.fromHSV(tempH, 1, 1)
+					svKnob.Position = UDim2.new(tempS, 0, 1 - tempV, 0)
+					svKnob.BackgroundColor3 = activeColor
+
+					hueKnob.Position = UDim2.new(0.5, 0, tempH, 0)
+					hueKnob.BackgroundColor3 = Color3.fromHSV(tempH, 1, 1)
+
+					alphaGradient.Color = ColorSequence.new({
+						ColorSequenceKeypoint.new(0, activeColor),
+						ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 22, 28))
+					})
+					alphaKnob.Position = UDim2.new(0.5, 0, 1 - tempA, 0)
+
+					newPreview.BackgroundColor3 = activeColor
+					newPreview.BackgroundTransparency = 1 - tempA
+
+					if not skipInputs then
+						hexBox.Text = "#" .. activeColor:ToHex()
+						rBox.Text = tostring(math.floor(activeColor.R * 255 + 0.5))
+						gBox.Text = tostring(math.floor(activeColor.G * 255 + 0.5))
+						bBox.Text = tostring(math.floor(activeColor.B * 255 + 0.5))
+						aBox.Text = math.floor(tempA * 100) .. "%"
+					end
+				end
+
+				-- Mouse Dragging Logic for SV Box
+				local svDragging = false
+				svBox.InputBegan:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+						svDragging = true
+						local function updateSV(pos)
+							local relX = math.clamp((pos.X - svBox.AbsolutePosition.X) / svBox.AbsoluteSize.X, 0, 1)
+							local relY = math.clamp((pos.Y - svBox.AbsolutePosition.Y) / svBox.AbsoluteSize.Y, 0, 1)
+							tempS = relX
+							tempV = 1 - relY
+							updatePicker()
+						end
+						updateSV(input.Position)
+
+						local moveConn, endConn
+						moveConn = UserInputService.InputChanged:Connect(function(mInput)
+							if svDragging and (mInput.UserInputType == Enum.UserInputType.MouseMovement or mInput.UserInputType == Enum.UserInputType.Touch) then
+								updateSV(mInput.Position)
+							end
+						end)
+
+						endConn = UserInputService.InputEnded:Connect(function(eInput)
+							if eInput.UserInputType == input.UserInputType then
+								svDragging = false
+								if moveConn then moveConn:Disconnect() end
+								if endConn then endConn:Disconnect() end
+							end
+						end)
+					end
+				end)
+
+				-- Mouse Dragging Logic for Hue Bar
+				local hueDragging = false
+				hueBar.InputBegan:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+						hueDragging = true
+						local function updateHue(pos)
+							local relY = math.clamp((pos.Y - hueBar.AbsolutePosition.Y) / hueBar.AbsoluteSize.Y, 0, 1)
+							tempH = relY
+							updatePicker()
+						end
+						updateHue(input.Position)
+
+						local moveConn, endConn
+						moveConn = UserInputService.InputChanged:Connect(function(mInput)
+							if hueDragging and (mInput.UserInputType == Enum.UserInputType.MouseMovement or mInput.UserInputType == Enum.UserInputType.Touch) then
+								updateHue(mInput.Position)
+							end
+						end)
+
+						endConn = UserInputService.InputEnded:Connect(function(eInput)
+							if eInput.UserInputType == input.UserInputType then
+								hueDragging = false
+								if moveConn then moveConn:Disconnect() end
+								if endConn then endConn:Disconnect() end
+							end
+						end)
+					end
+				end)
+
+				-- Mouse Dragging Logic for Alpha Bar
+				local alphaDragging = false
+				alphaBar.InputBegan:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+						alphaDragging = true
+						local function updateAlpha(pos)
+							local relY = math.clamp((pos.Y - alphaBar.AbsolutePosition.Y) / alphaBar.AbsoluteSize.Y, 0, 1)
+							tempA = 1 - relY
+							updatePicker()
+						end
+						updateAlpha(input.Position)
+
+						local moveConn, endConn
+						moveConn = UserInputService.InputChanged:Connect(function(mInput)
+							if alphaDragging and (mInput.UserInputType == Enum.UserInputType.MouseMovement or mInput.UserInputType == Enum.UserInputType.Touch) then
+								updateAlpha(mInput.Position)
+							end
+						end)
+
+						endConn = UserInputService.InputEnded:Connect(function(eInput)
+							if eInput.UserInputType == input.UserInputType then
+								alphaDragging = false
+								if moveConn then moveConn:Disconnect() end
+								if endConn then endConn:Disconnect() end
+							end
+						end)
+					end
+				end)
+
+				-- Hex & RGB Input Event Handlers
+				hexBox.FocusLost:Connect(function()
+					local cleanHex = hexBox.Text:gsub("#", "")
+					local success, parsedColor = pcall(function() return Color3.fromHex(cleanHex) end)
+					if success and parsedColor then
+						tempH, tempS, tempV = parsedColor:ToHSV()
+						updatePicker()
+					else
+						hexBox.Text = "#" .. Color3.fromHSV(tempH, tempS, tempV):ToHex()
+					end
+				end)
+
+				local function onRGBFocusLost()
+					local r = math.clamp(tonumber(rBox.Text) or (Color3.fromHSV(tempH, tempS, tempV).R * 255), 0, 255)
+					local g = math.clamp(tonumber(gBox.Text) or (Color3.fromHSV(tempH, tempS, tempV).G * 255), 0, 255)
+					local b = math.clamp(tonumber(bBox.Text) or (Color3.fromHSV(tempH, tempS, tempV).B * 255), 0, 255)
+					local newCol = Color3.fromRGB(r, g, b)
+					tempH, tempS, tempV = newCol:ToHSV()
+					updatePicker()
+				end
+
+				rBox.FocusLost:Connect(onRGBFocusLost)
+				gBox.FocusLost:Connect(onRGBFocusLost)
+				bBox.FocusLost:Connect(onRGBFocusLost)
+
+				aBox.FocusLost:Connect(function()
+					local num = tonumber(aBox.Text:gsub("%%", ""))
+					if num then
+						tempA = math.clamp(num / 100, 0, 1)
+						updatePicker()
+					else
+						aBox.Text = math.floor(tempA * 100) .. "%"
+					end
+				end)
+
+				-- Cancel & Apply Action Buttons
 				local cancelBtn = Instance.new("TextButton")
-				cancelBtn.Position = UDim2.new(0, 16, 1, -48)
-				cancelBtn.Size = UDim2.new(0, 148, 0, 32)
-				cancelBtn.BackgroundColor3 = Color3.fromRGB(30, 35, 48)
+				cancelBtn.Position = UDim2.new(0, 16, 1, -44)
+				cancelBtn.Size = UDim2.new(0, 168, 0, 32)
+				cancelBtn.BackgroundColor3 = Color3.fromRGB(30, 34, 46)
 				cancelBtn.BackgroundTransparency = 0.2
 				cancelBtn.Text = "Cancel"
 				cancelBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -2392,8 +2724,8 @@ function EclipseUI:CreateWindow(options)
 				cCorner.Parent = cancelBtn
 
 				local applyBtn = Instance.new("TextButton")
-				applyBtn.Position = UDim2.new(0, 176, 1, -48)
-				applyBtn.Size = UDim2.new(0, 148, 0, 32)
+				applyBtn.Position = UDim2.new(0, 196, 1, -44)
+				applyBtn.Size = UDim2.new(0, 168, 0, 32)
 				applyBtn.BackgroundColor3 = Color3.fromRGB(65, 85, 130)
 				applyBtn.BackgroundTransparency = 0.2
 				applyBtn.Text = "Apply"
@@ -2417,26 +2749,28 @@ function EclipseUI:CreateWindow(options)
 				end)
 
 				applyBtn.MouseButton1Click:Connect(function()
-					local r = tonumber(rBox.Text) or math.floor(tempColor.R * 255)
-					local g = tonumber(gBox.Text) or math.floor(tempColor.G * 255)
-					local b = tonumber(bBox.Text) or math.floor(tempColor.B * 255)
-					currentColor = Color3.fromRGB(math.clamp(r, 0, 255), math.clamp(g, 0, 255), math.clamp(b, 0, 255))
+					currentColor = Color3.fromHSV(tempH, tempS, tempV)
+					currentAlpha = tempA
 					colorPreview.BackgroundColor3 = currentColor
-					pcall(callback, currentColor)
+					pcall(callback, currentColor, currentAlpha)
 
 					local outTween = TweenService:Create(window, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.In), { GroupTransparency = 1 })
 					outTween:Play()
 					outTween.Completed:Wait()
 					popupGui:Destroy()
 				end)
+
+				updatePicker()
 			end)
 
 			local obj = {
 				GetColor = function() return currentColor end,
-				Set = function(_, col)
-					currentColor = col
-					colorPreview.BackgroundColor3 = col
-					pcall(callback, col)
+				GetAlpha = function() return currentAlpha end,
+				Set = function(_, col, alpha)
+					currentColor = col or currentColor
+					currentAlpha = alpha or currentAlpha
+					colorPreview.BackgroundColor3 = currentColor
+					pcall(callback, currentColor, currentAlpha)
 				end
 			}
 
@@ -2446,7 +2780,7 @@ function EclipseUI:CreateWindow(options)
 
 			return obj
 		end
-
+		
 		function TabObject:Toggle(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
