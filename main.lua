@@ -1879,7 +1879,7 @@ function EclipseUI:CreateWindow(options)
 
 			local rowFrame = Instance.new("Frame")
 			rowFrame.Name = "ButtonRow"
-			rowFrame.Size = UDim2.new(1, 0, 0, 38)
+			rowFrame.Size = UDim2.new(1, 0, 0, 32)
 			rowFrame.BackgroundTransparency = 1
 			rowFrame.ZIndex = 4
 			rowFrame.Parent = targetParent
@@ -1917,6 +1917,24 @@ function EclipseUI:CreateWindow(options)
 				stroke.Thickness = 1
 				stroke.Transparency = 0.5
 				stroke.Parent = btnFrame
+
+				local btnGradient = Instance.new("UIGradient")
+				btnGradient.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(65, 85, 130)),
+					ColorSequenceKeypoint.new(0.5, Color3.fromRGB(35, 45, 65)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(65, 85, 130))
+				})
+				btnGradient.Rotation = 0
+				btnGradient.Parent = btnFrame
+
+				task.spawn(function()
+					local tAcc = 0
+					while btnFrame:IsDescendantOf(game) do
+						local dt = RunService.RenderStepped:Wait()
+						tAcc = tAcc + dt
+						btnGradient.Rotation = (tAcc * 50) % 360
+					end
+				end)
 
 				local textRightOffset = -10
 				if bIcon then
