@@ -1473,6 +1473,36 @@ function EclipseUI:CreateWindow(options)
 			return spaceFrame
 		end
 
+		function TabObject:Divider(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local dividerHeight = 16
+			if typeof(opts) == "number" then
+				dividerHeight = opts
+			elseif typeof(opts) == "table" then
+				dividerHeight = opts.Height or opts.Size or 16
+			end
+
+			local dividerFrame = Instance.new("Frame")
+			dividerFrame.Name = "Divider"
+			dividerFrame.Size = UDim2.new(1, 0, 0, dividerHeight)
+			dividerFrame.BackgroundTransparency = 1
+			dividerFrame.ZIndex = 4
+			dividerFrame.Parent = targetParent
+
+			local line = Instance.new("Frame")
+			line.Size = UDim2.new(1, 0, 0, 1)
+			line.AnchorPoint = Vector2.new(0, 0.5)
+			line.Position = UDim2.new(0, 0, 0.5, 0)
+			line.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			line.BackgroundTransparency = 0.88
+			line.BorderSizePixel = 0
+			line.ZIndex = 4
+			line.Parent = dividerFrame
+
+			return dividerFrame
+		end
+
 		function TabObject:Section(secOptions)
 			secOptions = secOptions or {}
 			local secTitle = typeof(secOptions) == "string" and secOptions or (secOptions.Title or secOptions.Name or "Section")
