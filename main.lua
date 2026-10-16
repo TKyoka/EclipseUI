@@ -1670,10 +1670,42 @@ function EclipseUI:CreateWindow(options)
 					clickBtn.ZIndex = 6
 					clickBtn.Parent = headerContainer
 
+					local isAnimating = false
 					clickBtn.MouseButton1Click:Connect(function()
+						if isAnimating then return end
+						isAnimating = true
 						isFolded = not isFolded
+
 						tween(arrowIcon, fadeTweenInfo, { Rotation = isFolded and 180 or 0 })
-						contentContainer.Visible = not isFolded
+
+						local fullHeight = contentLayout.AbsoluteContentSize.Y + 6
+
+						if isFolded then
+							contentContainer.AutomaticSize = Enum.AutomaticSize.None
+							contentContainer.Size = UDim2.new(1, 0, 0, fullHeight)
+							
+							local foldTween = TweenService:Create(contentContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+								Size = UDim2.new(1, 0, 0, 0)
+							})
+							foldTween:Play()
+							foldTween.Completed:Wait()
+							
+							contentContainer.Visible = false
+							isAnimating = false
+						else
+							contentContainer.Visible = true
+							contentContainer.Size = UDim2.new(1, 0, 0, 0)
+							contentContainer.AutomaticSize = Enum.AutomaticSize.None
+
+							local unfoldTween = TweenService:Create(contentContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+								Size = UDim2.new(1, 0, 0, fullHeight)
+							})
+							unfoldTween:Play()
+							unfoldTween.Completed:Wait()
+
+							contentContainer.AutomaticSize = Enum.AutomaticSize.Y
+							isAnimating = false
+						end
 					end)
 				end
 			end
@@ -1838,6 +1870,121 @@ function EclipseUI:CreateWindow(options)
 			end)
 
 			return btn
+		end
+
+		function TabObject:ButtonRow(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local buttonsList = opts.Buttons or {}
+
+			local rowFrame = Instance.new("Frame")
+			rowFrame.Name = "ButtonRow"
+			rowFrame.Size = UDim2.new(1, 0, 0, 38)
+			rowFrame.BackgroundTransparency = 1
+			rowFrame.ZIndex = 4
+			rowFrame.Parent = targetParent
+
+			local rowLayout = Instance.new("UIListLayout")
+			rowLayout.FillDirection = Enum.FillDirection.Horizontal
+			rowLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+			rowLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			rowLayout.Padding = UDim.new(0, 6)
+			rowLayout.Parent = rowFrame
+
+			for _, bOpts in ipairs(buttonsList) do
+				local bTitle = bOpts.Title or "Button"
+				local bIcon = bOpts.Icon
+				local bCallback = bOpts.Callback or function() end
+
+				local btnFrame = Instance.new("Frame")
+				btnFrame.Size = UDim2.new(0, 0, 1, 0)
+				btnFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+				btnFrame.BackgroundTransparency = 0.75
+				btnFrame.ClipsDescendants = true
+				btnFrame.ZIndex = 4
+				btnFrame.Parent = rowFrame
+
+				local flexItem = Instance.new("UIFlexItem")
+				flexItem.FlexMode = Enum.UIFlexMode.Fill
+				flexItem.Parent = btnFrame
+
+				local corner = Instance.new("UICorner")
+				corner.CornerRadius = UDim.new(0, 8)
+				corner.Parent = btnFrame
+
+				local stroke = Instance.new("UIStroke")
+				stroke.Color = Color3.fromRGB(255, 255, 255)
+				stroke.Thickness = 1
+				stroke.Transparency = 0.5
+				stroke.Parent = btnFrame
+
+				local textRightOffset = -10
+				if bIcon then
+					local iconImg = Instance.new("ImageLabel")
+					iconImg.Size = UDim2.new(0, 14, 0, 14)
+					iconImg.AnchorPoint = Vector2.new(1, 0.5)
+					iconImg.Position = UDim2.new(1, -10, 0.5, 0)
+					iconImg.BackgroundTransparency = 1
+					iconImg.Image = getIconAsset(bIcon)
+					iconImg.ImageColor3 = Color3.fromRGB(255, 255, 255)
+					iconImg.ZIndex = 5
+					iconImg.Parent = btnFrame
+					textRightOffset = -28
+
+					if not iconsLoaded and not string.find(tostring(bIcon), "rbxassetid://") then
+						task.spawn(function()
+							repeat task.wait() until iconsLoaded or not iconImg:IsDescendantOf(game)
+							if iconImg:IsDescendantOf(game) then
+								iconImg.Image = getIconAsset(bIcon)
+							end
+						end)
+					end
+				end
+
+				local label = Instance.new("TextLabel")
+				label.Size = UDim2.new(1, textRightOffset, 1, 0)
+				label.Position = UDim2.new(0, 10, 0, 0)
+				label.BackgroundTransparency = 1
+				label.Text = bTitle
+				label.TextColor3 = Color3.fromRGB(255, 255, 255)
+				label.TextSize = 11
+				label.Font = Enum.Font.GothamBold
+				label.TextXAlignment = Enum.TextXAlignment.Left
+				label.TextTruncate = Enum.TextTruncate.AtEnd
+				label.ZIndex = 5
+				label.Parent = btnFrame
+
+				local clickBtn = Instance.new("TextButton")
+				clickBtn.Size = UDim2.new(1, 0, 1, 0)
+				clickBtn.BackgroundTransparency = 1
+				clickBtn.Text = ""
+				clickBtn.ZIndex = 6
+				clickBtn.Parent = btnFrame
+
+				clickBtn.MouseEnter:Connect(function()
+					tween(btnFrame, fadeTweenInfo, { BackgroundTransparency = 0.60 })
+					tween(stroke, fadeTweenInfo, { Transparency = 0.30 })
+				end)
+
+				clickBtn.MouseLeave:Connect(function()
+					tween(btnFrame, fadeTweenInfo, { BackgroundTransparency = 0.75 })
+					tween(stroke, fadeTweenInfo, { Transparency = 0.5 })
+				end)
+
+				clickBtn.MouseButton1Down:Connect(function()
+					tween(btnFrame, fadeTweenInfo, { BackgroundTransparency = 0.50 })
+				end)
+
+				clickBtn.MouseButton1Up:Connect(function()
+					tween(btnFrame, fadeTweenInfo, { BackgroundTransparency = 0.60 })
+				end)
+
+				clickBtn.MouseButton1Click:Connect(function()
+					bCallback()
+				end)
+			end
+
+			return rowFrame
 		end
 
 		function TabObject:Input(opts, targetParent)
