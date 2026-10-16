@@ -120,7 +120,7 @@ local Themes = {
 		ContainerBg = Color3.fromRGB(36, 11, 11),
 		LoaderBg = Color3.fromRGB(12, 3, 3),
 		LoaderBar = {Color3.fromRGB(255, 30, 30), Color3.fromRGB(255, 255, 255)},
-	}
+	},
 	Lavender = {
 		MainBg = Color3.fromRGB(18, 12, 26),
 		StrokeColors = {Color3.fromRGB(170, 100, 255), Color3.fromRGB(255, 255, 255), Color3.fromRGB(170, 100, 255)},
