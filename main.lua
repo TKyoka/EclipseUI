@@ -2230,6 +2230,7 @@ function EclipseUI:CreateWindow(options)
 			local flag = opts.Flag
 
 			local cpContainer, stroke = createContainer(targetParent, 38)
+			cpContainer.BackgroundColor3 = Color3.fromRGB(20, 23, 31)
 
 			local label = Instance.new("TextLabel")
 			label.Size = UDim2.new(1, -60, 1, 0)
@@ -2243,10 +2244,11 @@ function EclipseUI:CreateWindow(options)
 			label.ZIndex = 5
 			label.Parent = cpContainer
 
+			-- Premium Inline Preview Button with subtle gradient shine
 			local colorPreview = Instance.new("TextButton")
 			colorPreview.AnchorPoint = Vector2.new(1, 0.5)
 			colorPreview.Position = UDim2.new(1, -12, 0.5, 0)
-			colorPreview.Size = UDim2.new(0, 36, 0, 20)
+			colorPreview.Size = UDim2.new(0, 42, 0, 22)
 			colorPreview.BackgroundColor3 = defaultColor
 			colorPreview.AutoButtonColor = false
 			colorPreview.Text = ""
@@ -2259,9 +2261,20 @@ function EclipseUI:CreateWindow(options)
 
 			local cpStroke = Instance.new("UIStroke")
 			cpStroke.Color = Color3.fromRGB(255, 255, 255)
-			cpStroke.Thickness = 1
-			cpStroke.Transparency = 0.6
+			cpStroke.Thickness = 1.2
+			cpStroke.Transparency = 0.4
 			cpStroke.Parent = colorPreview
+
+			local previewGrad = Instance.new("UIGradient", colorPreview)
+			previewGrad.Rotation = 90
+			previewGrad.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 180, 180))
+			})
+			previewGrad.Transparency = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 0.2),
+				NumberSequenceKeypoint.new(1, 0.6)
+			})
 
 			local currentColor = defaultColor
 			local currentAlpha = defaultAlpha
@@ -2293,7 +2306,7 @@ function EclipseUI:CreateWindow(options)
 				local h, s, v = currentColor:ToHSV()
 				local tempH, tempS, tempV, tempA = h, s, v, currentAlpha
 
-				-- Parented to screenGui so it sits outside the main window boundary without getting clipped
+				-- Side Panel Drawer matching Main Window layout perfectly
 				drawerFrame = Instance.new("CanvasGroup")
 				drawerFrame.Name = "ColorpickerDrawer"
 				drawerFrame.GroupTransparency = 1
@@ -2318,7 +2331,6 @@ function EclipseUI:CreateWindow(options)
 					ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 90, 120))
 				})
 
-				-- Position, height, and visibility sync loop
 				local trackConn
 				trackConn = RunService.RenderStepped:Connect(function()
 					if not drawerFrame or not drawerFrame.Parent or not mainGroup:IsDescendantOf(game) then
@@ -2337,36 +2349,36 @@ function EclipseUI:CreateWindow(options)
 					local mainPos = mainGroup.AbsolutePosition
 					local mainSize = mainGroup.AbsoluteSize
 					
-					drawerFrame.Size = UDim2.new(0, 172, 0, mainSize.Y)
+					drawerFrame.Size = UDim2.new(0, 184, 0, mainSize.Y)
 					drawerFrame.Position = UDim2.new(0, mainPos.X + mainSize.X + 8, 0, mainPos.Y)
 				end)
 
-				-- Drawer Header Title & Lucide X Close Button
+				-- Side Panel Header (Font size matched to Main Window title: 14)
 				local dTitle = Instance.new("TextLabel", drawerFrame)
-				dTitle.Size = UDim2.new(1, -36, 0, 38)
-				dTitle.Position = UDim2.new(0, 14, 0, 0)
+				dTitle.Size = UDim2.new(1, -40, 0, 42)
+				dTitle.Position = UDim2.new(0, 16, 0, 0)
 				dTitle.BackgroundTransparency = 1
 				dTitle.Text = title
 				dTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-				dTitle.TextSize = 12
+				dTitle.TextSize = 14
 				dTitle.Font = Enum.Font.GothamBold
 				dTitle.TextXAlignment = Enum.TextXAlignment.Left
 				dTitle.ZIndex = 101
 
 				local closeBtn = Instance.new("ImageButton", drawerFrame)
 				closeBtn.AnchorPoint = Vector2.new(1, 0.5)
-				closeBtn.Position = UDim2.new(1, -12, 0, 19)
+				closeBtn.Position = UDim2.new(1, -14, 0, 21)
 				closeBtn.Size = UDim2.new(0, 16, 0, 16)
 				closeBtn.BackgroundTransparency = 1
-				closeBtn.Image = "rbxassetid://10709791437" -- Lucide X Icon
+				closeBtn.Image = "rbxassetid://10709791437"
 				closeBtn.ImageColor3 = Color3.fromRGB(160, 170, 190)
 				closeBtn.ZIndex = 101
 
 				closeBtn.MouseButton1Click:Connect(closeDrawer)
 
-				-- Header Divider Line matching Main Window style
+				-- Perfectly aligned header separator line matching Main Window
 				local headerDivider = Instance.new("Frame", drawerFrame)
-				headerDivider.Position = UDim2.new(0, 0, 0, 38)
+				headerDivider.Position = UDim2.new(0, 0, 0, 42)
 				headerDivider.Size = UDim2.new(1, 0, 0, 1)
 				headerDivider.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 				headerDivider.BackgroundTransparency = 0.85
@@ -2375,8 +2387,8 @@ function EclipseUI:CreateWindow(options)
 
 				-- 1. Saturation & Value Box
 				local svBox = Instance.new("Frame", drawerFrame)
-				svBox.Position = UDim2.new(0, 14, 0, 52)
-				svBox.Size = UDim2.new(0, 104, 0, 104)
+				svBox.Position = UDim2.new(0, 16, 0, 56)
+				svBox.Size = UDim2.new(0, 112, 0, 112)
 				svBox.BackgroundColor3 = Color3.fromHSV(tempH, 1, 1)
 				svBox.BorderSizePixel = 0
 				svBox.ZIndex = 101
@@ -2412,8 +2424,8 @@ function EclipseUI:CreateWindow(options)
 
 				-- 2. Hue Bar
 				local hueBar = Instance.new("Frame", drawerFrame)
-				hueBar.Position = UDim2.new(0, 124, 0, 52)
-				hueBar.Size = UDim2.new(0, 10, 0, 104)
+				hueBar.Position = UDim2.new(0, 134, 0, 56)
+				hueBar.Size = UDim2.new(0, 12, 0, 112)
 				hueBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 				hueBar.BorderSizePixel = 0
 				hueBar.ZIndex = 101
@@ -2434,18 +2446,18 @@ function EclipseUI:CreateWindow(options)
 				local hueKnob = Instance.new("Frame", hueBar)
 				hueKnob.AnchorPoint = Vector2.new(0.5, 0.5)
 				hueKnob.Position = UDim2.new(0.5, 0, tempH, 0)
-				hueKnob.Size = UDim2.new(0, 12, 0, 12)
+				hueKnob.Size = UDim2.new(0, 14, 0, 14)
 				hueKnob.BackgroundColor3 = Color3.fromHSV(tempH, 1, 1)
 				hueKnob.ZIndex = 104
 				Instance.new("UICorner", hueKnob).CornerRadius = UDim.new(1, 0)
 				Instance.new("UIStroke", hueKnob).Color = Color3.fromRGB(255, 255, 255)
 
 				-- 3. Inputs (Hex & RGB)
-				local inputStartX = 14
+				local inputStartX = 16
 				local function createInputRow(labelName, defaultVal, yPos)
 					local box = Instance.new("TextBox", drawerFrame)
 					box.Position = UDim2.new(0, inputStartX, 0, yPos)
-					box.Size = UDim2.new(0, 78, 0, 20)
+					box.Size = UDim2.new(0, 84, 0, 22)
 					box.BackgroundColor3 = Color3.fromRGB(22, 27, 38)
 					box.BackgroundTransparency = 0.1
 					box.Text = tostring(defaultVal)
@@ -2467,8 +2479,8 @@ function EclipseUI:CreateWindow(options)
 					end)
 
 					local tag = Instance.new("TextLabel", drawerFrame)
-					tag.Position = UDim2.new(0, inputStartX + 82, 0, yPos)
-					tag.Size = UDim2.new(0, 62, 0, 20)
+					tag.Position = UDim2.new(0, inputStartX + 88, 0, yPos)
+					tag.Size = UDim2.new(0, 60, 0, 22)
 					tag.BackgroundTransparency = 1
 					tag.Text = labelName
 					tag.TextColor3 = Color3.fromRGB(130, 140, 160)
@@ -2480,10 +2492,10 @@ function EclipseUI:CreateWindow(options)
 					return box
 				end
 
-				local hexBox = createInputRow("Hex", "#" .. currentColor:ToHex(), 164)
-				local rBox = createInputRow("Red", math.floor(currentColor.R * 255 + 0.5), 188)
-				local gBox = createInputRow("Green", math.floor(currentColor.G * 255 + 0.5), 212)
-				local bBox = createInputRow("Blue", math.floor(currentColor.B * 255 + 0.5), 236)
+				local hexBox = createInputRow("Hex", "#" .. currentColor:ToHex(), 180)
+				local rBox = createInputRow("Red", math.floor(currentColor.R * 255 + 0.5), 206)
+				local gBox = createInputRow("Green", math.floor(currentColor.G * 255 + 0.5), 232)
+				local bBox = createInputRow("Blue", math.floor(currentColor.B * 255 + 0.5), 258)
 
 				local function updatePicker(skipInputs)
 					local activeColor = Color3.fromHSV(tempH, tempS, tempV)
@@ -2573,11 +2585,11 @@ function EclipseUI:CreateWindow(options)
 				gBox.FocusLost:Connect(rgbLost)
 				bBox.FocusLost:Connect(rgbLost)
 
-				-- Apply Button at the bottom
+				-- Premium Apply Button at the bottom
 				local applyBtn = Instance.new("TextButton", drawerFrame)
 				applyBtn.AnchorPoint = Vector2.new(0, 1)
-				applyBtn.Position = UDim2.new(0, 14, 1, -14)
-				applyBtn.Size = UDim2.new(1, -28, 0, 28)
+				applyBtn.Position = UDim2.new(0, 16, 1, -16)
+				applyBtn.Size = UDim2.new(1, -32, 0, 30)
 				applyBtn.BackgroundColor3 = Color3.fromRGB(65, 85, 130)
 				applyBtn.BackgroundTransparency = 0.2
 				applyBtn.Text = "Apply"
