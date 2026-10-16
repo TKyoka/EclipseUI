@@ -203,7 +203,6 @@ function EclipseUI:CreateWindow(options)
 	local userOptions = options.User
 	local folderName = options.Folder or "EclipseUIConfigs"
 
-	-- WindUI-Style Workspace Config Folder Setup
 	if makefolder and not isfolder(folderName) then
 		pcall(function() makefolder(folderName) end)
 	end
@@ -226,7 +225,7 @@ function EclipseUI:CreateWindow(options)
 		return item
 	end
 
-	-- WindUI-Style Built-in Config Manager Integration
+	-- WindUI-Style Built-in Config Manager Integration (Fixed Register mapping)
 	Window.ConfigManager = {}
 
 	function Window.ConfigManager:CreateConfig(configName)
@@ -237,7 +236,7 @@ function EclipseUI:CreateWindow(options)
 		local configObj = {}
 
 		function configObj:Register(flag, element)
-			registeredElements[flag] = element[cite: 1]
+			registeredElements[flag] = element
 		end
 
 		function configObj:Save()
@@ -284,7 +283,7 @@ function EclipseUI:CreateWindow(options)
 			end
 		end
 
-		return configObj[cite: 1]
+		return configObj
 	end
 
 	function Window.ConfigManager:AllConfigs()
@@ -300,7 +299,7 @@ function EclipseUI:CreateWindow(options)
 				end
 			end
 		end
-		return configs[cite: 1]
+		return configs
 	end
 
 	local mainGroup = Instance.new("CanvasGroup")
@@ -412,7 +411,7 @@ function EclipseUI:CreateWindow(options)
 		label.Text = "INITIALIZING " .. string.upper(windowName)
 		label.TextColor3 = Color3.fromRGB(255, 255, 255)
 		label.TextTransparency = 1
-		label.TextSize = 16 -- Increased by +1
+		label.TextSize = 16
 		label.Font = Enum.Font.GothamBold
 		label.TextXAlignment = Enum.TextXAlignment.Center
 		label.Parent = container
@@ -747,7 +746,7 @@ function EclipseUI:CreateWindow(options)
 	textLayout.Padding = UDim.new(0, 1)
 	textLayout.Parent = textBlock
 
-	-- Title font size increased by +1 (13 -> 14)
+	-- Title font size increased by +1
 	local titleLabel = Instance.new("TextLabel")
 	titleLabel.Name = "Title"
 	titleLabel.Size = UDim2.new(0, 0, 0, 16)
@@ -763,7 +762,7 @@ function EclipseUI:CreateWindow(options)
 	titleLabel.Parent = textBlock
 
 	if windowSubtitle then
-		-- Subtitle font size increased by +1 (10 -> 11)
+		-- Subtitle font size increased by +1
 		local subtitleLabel = Instance.new("TextLabel")
 		subtitleLabel.Name = "Subtitle"
 		subtitleLabel.Size = UDim2.new(0, 0, 0, 13)
@@ -829,7 +828,7 @@ function EclipseUI:CreateWindow(options)
 			tagPadding.PaddingRight = UDim.new(0, 8)
 			tagPadding.Parent = tagPill
 
-			-- Tags font size increased by +2 (10 -> 12)
+			-- Tags font size increased by +2
 			local tagText = Instance.new("TextLabel")
 			tagText.Size = UDim2.new(0, 0, 1, 0)
 			tagText.AutomaticSize = Enum.AutomaticSize.X
