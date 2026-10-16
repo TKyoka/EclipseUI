@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.6.05 (Dynamic Multi-Theme Support)
+--// EclipseUI Roblox Library Version 1.6.06 (Dynamic Multi-Theme & Custom Anonymous Profile Support)
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -706,12 +706,16 @@ function EclipseUI:CreateWindow(options)
 	local showUser = true
 	local userAnon = false
 	local userCallback = function() end
+	local anonName = "Eclipse"
+	local anonUsername = "@EclipseUI"
 
 	if userOptions ~= nil then
 		if typeof(userOptions) == "table" then
 			if userOptions.Enabled ~= nil then showUser = userOptions.Enabled end
 			if userOptions.Anonymous ~= nil then userAnon = userOptions.Anonymous end
 			if userOptions.Callback ~= nil then userCallback = userOptions.Callback end
+			if userOptions.AnonName then anonName = userOptions.AnonName end
+			if userOptions.AnonUsername then anonUsername = userOptions.AnonUsername end
 		elseif typeof(userOptions) == "boolean" then
 			showUser = userOptions
 		end
@@ -1269,7 +1273,7 @@ function EclipseUI:CreateWindow(options)
 		displayNameLabel.Size = UDim2.new(1, -48, 0, 15)
 		displayNameLabel.Position = UDim2.new(0, 44, 0, 8)
 		displayNameLabel.BackgroundTransparency = 1
-		displayNameLabel.Text = userAnon and Window.ThemeName or LocalPlayer.DisplayName
+		displayNameLabel.Text = userAnon and anonName or LocalPlayer.DisplayName
 		displayNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 		displayNameLabel.TextSize = 12
 		displayNameLabel.Font = Enum.Font.GothamBold
@@ -1283,7 +1287,7 @@ function EclipseUI:CreateWindow(options)
 		usernameLabel.Size = UDim2.new(1, -48, 0, 13)
 		usernameLabel.Position = UDim2.new(0, 44, 0, 23)
 		usernameLabel.BackgroundTransparency = 1
-		usernameLabel.Text = userAnon and ("@" .. Window.ThemeName .. "UI") or ("@" .. LocalPlayer.Name)
+		usernameLabel.Text = userAnon and anonUsername or ("@" .. LocalPlayer.Name)
 		usernameLabel.TextColor3 = Window.Theme.TextMuted
 		usernameLabel.TextSize = 10
 		usernameLabel.Font = Enum.Font.GothamBold
@@ -1295,8 +1299,8 @@ function EclipseUI:CreateWindow(options)
 		table.insert(Window.ThemeUpdaters, function(t)
 			usernameLabel.TextColor3 = t.TextMuted
 			if userAnon then
-				displayNameLabel.Text = Window.ThemeName
-				usernameLabel.Text = "@" .. Window.ThemeName .. "UI"
+				displayNameLabel.Text = anonName
+				usernameLabel.Text = anonUsername
 			end
 		end)
 
@@ -1325,8 +1329,8 @@ function EclipseUI:CreateWindow(options)
 
 		userInfo.MouseButton1Click:Connect(function()
 			userAnon = not userAnon
-			displayNameLabel.Text = userAnon and Window.ThemeName or LocalPlayer.DisplayName
-			usernameLabel.Text = userAnon and ("@" .. Window.ThemeName .. "UI") or ("@" .. LocalPlayer.Name)
+			displayNameLabel.Text = userAnon and anonName or LocalPlayer.DisplayName
+			usernameLabel.Text = userAnon and anonUsername or ("@" .. LocalPlayer.Name)
 			avatarImage.Image = userAnon and "rbxassetid://11984980776" or (realThumbnail ~= "" and realThumbnail or "rbxassetid://11984980776")
 			pcall(userCallback)
 		end)
