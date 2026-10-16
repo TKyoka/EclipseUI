@@ -2318,7 +2318,7 @@ function EclipseUI:CreateWindow(options)
 					ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 90, 120))
 				})
 
-				-- Position, height, and visibility sync loop (follows main window & closes if main window hides)
+				-- Position, height, and visibility sync loop
 				local trackConn
 				trackConn = RunService.RenderStepped:Connect(function()
 					if not drawerFrame or not drawerFrame.Parent or not mainGroup:IsDescendantOf(game) then
@@ -2326,7 +2326,6 @@ function EclipseUI:CreateWindow(options)
 						return
 					end
 
-					-- Auto close if main window becomes invisible or minimized
 					if not mainGroup.Visible or mainGroup.GroupTransparency >= 0.99 then
 						closeDrawer()
 						if trackConn then trackConn:Disconnect() end
@@ -2338,26 +2337,25 @@ function EclipseUI:CreateWindow(options)
 					local mainPos = mainGroup.AbsolutePosition
 					local mainSize = mainGroup.AbsoluteSize
 					
-					-- Match main window height & stick to the right side
 					drawerFrame.Size = UDim2.new(0, 172, 0, mainSize.Y)
 					drawerFrame.Position = UDim2.new(0, mainPos.X + mainSize.X + 8, 0, mainPos.Y)
 				end)
 
 				-- Drawer Header Title & Lucide X Close Button
 				local dTitle = Instance.new("TextLabel", drawerFrame)
-				dTitle.Size = UDim2.new(1, -36, 0, 32)
-				dTitle.Position = UDim2.new(0, 12, 0, 8)
+				dTitle.Size = UDim2.new(1, -36, 0, 38)
+				dTitle.Position = UDim2.new(0, 14, 0, 0)
 				dTitle.BackgroundTransparency = 1
 				dTitle.Text = title
 				dTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-				dTitle.TextSize = 11
+				dTitle.TextSize = 12
 				dTitle.Font = Enum.Font.GothamBold
 				dTitle.TextXAlignment = Enum.TextXAlignment.Left
 				dTitle.ZIndex = 101
 
 				local closeBtn = Instance.new("ImageButton", drawerFrame)
-				closeBtn.AnchorPoint = Vector2.new(1, 0)
-				closeBtn.Position = UDim2.new(1, -10, 0, 10)
+				closeBtn.AnchorPoint = Vector2.new(1, 0.5)
+				closeBtn.Position = UDim2.new(1, -12, 0, 19)
 				closeBtn.Size = UDim2.new(0, 16, 0, 16)
 				closeBtn.BackgroundTransparency = 1
 				closeBtn.Image = "rbxassetid://10709791437" -- Lucide X Icon
@@ -2366,9 +2364,18 @@ function EclipseUI:CreateWindow(options)
 
 				closeBtn.MouseButton1Click:Connect(closeDrawer)
 
-				-- 1. Saturation & Value Box (Thinner layout width: 104px)
+				-- Header Divider Line matching Main Window style
+				local headerDivider = Instance.new("Frame", drawerFrame)
+				headerDivider.Position = UDim2.new(0, 0, 0, 38)
+				headerDivider.Size = UDim2.new(1, 0, 0, 1)
+				headerDivider.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+				headerDivider.BackgroundTransparency = 0.85
+				headerDivider.BorderSizePixel = 0
+				headerDivider.ZIndex = 101
+
+				-- 1. Saturation & Value Box
 				local svBox = Instance.new("Frame", drawerFrame)
-				svBox.Position = UDim2.new(0, 12, 0, 44)
+				svBox.Position = UDim2.new(0, 14, 0, 52)
 				svBox.Size = UDim2.new(0, 104, 0, 104)
 				svBox.BackgroundColor3 = Color3.fromHSV(tempH, 1, 1)
 				svBox.BorderSizePixel = 0
@@ -2405,7 +2412,7 @@ function EclipseUI:CreateWindow(options)
 
 				-- 2. Hue Bar
 				local hueBar = Instance.new("Frame", drawerFrame)
-				hueBar.Position = UDim2.new(0, 122, 0, 44)
+				hueBar.Position = UDim2.new(0, 124, 0, 52)
 				hueBar.Size = UDim2.new(0, 10, 0, 104)
 				hueBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 				hueBar.BorderSizePixel = 0
@@ -2434,11 +2441,11 @@ function EclipseUI:CreateWindow(options)
 				Instance.new("UIStroke", hueKnob).Color = Color3.fromRGB(255, 255, 255)
 
 				-- 3. Inputs (Hex & RGB)
-				local inputStartX = 12
+				local inputStartX = 14
 				local function createInputRow(labelName, defaultVal, yPos)
 					local box = Instance.new("TextBox", drawerFrame)
 					box.Position = UDim2.new(0, inputStartX, 0, yPos)
-					box.Size = UDim2.new(0, 80, 0, 20)
+					box.Size = UDim2.new(0, 78, 0, 20)
 					box.BackgroundColor3 = Color3.fromRGB(22, 27, 38)
 					box.BackgroundTransparency = 0.1
 					box.Text = tostring(defaultVal)
@@ -2460,8 +2467,8 @@ function EclipseUI:CreateWindow(options)
 					end)
 
 					local tag = Instance.new("TextLabel", drawerFrame)
-					tag.Position = UDim2.new(0, inputStartX + 84, 0, yPos)
-					tag.Size = UDim2.new(0, 60, 0, 20)
+					tag.Position = UDim2.new(0, inputStartX + 82, 0, yPos)
+					tag.Size = UDim2.new(0, 62, 0, 20)
 					tag.BackgroundTransparency = 1
 					tag.Text = labelName
 					tag.TextColor3 = Color3.fromRGB(130, 140, 160)
@@ -2473,10 +2480,10 @@ function EclipseUI:CreateWindow(options)
 					return box
 				end
 
-				local hexBox = createInputRow("Hex", "#" .. currentColor:ToHex(), 156)
-				local rBox = createInputRow("Red", math.floor(currentColor.R * 255 + 0.5), 180)
-				local gBox = createInputRow("Green", math.floor(currentColor.G * 255 + 0.5), 204)
-				local bBox = createInputRow("Blue", math.floor(currentColor.B * 255 + 0.5), 228)
+				local hexBox = createInputRow("Hex", "#" .. currentColor:ToHex(), 164)
+				local rBox = createInputRow("Red", math.floor(currentColor.R * 255 + 0.5), 188)
+				local gBox = createInputRow("Green", math.floor(currentColor.G * 255 + 0.5), 212)
+				local bBox = createInputRow("Blue", math.floor(currentColor.B * 255 + 0.5), 236)
 
 				local function updatePicker(skipInputs)
 					local activeColor = Color3.fromHSV(tempH, tempS, tempV)
@@ -2569,8 +2576,8 @@ function EclipseUI:CreateWindow(options)
 				-- Apply Button at the bottom
 				local applyBtn = Instance.new("TextButton", drawerFrame)
 				applyBtn.AnchorPoint = Vector2.new(0, 1)
-				applyBtn.Position = UDim2.new(0, 12, 1, -12)
-				applyBtn.Size = UDim2.new(1, -24, 0, 28)
+				applyBtn.Position = UDim2.new(0, 14, 1, -14)
+				applyBtn.Size = UDim2.new(1, -28, 0, 28)
 				applyBtn.BackgroundColor3 = Color3.fromRGB(65, 85, 130)
 				applyBtn.BackgroundTransparency = 0.2
 				applyBtn.Text = "Apply"
