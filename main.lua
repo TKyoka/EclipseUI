@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.6.04
+--// EclipseUI Roblox Library Version 1.7.0
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -10,6 +10,45 @@ local LocalPlayer = Players.LocalPlayer
 
 local LucideIcons = {}
 local iconsLoaded = false
+
+--// Built-in Theme Palettes
+local Themes = {
+	["Eclipse"] = {
+		MainBg = Color3.fromRGB(15, 16, 20),
+		CardBg = Color3.fromRGB(18, 22, 30),
+		Accent = Color3.fromRGB(65, 85, 140),
+		Text = Color3.fromRGB(255, 255, 255),
+		SubText = Color3.fromRGB(150, 160, 180),
+	},
+	["Dark"] = {
+		MainBg = Color3.fromRGB(12, 12, 14),
+		CardBg = Color3.fromRGB(20, 20, 24),
+		Accent = Color3.fromRGB(70, 70, 80),
+		Text = Color3.fromRGB(240, 240, 240),
+		SubText = Color3.fromRGB(140, 140, 150),
+	},
+	["Light"] = {
+		MainBg = Color3.fromRGB(240, 242, 245),
+		CardBg = Color3.fromRGB(255, 255, 255),
+		Accent = Color3.fromRGB(50, 100, 220),
+		Text = Color3.fromRGB(20, 25, 35),
+		SubText = Color3.fromRGB(90, 100, 115),
+	},
+	["Emerald"] = {
+		MainBg = Color3.fromRGB(14, 18, 16),
+		CardBg = Color3.fromRGB(20, 28, 24),
+		Accent = Color3.fromRGB(40, 160, 100),
+		Text = Color3.fromRGB(240, 255, 245),
+		SubText = Color3.fromRGB(130, 160, 145),
+	},
+	["Crimson"] = {
+		MainBg = Color3.fromRGB(18, 14, 14),
+		CardBg = Color3.fromRGB(26, 20, 20),
+		Accent = Color3.fromRGB(180, 50, 50),
+		Text = Color3.fromRGB(255, 240, 240),
+		SubText = Color3.fromRGB(170, 130, 130),
+	},
+}
 
 task.spawn(function()
 	local success, result = pcall(function()
@@ -202,6 +241,7 @@ function EclipseUI:CreateWindow(options)
 	local loadAnimEnabled = options.LoadAnim or false
 	local openButtonEnabled = options.OpenButton or false
 	local userOptions = options.User
+	local initialTheme = options.Theme or "Eclipse"
 
 	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -214,7 +254,26 @@ function EclipseUI:CreateWindow(options)
 	local defaultSize = UDim2.new(0, 480, 0, 320)
 	local defaultPos = UDim2.new(0.5, 0, 0.5, 0)
 
-	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = initialToggleKey, Tags = {}, CleanupItems = {} }
+	local currentThemeData = Themes[initialTheme] or Themes["Eclipse"]
+	local Window = { 
+		Tabs = {}, 
+		ActiveTab = nil, 
+		ToggleKey = initialToggleKey, 
+		Tags = {}, 
+		CleanupItems = {},
+		Theme = currentThemeData,
+		ThemeConnections = {}
+	}
+
+	function Window:SetTheme(themeName)
+		local tData = Themes[themeName]
+		if tData then
+			self.Theme = tData
+			for _, callback in ipairs(self.ThemeConnections) do
+				pcall(callback, tData)
+			end
+		end
+	end
 
 	-- Config Manager Setup
 	local registeredElements = {}
@@ -324,12 +383,16 @@ function EclipseUI:CreateWindow(options)
 	mainGroup.AnchorPoint = Vector2.new(0.5, 0.5)
 	mainGroup.Position = defaultPos
 	mainGroup.Size = defaultSize
-	mainGroup.BackgroundColor3 = Color3.fromRGB(15, 16, 20)
+	mainGroup.BackgroundColor3 = currentThemeData.MainBg
 	mainGroup.BackgroundTransparency = 0.2
 	mainGroup.BorderSizePixel = 0
 	mainGroup.GroupTransparency = loadAnimEnabled and 1 or 0
 	mainGroup.ZIndex = 2
 	mainGroup.Parent = screenGui
+
+	table.insert(Window.ThemeConnections, function(theme)
+		TweenService:Create(mainGroup, TweenInfo.new(0.3), { BackgroundColor3 = theme.MainBg }):Play()
+	end)
 
 	local uiCorner = Instance.new("UICorner")
 	uiCorner.CornerRadius = UDim.new(0, 12)
@@ -2603,7 +2666,6 @@ function EclipseUI:CreateWindow(options)
 					keyBtn.Text = currentKey.Name
 					keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
 					tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
-					-- Fire callback only when the key is actually changed/rebound
 					pcall(callback, currentKey)
 				end
 			end)
