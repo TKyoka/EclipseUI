@@ -3,7 +3,6 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
-local HttpService = game:GetService("HttpService")
 
 local LocalPlayer = Players.LocalPlayer
 
@@ -201,11 +200,6 @@ function EclipseUI:CreateWindow(options)
 	local loadAnimEnabled = options.LoadAnim or false
 	local openButtonEnabled = options.OpenButton or false
 	local userOptions = options.User
-	local folderName = options.Folder or "EclipseUIConfigs"
-
-	if makefolder and not isfolder(folderName) then
-		pcall(function() makefolder(folderName) end)
-	end
 
 	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -223,82 +217,6 @@ function EclipseUI:CreateWindow(options)
 	function Window:Cleanup(item)
 		table.insert(self.CleanupItems, item)
 		return item
-	end
-
-	Window.ConfigManager = {}
-
-	function Window.ConfigManager:CreateConfig(configName)
-		configName = configName or "default"
-		local fullPath = folderName .. "/" .. configName .. ".json"
-		local registeredElements = {}
-
-		local configObj = {}
-
-		function configObj:Register(flag, element)
-			registeredElements[flag] = element
-		end
-
-		function configObj:Save()
-			if not writefile then return end
-			local data = {}
-			for flag, element in pairs(registeredElements) do
-				if element.Value ~= nil then
-					data[flag] = element.Value
-				elseif element.Get then
-					data[flag] = element:Get()
-				elseif element.GetText then
-					data[flag] = element:GetText()
-				elseif element.GetColor then
-					data[flag] = element:GetColor()
-				elseif element.GetKey then
-					data[flag] = element:GetKey()
-				elseif element.GetSelected then
-					data[flag] = element:GetSelected()
-				end
-			end
-			pcall(function()
-				writefile(fullPath, HttpService:JSONEncode(data))
-			end)
-		end
-
-		function configObj:Load()
-			if not readfile or not isfile or not isfile(fullPath) then return end
-			local success, decoded = pcall(function()
-				return HttpService:JSONDecode(readfile(fullPath))
-			end)
-			if success and typeof(decoded) == "table" then
-				for flag, val in pairs(decoded) do
-					local element = registeredElements[flag]
-					if element and element.Set then
-						element:Set(val)
-					end
-				end
-			end
-		end
-
-		function configObj:Delete()
-			if delfile and isfile and isfile(fullPath) then
-				pcall(function() delfile(fullPath) end)
-			end
-		end
-
-		return configObj
-	end
-
-	function Window.ConfigManager:AllConfigs()
-		local configs = {}
-		if listfiles then
-			local success, files = pcall(function() return listfiles(folderName) end)
-			if success then
-				for _, file in ipairs(files) do
-					if file:match("%.json$") then
-						local name = file:match("([^/\\]+)%.json$")
-						table.insert(configs, name)
-					end
-				end
-			end
-		end
-		return configs
 	end
 
 	local mainGroup = Instance.new("CanvasGroup")
@@ -1630,6 +1548,9 @@ function EclipseUI:CreateWindow(options)
 			opts = opts or {}
 			targetParent = targetParent or page
 			local boxTitle = opts.Title or "Group"
+			local boxIcon = opts.Icon
+			local isFoldable = opts.Foldable or false
+			local isFolded = (opts.Default == false)
 
 			local boxFrame = Instance.new("Frame")
 			boxFrame.Size = UDim2.new(1, 0, 0, 0)
@@ -1649,10 +1570,10 @@ function EclipseUI:CreateWindow(options)
 			boxStroke.Transparency = 0.88
 			boxStroke.Parent = boxFrame
 
-			local boxLayout = Instance.new("UIListLayout")
-			boxLayout.Padding = UDim.new(0, 6)
-			boxLayout.SortOrder = Enum.SortOrder.LayoutOrder
-			boxLayout.Parent = boxFrame
+			local boxMainLayout = Instance.new("UIListLayout")
+			boxMainLayout.Padding = UDim.new(0, 6)
+			boxMainLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			boxMainLayout.Parent = boxFrame
 
 			local boxPadding = Instance.new("UIPadding")
 			boxPadding.PaddingLeft = UDim.new(0, 12)
@@ -1661,9 +1582,55 @@ function EclipseUI:CreateWindow(options)
 			boxPadding.PaddingBottom = UDim.new(0, 12)
 			boxPadding.Parent = boxFrame
 
-			if boxTitle ~= "" then
+			local contentContainer = Instance.new("Frame")
+			contentContainer.Name = "ContentContainer"
+			contentContainer.Size = UDim2.new(1, 0, 0, 0)
+			contentContainer.AutomaticSize = Enum.AutomaticSize.Y
+			contentContainer.BackgroundTransparency = 1
+			contentContainer.Visible = not isFolded
+			contentContainer.ZIndex = 4
+			contentContainer.LayoutOrder = 1
+			contentContainer.Parent = boxFrame
+
+			local contentLayout = Instance.new("UIListLayout")
+			contentLayout.Padding = UDim.new(0, 6)
+			contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			contentLayout.Parent = contentContainer
+
+			if boxTitle ~= "" or boxIcon or isFoldable then
+				local headerContainer = Instance.new("Frame")
+				headerContainer.Size = UDim2.new(1, 0, 0, 16)
+				headerContainer.BackgroundTransparency = 1
+				headerContainer.ZIndex = 5
+				headerContainer.LayoutOrder = 0
+				headerContainer.Parent = boxFrame
+
+				local textOffsetX = 0
+				if boxIcon then
+					local iconImg = Instance.new("ImageLabel")
+					iconImg.Size = UDim2.new(0, 14, 0, 14)
+					iconImg.Position = UDim2.new(0, 0, 0.5, -7)
+					iconImg.BackgroundTransparency = 1
+					iconImg.Image = getIconAsset(boxIcon)
+					iconImg.ImageColor3 = Color3.fromRGB(160, 170, 190)
+					iconImg.ZIndex = 5
+					iconImg.Parent = headerContainer
+
+					if not iconsLoaded and not string.find(tostring(boxIcon), "rbxassetid://") then
+						task.spawn(function()
+							repeat task.wait() until iconsLoaded or not iconImg:IsDescendantOf(game)
+							if iconImg:IsDescendantOf(game) then
+								iconImg.Image = getIconAsset(boxIcon)
+							end
+						end)
+					end
+
+					textOffsetX = 18
+				end
+
 				local titleLabel = Instance.new("TextLabel")
-				titleLabel.Size = UDim2.new(1, 0, 0, 16)
+				titleLabel.Size = UDim2.new(1, -textOffsetX - (isFoldable and 20 or 0), 1, 0)
+				titleLabel.Position = UDim2.new(0, textOffsetX, 0, 0)
 				titleLabel.BackgroundTransparency = 1
 				titleLabel.Text = string.upper(boxTitle)
 				titleLabel.TextColor3 = Color3.fromRGB(160, 170, 190)
@@ -1671,14 +1638,49 @@ function EclipseUI:CreateWindow(options)
 				titleLabel.Font = Enum.Font.GothamBold
 				titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 				titleLabel.ZIndex = 5
-				titleLabel.Parent = boxFrame
+				titleLabel.Parent = headerContainer
+
+				if isFoldable then
+					local arrowIcon = Instance.new("ImageLabel")
+					arrowIcon.AnchorPoint = Vector2.new(1, 0.5)
+					arrowIcon.Position = UDim2.new(1, 0, 0.5, 0)
+					arrowIcon.Size = UDim2.new(0, 14, 0, 14)
+					arrowIcon.BackgroundTransparency = 1
+					arrowIcon.Image = getIconAsset("chevron-down")
+					arrowIcon.ImageColor3 = Color3.fromRGB(160, 170, 190)
+					arrowIcon.Rotation = isFolded and 180 or 0
+					arrowIcon.ZIndex = 5
+					arrowIcon.Parent = headerContainer
+
+					if not iconsLoaded then
+						task.spawn(function()
+							repeat task.wait() until iconsLoaded or not arrowIcon:IsDescendantOf(game)
+							if arrowIcon:IsDescendantOf(game) then
+								arrowIcon.Image = getIconAsset("chevron-down")
+							end
+						end)
+					end
+
+					local clickBtn = Instance.new("TextButton")
+					clickBtn.Size = UDim2.new(1, 0, 1, 0)
+					clickBtn.BackgroundTransparency = 1
+					clickBtn.Text = ""
+					clickBtn.ZIndex = 6
+					clickBtn.Parent = headerContainer
+
+					clickBtn.MouseButton1Click:Connect(function()
+						isFolded = not isFolded
+						contentContainer.Visible = not isFolded
+						tween(arrowIcon, fadeTweenInfo, { Rotation = isFolded and 180 or 0 })
+					end)
+				end
 			end
 
 			local GroupObj = {}
 			for k, v in pairs(TabObject) do
 				if typeof(v) == "function" and k ~= "GroupBox" then
 					GroupObj[k] = function(self, elementOpts)
-						return v(TabObject, elementOpts, boxFrame)
+						return v(TabObject, elementOpts, contentContainer)
 					end
 				end
 			end
@@ -2008,7 +2010,7 @@ function EclipseUI:CreateWindow(options)
 			end
 
 			local h, s, v = defaultColor:ToHSV()
-			_, _, _ = createSliderBar("Hue", ColorSequence.new({
+			createSliderBar("Hue", ColorSequence.new({
 				ColorSequenceKeypoint.new(0, Color3.fromHSV(0, 1, 1)),
 				ColorSequenceKeypoint.new(0.2, Color3.fromHSV(0.2, 1, 1)),
 				ColorSequenceKeypoint.new(0.4, Color3.fromHSV(0.4, 1, 1)),
