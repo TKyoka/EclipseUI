@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.7.5
+--// EclipseUI Roblox Library Version 1.6.04
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -10,80 +10,6 @@ local LocalPlayer = Players.LocalPlayer
 
 local LucideIcons = {}
 local iconsLoaded = false
-
---// Comprehensive Theme Palettes (Matching original Eclipse style + Dark, Light, Emerald, Crimson)
-local Themes = {
-	["Eclipse"] = {
-		MainBg = Color3.fromRGB(15, 16, 20),
-		CardBg = Color3.fromRGB(18, 22, 30),
-		ContainerBg = Color3.fromRGB(255, 255, 255),
-		ContainerTrans = 0.88,
-		Accent = Color3.fromRGB(65, 85, 140),
-		AccentSecondary = Color3.fromRGB(35, 42, 60),
-		Text = Color3.fromRGB(255, 255, 255),
-		SubText = Color3.fromRGB(150, 160, 180),
-		InactiveText = Color3.fromRGB(140, 148, 165),
-		InputBg = Color3.fromRGB(18, 22, 30),
-		ToggleBg = Color3.fromRGB(25, 30, 40),
-		SliderTrack = Color3.fromRGB(20, 24, 32),
-	},
-	["Dark"] = {
-		MainBg = Color3.fromRGB(12, 12, 14),
-		CardBg = Color3.fromRGB(20, 20, 24),
-		ContainerBg = Color3.fromRGB(35, 35, 42),
-		ContainerTrans = 0.75,
-		Accent = Color3.fromRGB(70, 70, 80),
-		AccentSecondary = Color3.fromRGB(40, 40, 48),
-		Text = Color3.fromRGB(240, 240, 240),
-		SubText = Color3.fromRGB(140, 140, 150),
-		InactiveText = Color3.fromRGB(110, 110, 120),
-		InputBg = Color3.fromRGB(24, 24, 28),
-		ToggleBg = Color3.fromRGB(30, 30, 36),
-		SliderTrack = Color3.fromRGB(24, 24, 28),
-	},
-	["Light"] = {
-		MainBg = Color3.fromRGB(240, 242, 245),
-		CardBg = Color3.fromRGB(255, 255, 255),
-		ContainerBg = Color3.fromRGB(230, 234, 242),
-		ContainerTrans = 0.5,
-		Accent = Color3.fromRGB(50, 100, 220),
-		AccentSecondary = Color3.fromRGB(180, 200, 240),
-		Text = Color3.fromRGB(20, 25, 35),
-		SubText = Color3.fromRGB(90, 100, 115),
-		InactiveText = Color3.fromRGB(120, 130, 145),
-		InputBg = Color3.fromRGB(225, 230, 238),
-		ToggleBg = Color3.fromRGB(210, 218, 228),
-		SliderTrack = Color3.fromRGB(215, 220, 230),
-	},
-	["Emerald"] = {
-		MainBg = Color3.fromRGB(14, 18, 16),
-		CardBg = Color3.fromRGB(20, 28, 24),
-		ContainerBg = Color3.fromRGB(30, 45, 38),
-		ContainerTrans = 0.7,
-		Accent = Color3.fromRGB(40, 160, 100),
-		AccentSecondary = Color3.fromRGB(20, 60, 40),
-		Text = Color3.fromRGB(240, 255, 245),
-		SubText = Color3.fromRGB(130, 160, 145),
-		InactiveText = Color3.fromRGB(100, 130, 115),
-		InputBg = Color3.fromRGB(18, 26, 22),
-		ToggleBg = Color3.fromRGB(22, 32, 26),
-		SliderTrack = Color3.fromRGB(18, 26, 22),
-	},
-	["Crimson"] = {
-		MainBg = Color3.fromRGB(18, 14, 14),
-		CardBg = Color3.fromRGB(26, 20, 20),
-		ContainerBg = Color3.fromRGB(45, 30, 30),
-		ContainerTrans = 0.7,
-		Accent = Color3.fromRGB(180, 50, 50),
-		AccentSecondary = Color3.fromRGB(70, 25, 25),
-		Text = Color3.fromRGB(255, 240, 240),
-		SubText = Color3.fromRGB(170, 130, 130),
-		InactiveText = Color3.fromRGB(140, 100, 100),
-		InputBg = Color3.fromRGB(24, 18, 18),
-		ToggleBg = Color3.fromRGB(30, 22, 22),
-		SliderTrack = Color3.fromRGB(24, 18, 18),
-	},
-}
 
 task.spawn(function()
 	local success, result = pcall(function()
@@ -276,7 +202,6 @@ function EclipseUI:CreateWindow(options)
 	local loadAnimEnabled = options.LoadAnim or false
 	local openButtonEnabled = options.OpenButton or false
 	local userOptions = options.User
-	local initialThemeName = options.Theme or "Eclipse"
 
 	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -289,26 +214,7 @@ function EclipseUI:CreateWindow(options)
 	local defaultSize = UDim2.new(0, 480, 0, 320)
 	local defaultPos = UDim2.new(0.5, 0, 0.5, 0)
 
-	local currentThemeData = Themes[initialThemeName] or Themes["Eclipse"]
-	local Window = { 
-		Tabs = {}, 
-		ActiveTab = nil, 
-		ToggleKey = initialToggleKey, 
-		Tags = {}, 
-		CleanupItems = {},
-		Theme = currentThemeData,
-		ThemeConnections = {}
-	}
-
-	function Window:SetTheme(themeName)
-		local tData = Themes[themeName]
-		if tData then
-			self.Theme = tData
-			for _, callback in ipairs(self.ThemeConnections) do
-				pcall(callback, tData)
-			end
-		end
-	end
+	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = initialToggleKey, Tags = {}, CleanupItems = {} }
 
 	-- Config Manager Setup
 	local registeredElements = {}
@@ -418,16 +324,12 @@ function EclipseUI:CreateWindow(options)
 	mainGroup.AnchorPoint = Vector2.new(0.5, 0.5)
 	mainGroup.Position = defaultPos
 	mainGroup.Size = defaultSize
-	mainGroup.BackgroundColor3 = currentThemeData.MainBg
+	mainGroup.BackgroundColor3 = Color3.fromRGB(15, 16, 20)
 	mainGroup.BackgroundTransparency = 0.2
 	mainGroup.BorderSizePixel = 0
 	mainGroup.GroupTransparency = loadAnimEnabled and 1 or 0
 	mainGroup.ZIndex = 2
 	mainGroup.Parent = screenGui
-
-	table.insert(Window.ThemeConnections, function(theme)
-		TweenService:Create(mainGroup, TweenInfo.new(0.3), { BackgroundColor3 = theme.MainBg }):Play()
-	end)
 
 	local uiCorner = Instance.new("UICorner")
 	uiCorner.CornerRadius = UDim.new(0, 12)
@@ -633,15 +535,11 @@ function EclipseUI:CreateWindow(options)
 		local openBtn = Instance.new("ImageButton")
 		openBtn.Size = UDim2.new(0, 44, 0, 44)
 		openBtn.Position = UDim2.new(0, 20, 0, 20)
-		openBtn.BackgroundColor3 = currentThemeData.CardBg
+		openBtn.BackgroundColor3 = Color3.fromRGB(15, 16, 22)
 		openBtn.BackgroundTransparency = 0.2
 		openBtn.AutoButtonColor = false
 		openBtn.Image = ""
 		openBtn.Parent = openBtnGui
-
-		table.insert(Window.ThemeConnections, function(theme)
-			TweenService:Create(openBtn, TweenInfo.new(0.3), { BackgroundColor3 = theme.CardBg }):Play()
-		end)
 
 		local openCorner = Instance.new("UICorner")
 		openCorner.CornerRadius = UDim.new(0, 10)
@@ -659,12 +557,8 @@ function EclipseUI:CreateWindow(options)
 		openIcon.Size = UDim2.new(0, 20, 0, 20)
 		openIcon.BackgroundTransparency = 1
 		openIcon.Image = getIconAsset(windowIcon or "sparkles")
-		openIcon.ImageColor3 = currentThemeData.Text
+		openIcon.ImageColor3 = Color3.fromRGB(240, 245, 255)
 		openIcon.Parent = openBtn
-
-		table.insert(Window.ThemeConnections, function(theme)
-			TweenService:Create(openIcon, TweenInfo.new(0.3), { ImageColor3 = theme.Text }):Play()
-		end)
 
 		if not iconsLoaded and windowIcon then
 			task.spawn(function()
@@ -821,13 +715,9 @@ function EclipseUI:CreateWindow(options)
 		headerIcon.Position = UDim2.new(0, 14, 0.5, -8)
 		headerIcon.BackgroundTransparency = 1
 		headerIcon.Image = getIconAsset(windowIcon)
-		headerIcon.ImageColor3 = currentThemeData.Text
+		headerIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
 		headerIcon.ZIndex = 4
 		headerIcon.Parent = header
-
-		table.insert(Window.ThemeConnections, function(theme)
-			TweenService:Create(headerIcon, TweenInfo.new(0.3), { ImageColor3 = theme.Text }):Play()
-		end)
 
 		if not iconsLoaded and not string.find(tostring(windowIcon), "rbxassetid://") then
 			task.spawn(function()
@@ -879,17 +769,13 @@ function EclipseUI:CreateWindow(options)
 	titleLabel.AutomaticSize = Enum.AutomaticSize.X
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Text = windowName
-	titleLabel.TextColor3 = currentThemeData.Text
+	titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 	titleLabel.TextSize = 14
 	titleLabel.Font = Enum.Font.GothamBold
 	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 	titleLabel.LayoutOrder = 1
 	titleLabel.ZIndex = 4
 	titleLabel.Parent = textBlock
-
-	table.insert(Window.ThemeConnections, function(theme)
-		TweenService:Create(titleLabel, TweenInfo.new(0.3), { TextColor3 = theme.Text }):Play()
-	end)
 
 	if windowSubtitle then
 		local subtitleLabel = Instance.new("TextLabel")
@@ -898,17 +784,13 @@ function EclipseUI:CreateWindow(options)
 		subtitleLabel.AutomaticSize = Enum.AutomaticSize.X
 		subtitleLabel.BackgroundTransparency = 1
 		subtitleLabel.Text = windowSubtitle
-		subtitleLabel.TextColor3 = currentThemeData.SubText
+		subtitleLabel.TextColor3 = Color3.fromRGB(150, 160, 180)
 		subtitleLabel.TextSize = 11
 		subtitleLabel.Font = Enum.Font.Gotham
 		subtitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 		subtitleLabel.LayoutOrder = 2
 		subtitleLabel.ZIndex = 4
 		subtitleLabel.Parent = textBlock
-
-		table.insert(Window.ThemeConnections, function(theme)
-			TweenService:Create(subtitleLabel, TweenInfo.new(0.3), { TextColor3 = theme.SubText }):Play()
-		end)
 	end
 
 	local TagsObj = {}
@@ -933,14 +815,10 @@ function EclipseUI:CreateWindow(options)
 			local tagPill = Instance.new("Frame")
 			tagPill.Size = UDim2.new(0, 0, 0, 20)
 			tagPill.AutomaticSize = Enum.AutomaticSize.X
-			tagPill.BackgroundColor3 = currentThemeData.CardBg
+			tagPill.BackgroundColor3 = Color3.fromRGB(25, 30, 42)
 			tagPill.BackgroundTransparency = 0.4
 			tagPill.ZIndex = 4
 			tagPill.Parent = tagsList
-
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(tagPill, TweenInfo.new(0.3), { BackgroundColor3 = theme.CardBg }):Play()
-			end)
 
 			local tagCorner = Instance.new("UICorner")
 			tagCorner.CornerRadius = UDim.new(1, 0)
@@ -970,16 +848,12 @@ function EclipseUI:CreateWindow(options)
 			tagText.AutomaticSize = Enum.AutomaticSize.X
 			tagText.BackgroundTransparency = 1
 			tagText.Text = tostring(tagName)
-			tagText.TextColor3 = currentThemeData.Text
+			tagText.TextColor3 = Color3.fromRGB(220, 228, 240)
 			tagText.TextSize = 11
 			tagText.Font = Enum.Font.GothamBold
 			tagText.TextXAlignment = Enum.TextXAlignment.Left
 			tagText.ZIndex = 4
 			tagText.Parent = tagPill
-
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(tagText, TweenInfo.new(0.3), { TextColor3 = theme.Text }):Play()
-			end)
 
 			TagsObj[index] = {
 				SetText = function(_, newText)
@@ -1030,15 +904,9 @@ function EclipseUI:CreateWindow(options)
 		icon.Size = UDim2.new(0, iconSize, 0, iconSize)
 		icon.BackgroundTransparency = 1
 		icon.Image = getIconAsset(iconName)
-		icon.ImageColor3 = currentThemeData.SubText
+		icon.ImageColor3 = Color3.fromRGB(150, 160, 180)
 		icon.ZIndex = 11
 		icon.Parent = btnFrame
-
-		table.insert(Window.ThemeConnections, function(theme)
-			if name ~= "DestroyBtn" then
-				TweenService:Create(icon, TweenInfo.new(0.3), { ImageColor3 = theme.SubText }):Play()
-			end
-		end)
 
 		if not iconsLoaded then
 			task.spawn(function()
@@ -1056,7 +924,7 @@ function EclipseUI:CreateWindow(options)
 
 		icon.MouseLeave:Connect(function()
 			TweenService:Create(btnFrame, TweenInfo.new(0.15), { BackgroundTransparency = 1 }):Play()
-			TweenService:Create(icon, TweenInfo.new(0.15), { ImageColor3 = Window.Theme.SubText }):Play()
+			TweenService:Create(icon, TweenInfo.new(0.15), { ImageColor3 = Color3.fromRGB(150, 160, 180) }):Play()
 		end)
 
 		return icon, btnFrame
@@ -1202,20 +1070,12 @@ function EclipseUI:CreateWindow(options)
 
 	local pillGradient = Instance.new("UIGradient")
 	pillGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, currentThemeData.Accent),
-		ColorSequenceKeypoint.new(0.5, currentThemeData.AccentSecondary),
-		ColorSequenceKeypoint.new(1, currentThemeData.CardBg)
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(65, 85, 140)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(35, 42, 60)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 28, 38))
 	})
 	pillGradient.Rotation = 90
 	pillGradient.Parent = activePill
-
-	table.insert(Window.ThemeConnections, function(theme)
-		pillGradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, theme.Accent),
-			ColorSequenceKeypoint.new(0.5, theme.AccentSecondary),
-			ColorSequenceKeypoint.new(1, theme.CardBg)
-		})
-	end)
 
 	local tabs = Instance.new("ScrollingFrame")
 	tabs.Name = "Tabs"
@@ -1312,7 +1172,7 @@ function EclipseUI:CreateWindow(options)
 		displayNameLabel.Position = UDim2.new(0, 44, 0, 8)
 		displayNameLabel.BackgroundTransparency = 1
 		displayNameLabel.Text = userAnon and "Eclipse" or LocalPlayer.DisplayName
-		displayNameLabel.TextColor3 = currentThemeData.Text
+		displayNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 		displayNameLabel.TextSize = 12
 		displayNameLabel.Font = Enum.Font.GothamBold
 		displayNameLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -1320,17 +1180,13 @@ function EclipseUI:CreateWindow(options)
 		displayNameLabel.ZIndex = 4
 		displayNameLabel.Parent = userContentGroup
 
-		table.insert(Window.ThemeConnections, function(theme)
-			TweenService:Create(displayNameLabel, TweenInfo.new(0.3), { TextColor3 = theme.Text }):Play()
-		end)
-
 		local usernameLabel = Instance.new("TextLabel")
 		usernameLabel.Name = "Username"
 		usernameLabel.Size = UDim2.new(1, -48, 0, 13)
 		usernameLabel.Position = UDim2.new(0, 44, 0, 23)
 		usernameLabel.BackgroundTransparency = 1
 		usernameLabel.Text = userAnon and "@EclipseUI" or ("@" .. LocalPlayer.Name)
-		usernameLabel.TextColor3 = currentThemeData.SubText
+		usernameLabel.TextColor3 = Color3.fromRGB(150, 158, 175)
 		usernameLabel.TextSize = 10
 		usernameLabel.Font = Enum.Font.GothamBold
 		usernameLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -1338,23 +1194,19 @@ function EclipseUI:CreateWindow(options)
 		usernameLabel.ZIndex = 4
 		usernameLabel.Parent = userContentGroup
 
-		table.insert(Window.ThemeConnections, function(theme)
-			TweenService:Create(usernameLabel, TweenInfo.new(0.3), { TextColor3 = theme.SubText }):Play()
-		end)
-
 		local userHoverInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 		local userPressInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
 
 		userInfo.MouseEnter:Connect(function()
 			TweenService:Create(userInfo, userHoverInfo, { BackgroundTransparency = 0.94 }):Play()
 			TweenService:Create(userStroke, userHoverInfo, { Transparency = 0.90 }):Play()
-			TweenService:Create(displayNameLabel, userHoverInfo, { TextColor3 = Window.Theme.Text }):Play()
+			TweenService:Create(displayNameLabel, userHoverInfo, { TextColor3 = Color3.fromRGB(255, 255, 255) }):Play()
 		end)
 
 		userInfo.MouseLeave:Connect(function()
 			TweenService:Create(userInfo, userHoverInfo, { BackgroundTransparency = 1 }):Play()
 			TweenService:Create(userStroke, userHoverInfo, { Transparency = 1 }):Play()
-			TweenService:Create(displayNameLabel, userHoverInfo, { TextColor3 = Window.Theme.Text }):Play()
+			TweenService:Create(displayNameLabel, userHoverInfo, { TextColor3 = Color3.fromRGB(240, 245, 255) }):Play()
 		end)
 
 		userInfo.MouseButton1Down:Connect(function()
@@ -1393,17 +1245,13 @@ function EclipseUI:CreateWindow(options)
 		bgWatermark.Size = UDim2.new(1, 0, 0, 50)
 		bgWatermark.BackgroundTransparency = 1
 		bgWatermark.Text = bgName
-		bgWatermark.TextColor3 = currentThemeData.Text
+		bgWatermark.TextColor3 = Color3.fromRGB(255, 255, 255)
 		bgWatermark.TextTransparency = 1
 		bgWatermark.TextSize = 28
 		bgWatermark.FontFace = Font.new("rbxassetid://12187375194", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
 		bgWatermark.TextXAlignment = Enum.TextXAlignment.Center
 		bgWatermark.ZIndex = 1
 		bgWatermark.Parent = mainGroup
-
-		table.insert(Window.ThemeConnections, function(theme)
-			TweenService:Create(bgWatermark, TweenInfo.new(0.3), { TextColor3 = theme.Text }):Play()
-		end)
 	end
 
 	local dragging = false
@@ -1514,9 +1362,9 @@ function EclipseUI:CreateWindow(options)
 
 		for _, tab in ipairs(Window.Tabs) do
 			if tab == targetTab then
-				tween(tab.Label, fadeTweenInfo, { TextColor3 = Window.Theme.Text })
+				tween(tab.Label, fadeTweenInfo, { TextColor3 = Color3.fromRGB(255, 255, 255) })
 				if tab.Icon then
-					tween(tab.Icon, fadeTweenInfo, { ImageColor3 = Window.Theme.Text, ImageTransparency = 0 })
+					tween(tab.Icon, fadeTweenInfo, { ImageColor3 = Color3.fromRGB(255, 255, 255), ImageTransparency = 0 })
 				end
 
 				tab.PageGroup.Visible = true
@@ -1527,9 +1375,9 @@ function EclipseUI:CreateWindow(options)
 					GroupTransparency = 0
 				})
 			else
-				tween(tab.Label, fadeTweenInfo, { TextColor3 = Window.Theme.InactiveText })
+				tween(tab.Label, fadeTweenInfo, { TextColor3 = Color3.fromRGB(140, 148, 165) })
 				if tab.Icon then
-					tween(tab.Icon, fadeTweenInfo, { ImageColor3 = Window.Theme.InactiveText, ImageTransparency = 0.3 })
+					tween(tab.Icon, fadeTweenInfo, { ImageColor3 = Color3.fromRGB(140, 148, 165), ImageTransparency = 0.3 })
 				end
 
 				tab.PageGroup.Visible = false
@@ -1568,18 +1416,10 @@ function EclipseUI:CreateWindow(options)
 			iconImage.Position = UDim2.new(0, 8, 0.5, -8)
 			iconImage.BackgroundTransparency = 1
 			iconImage.Image = getIconAsset(tabIcon)
-			iconImage.ImageColor3 = currentThemeData.InactiveText
+			iconImage.ImageColor3 = Color3.fromRGB(140, 148, 165)
 			iconImage.ImageTransparency = 0.3
 			iconImage.ZIndex = 5
 			iconImage.Parent = tabFrame
-
-			table.insert(Window.ThemeConnections, function(theme)
-				if Window.ActiveTab ~= TabObject then
-					TweenService:Create(iconImage, TweenInfo.new(0.3), { ImageColor3 = theme.InactiveText }):Play()
-				else
-					TweenService:Create(iconImage, TweenInfo.new(0.3), { ImageColor3 = theme.Text }):Play()
-				end
-			end)
 
 			if not iconsLoaded and not string.find(tostring(tabIcon), "rbxassetid://") then
 				task.spawn(function()
@@ -1599,20 +1439,12 @@ function EclipseUI:CreateWindow(options)
 		tabText.Position = UDim2.new(0, textOffsetX, 0, 0)
 		tabText.BackgroundTransparency = 1
 		tabText.Text = tabTitle
-		tabText.TextColor3 = currentThemeData.InactiveText
+		tabText.TextColor3 = Color3.fromRGB(140, 148, 165)
 		tabText.TextSize = 12
 		tabText.Font = Enum.Font.GothamBold
 		tabText.TextXAlignment = Enum.TextXAlignment.Left
 		tabText.ZIndex = 5
 		tabText.Parent = tabFrame
-
-		table.insert(Window.ThemeConnections, function(theme)
-			if Window.ActiveTab ~= TabObject then
-				TweenService:Create(tabText, TweenInfo.new(0.3), { TextColor3 = theme.InactiveText }):Play()
-			else
-				TweenService:Create(tabText, TweenInfo.new(0.3), { TextColor3 = theme.Text }):Play()
-			end
-		end)
 
 		local pageGroup = Instance.new("CanvasGroup")
 		pageGroup.Name = tabTitle .. "PageGroup"
@@ -1628,16 +1460,12 @@ function EclipseUI:CreateWindow(options)
 		page.Size = UDim2.new(1, 0, 1, 0)
 		page.BackgroundTransparency = 1
 		page.ScrollBarThickness = 2
-		page.ScrollBarImageColor3 = currentThemeData.Text
+		page.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
 		page.ScrollBarImageTransparency = 0.85
 		page.AutomaticCanvasSize = Enum.AutomaticSize.Y
 		page.CanvasSize = UDim2.new(0, 0, 0, 0)
 		page.ZIndex = 3
 		page.Parent = pageGroup
-
-		table.insert(Window.ThemeConnections, function(theme)
-			TweenService:Create(page, TweenInfo.new(0.3), { ScrollBarImageColor3 = theme.Text }):Play()
-		end)
 
 		local pageLayout = Instance.new("UIListLayout")
 		pageLayout.Padding = UDim.new(0, 8)
@@ -1665,7 +1493,7 @@ function EclipseUI:CreateWindow(options)
 
 		clickBtn.MouseEnter:Connect(function()
 			if Window.ActiveTab ~= TabObject then
-				tween(tabText, fadeTweenInfo, { TextColor3 = Window.Theme.Text })
+				tween(tabText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(220, 225, 235) })
 				if iconImage then
 					tween(iconImage, fadeTweenInfo, { ImageTransparency = 0.1 })
 				end
@@ -1674,7 +1502,7 @@ function EclipseUI:CreateWindow(options)
 
 		clickBtn.MouseLeave:Connect(function()
 			if Window.ActiveTab ~= TabObject then
-				tween(tabText, fadeTweenInfo, { TextColor3 = Window.Theme.InactiveText })
+				tween(tabText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(140, 148, 165) })
 				if iconImage then
 					tween(iconImage, fadeTweenInfo, { ImageTransparency = 0.3 })
 				end
@@ -1707,14 +1535,10 @@ function EclipseUI:CreateWindow(options)
 		local function createContainer(parent, height)
 			local frame = Instance.new("Frame")
 			frame.Size = UDim2.new(1, 0, 0, height)
-			frame.BackgroundColor3 = Window.Theme.ContainerBg
-			frame.BackgroundTransparency = Window.Theme.ContainerTrans
+			frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			frame.BackgroundTransparency = 0.95
 			frame.ZIndex = 4
 			frame.Parent = parent
-
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(frame, TweenInfo.new(0.3), { BackgroundColor3 = theme.ContainerBg, BackgroundTransparency = theme.ContainerTrans }):Play()
-			end)
 
 			local corner = Instance.new("UICorner")
 			corner.CornerRadius = UDim.new(0, 8)
@@ -1809,13 +1633,9 @@ function EclipseUI:CreateWindow(options)
 				secIconImg.Position = UDim2.new(0, 0, 0.5, -7)
 				secIconImg.BackgroundTransparency = 1
 				secIconImg.Image = getIconAsset(secIcon)
-				secIconImg.ImageColor3 = currentThemeData.SubText
+				secIconImg.ImageColor3 = Color3.fromRGB(130, 140, 165)
 				secIconImg.ZIndex = 4
 				secIconImg.Parent = secHeaderContainer
-
-				table.insert(Window.ThemeConnections, function(theme)
-					TweenService:Create(secIconImg, TweenInfo.new(0.3), { ImageColor3 = theme.SubText }):Play()
-				end)
 
 				if not iconsLoaded and not string.find(tostring(secIcon), "rbxassetid://") then
 					task.spawn(function()
@@ -1834,16 +1654,12 @@ function EclipseUI:CreateWindow(options)
 			secHeader.Position = UDim2.new(0, textOffsetX, 0, 0)
 			secHeader.BackgroundTransparency = 1
 			secHeader.Text = string.upper(secTitle)
-			secHeader.TextColor3 = currentThemeData.SubText
+			secHeader.TextColor3 = Color3.fromRGB(130, 140, 165)
 			secHeader.TextSize = 10
 			secHeader.Font = Enum.Font.GothamBold
 			secHeader.TextXAlignment = Enum.TextXAlignment.Left
 			secHeader.ZIndex = 4
 			secHeader.Parent = secHeaderContainer
-
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(secHeader, TweenInfo.new(0.3), { TextColor3 = theme.SubText }):Play()
-			end)
 
 			local SectionObj = {}
 
@@ -1869,15 +1685,11 @@ function EclipseUI:CreateWindow(options)
 			local boxFrame = Instance.new("Frame")
 			boxFrame.Size = UDim2.new(1, 0, 0, 0)
 			boxFrame.AutomaticSize = Enum.AutomaticSize.Y
-			boxFrame.BackgroundColor3 = currentThemeData.CardBg
+			boxFrame.BackgroundColor3 = Color3.fromRGB(18, 22, 30)
 			boxFrame.BackgroundTransparency = 0.6
 			boxFrame.ClipsDescendants = true
 			boxFrame.ZIndex = 4
 			boxFrame.Parent = targetParent
-
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(boxFrame, TweenInfo.new(0.3), { BackgroundColor3 = theme.CardBg }):Play()
-			end)
 
 			local boxCorner = Instance.new("UICorner")
 			boxCorner.CornerRadius = UDim.new(0, 8)
@@ -1932,13 +1744,9 @@ function EclipseUI:CreateWindow(options)
 					iconImg.Position = UDim2.new(0, 0, 0.5, -7)
 					iconImg.BackgroundTransparency = 1
 					iconImg.Image = getIconAsset(boxIcon)
-					iconImg.ImageColor3 = currentThemeData.SubText
+					iconImg.ImageColor3 = Color3.fromRGB(160, 170, 190)
 					iconImg.ZIndex = 5
 					iconImg.Parent = headerContainer
-
-					table.insert(Window.ThemeConnections, function(theme)
-						TweenService:Create(iconImg, TweenInfo.new(0.3), { ImageColor3 = theme.SubText }):Play()
-					end)
 
 					if not iconsLoaded and not string.find(tostring(boxIcon), "rbxassetid://") then
 						task.spawn(function()
@@ -1957,16 +1765,12 @@ function EclipseUI:CreateWindow(options)
 				titleLabel.Position = UDim2.new(0, textOffsetX, 0, 0)
 				titleLabel.BackgroundTransparency = 1
 				titleLabel.Text = string.upper(boxTitle)
-				titleLabel.TextColor3 = currentThemeData.SubText
+				titleLabel.TextColor3 = Color3.fromRGB(160, 170, 190)
 				titleLabel.TextSize = 10
 				titleLabel.Font = Enum.Font.GothamBold
 				titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 				titleLabel.ZIndex = 5
 				titleLabel.Parent = headerContainer
-
-				table.insert(Window.ThemeConnections, function(theme)
-					TweenService:Create(titleLabel, TweenInfo.new(0.3), { TextColor3 = theme.SubText }):Play()
-				end)
 
 				if isFoldable then
 					local arrowIcon = Instance.new("ImageLabel")
@@ -1975,14 +1779,10 @@ function EclipseUI:CreateWindow(options)
 					arrowIcon.Size = UDim2.new(0, 14, 0, 14)
 					arrowIcon.BackgroundTransparency = 1
 					arrowIcon.Image = getIconAsset("chevron-down")
-					arrowIcon.ImageColor3 = currentThemeData.SubText
+					arrowIcon.ImageColor3 = Color3.fromRGB(160, 170, 190)
 					arrowIcon.Rotation = isFolded and 180 or 0
 					arrowIcon.ZIndex = 5
 					arrowIcon.Parent = headerContainer
-
-					table.insert(Window.ThemeConnections, function(theme)
-						TweenService:Create(arrowIcon, TweenInfo.new(0.3), { ImageColor3 = theme.SubText }):Play()
-					end)
 
 					if not iconsLoaded then
 						task.spawn(function()
@@ -2077,33 +1877,25 @@ function EclipseUI:CreateWindow(options)
 			pTitle.Size = UDim2.new(1, 0, 0, 15)
 			pTitle.BackgroundTransparency = 1
 			pTitle.Text = title
-			pTitle.TextColor3 = currentThemeData.Text
+			pTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
 			pTitle.TextSize = 12
 			pTitle.Font = Enum.Font.GothamBold
 			pTitle.TextXAlignment = Enum.TextXAlignment.Left
 			pTitle.ZIndex = 5
 			pTitle.Parent = pFrame
 
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(pTitle, TweenInfo.new(0.3), { TextColor3 = theme.Text }):Play()
-			end)
-
 			local pText = Instance.new("TextLabel")
 			pText.Size = UDim2.new(1, 0, 0, 0)
 			pText.AutomaticSize = Enum.AutomaticSize.Y
 			pText.BackgroundTransparency = 1
 			pText.Text = content
-			pText.TextColor3 = currentThemeData.SubText
+			pText.TextColor3 = Color3.fromRGB(150, 160, 180)
 			pText.TextSize = 11
 			pText.Font = Enum.Font.Gotham
 			pText.TextXAlignment = Enum.TextXAlignment.Left
 			pText.TextWrapped = true
 			pText.ZIndex = 5
 			pText.Parent = pFrame
-
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(pText, TweenInfo.new(0.3), { TextColor3 = theme.SubText }):Play()
-			end)
 
 			return {
 				SetTitle = function(_, newTitle) pTitle.Text = newTitle end,
@@ -2127,20 +1919,12 @@ function EclipseUI:CreateWindow(options)
 
 			local btnGradient = Instance.new("UIGradient")
 			btnGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, currentThemeData.Accent),
-				ColorSequenceKeypoint.new(0.5, currentThemeData.AccentSecondary),
-				ColorSequenceKeypoint.new(1, currentThemeData.Accent)
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(65, 85, 130)),
+				ColorSequenceKeypoint.new(0.5, Color3.fromRGB(35, 45, 65)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(65, 85, 130))
 			})
 			btnGradient.Rotation = 0
 			btnGradient.Parent = btn
-
-			table.insert(Window.ThemeConnections, function(theme)
-				btnGradient.Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, theme.Accent),
-					ColorSequenceKeypoint.new(0.5, theme.AccentSecondary),
-					ColorSequenceKeypoint.new(1, theme.Accent)
-				})
-			end)
 
 			task.spawn(function()
 				local tAcc = 0
@@ -2159,14 +1943,10 @@ function EclipseUI:CreateWindow(options)
 				iconImg.Position = UDim2.new(1, -14, 0.5, 0)
 				iconImg.BackgroundTransparency = 1
 				iconImg.Image = getIconAsset(btnIcon)
-				iconImg.ImageColor3 = currentThemeData.Text
+				iconImg.ImageColor3 = Color3.fromRGB(255, 255, 255)
 				iconImg.ZIndex = 5
 				iconImg.Parent = btn
 				textRightOffset = -36
-
-				table.insert(Window.ThemeConnections, function(theme)
-					TweenService:Create(iconImg, TweenInfo.new(0.3), { ImageColor3 = theme.Text }):Play()
-				end)
 
 				if not iconsLoaded and not string.find(tostring(btnIcon), "rbxassetid://") then
 					task.spawn(function()
@@ -2183,16 +1963,12 @@ function EclipseUI:CreateWindow(options)
 			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = btnName
-			label.TextColor3 = currentThemeData.Text
+			label.TextColor3 = Color3.fromRGB(255, 255, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.ZIndex = 5
 			label.Parent = btn
-
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(label, TweenInfo.new(0.3), { TextColor3 = theme.Text }):Play()
-			end)
 
 			local clickBtn = Instance.new("TextButton")
 			clickBtn.Size = UDim2.new(1, 0, 1, 0)
@@ -2274,20 +2050,12 @@ function EclipseUI:CreateWindow(options)
 
 				local btnGradient = Instance.new("UIGradient")
 				btnGradient.Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, currentThemeData.Accent),
-					ColorSequenceKeypoint.new(0.5, currentThemeData.AccentSecondary),
-					ColorSequenceKeypoint.new(1, currentThemeData.Accent)
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(65, 85, 130)),
+					ColorSequenceKeypoint.new(0.5, Color3.fromRGB(35, 45, 65)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(65, 85, 130))
 				})
 				btnGradient.Rotation = 0
 				btnGradient.Parent = btnFrame
-
-				table.insert(Window.ThemeConnections, function(theme)
-					btnGradient.Color = ColorSequence.new({
-						ColorSequenceKeypoint.new(0, theme.Accent),
-						ColorSequenceKeypoint.new(0.5, theme.AccentSecondary),
-						ColorSequenceKeypoint.new(1, theme.Accent)
-					})
-				end)
 
 				task.spawn(function()
 					local tAcc = 0
@@ -2306,14 +2074,10 @@ function EclipseUI:CreateWindow(options)
 					iconImg.Position = UDim2.new(1, -10, 0.5, 0)
 					iconImg.BackgroundTransparency = 1
 					iconImg.Image = getIconAsset(bIcon)
-					iconImg.ImageColor3 = currentThemeData.Text
+					iconImg.ImageColor3 = Color3.fromRGB(255, 255, 255)
 					iconImg.ZIndex = 5
 					iconImg.Parent = btnFrame
 					textRightOffset = -28
-
-					table.insert(Window.ThemeConnections, function(theme)
-						TweenService:Create(iconImg, TweenInfo.new(0.3), { ImageColor3 = theme.Text }):Play()
-					end)
 
 					if not iconsLoaded and not string.find(tostring(bIcon), "rbxassetid://") then
 						task.spawn(function()
@@ -2330,17 +2094,13 @@ function EclipseUI:CreateWindow(options)
 				label.Position = UDim2.new(0, 10, 0, 0)
 				label.BackgroundTransparency = 1
 				label.Text = bTitle
-				label.TextColor3 = currentThemeData.Text
+				label.TextColor3 = Color3.fromRGB(255, 255, 255)
 				label.TextSize = 11
 				label.Font = Enum.Font.GothamBold
 				label.TextXAlignment = Enum.TextXAlignment.Left
 				label.TextTruncate = Enum.TextTruncate.AtEnd
 				label.ZIndex = 5
 				label.Parent = btnFrame
-
-				table.insert(Window.ThemeConnections, function(theme)
-					TweenService:Create(label, TweenInfo.new(0.3), { TextColor3 = theme.Text }):Play()
-				end)
 
 				local clickBtn = Instance.new("TextButton")
 				clickBtn.Size = UDim2.new(1, 0, 1, 0)
@@ -2391,37 +2151,29 @@ function EclipseUI:CreateWindow(options)
 			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = title
-			label.TextColor3 = currentThemeData.Text
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.ZIndex = 5
 			label.Parent = inputContainer
 
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(label, TweenInfo.new(0.3), { TextColor3 = theme.Text }):Play()
-			end)
-
 			local textBox = Instance.new("TextBox")
 			textBox.AnchorPoint = Vector2.new(1, 0.5)
 			textBox.Position = UDim2.new(1, -12, 0.5, 0)
 			textBox.Size = UDim2.new(0, 130, 0, 24)
-			textBox.BackgroundColor3 = currentThemeData.InputBg
+			textBox.BackgroundColor3 = Color3.fromRGB(18, 22, 30)
 			textBox.BackgroundTransparency = 0.2
 			textBox.Text = tostring(default)
 			textBox.PlaceholderText = placeholder
-			textBox.PlaceholderColor3 = currentThemeData.SubText
-			textBox.TextColor3 = currentThemeData.Text
+			textBox.PlaceholderColor3 = Color3.fromRGB(110, 120, 140)
+			textBox.TextColor3 = Color3.fromRGB(230, 238, 250)
 			textBox.TextSize = 11
 			textBox.Font = Enum.Font.GothamMedium
 			textBox.TextYAlignment = Enum.TextYAlignment.Center
 			textBox.ClearTextOnFocus = false
 			textBox.ZIndex = 6
 			textBox.Parent = inputContainer
-
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(textBox, TweenInfo.new(0.3), { BackgroundColor3 = theme.InputBg, TextColor3 = theme.Text, PlaceholderColor3 = theme.SubText }):Play()
-			end)
 
 			local tbCorner = Instance.new("UICorner")
 			tbCorner.CornerRadius = UDim.new(0, 6)
@@ -2477,30 +2229,22 @@ function EclipseUI:CreateWindow(options)
 			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = title
-			label.TextColor3 = currentThemeData.Text
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.ZIndex = 5
 			label.Parent = toggleContainer
 
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(label, TweenInfo.new(0.3), { TextColor3 = theme.Text }):Play()
-			end)
-
 			local toggleFrame = Instance.new("Frame")
 			toggleFrame.Name = "ToggleFrame"
 			toggleFrame.AnchorPoint = Vector2.new(1, 0.5)
 			toggleFrame.Position = UDim2.new(1, -12, 0.5, 0)
 			toggleFrame.Size = UDim2.new(0, 44, 0, 22)
-			toggleFrame.BackgroundColor3 = currentThemeData.ToggleBg
+			toggleFrame.BackgroundColor3 = Color3.fromRGB(25, 30, 40)
 			toggleFrame.BackgroundTransparency = 0.4
 			toggleFrame.ZIndex = 5
 			toggleFrame.Parent = toggleContainer
-
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(toggleFrame, TweenInfo.new(0.3), { BackgroundColor3 = theme.ToggleBg }):Play()
-			end)
 
 			local tfCorner = Instance.new("UICorner")
 			tfCorner.CornerRadius = UDim.new(1, 0)
@@ -2520,18 +2264,11 @@ function EclipseUI:CreateWindow(options)
 
 			local toggleGradient = Instance.new("UIGradient")
 			toggleGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, currentThemeData.Accent),
-				ColorSequenceKeypoint.new(1, currentThemeData.SubText)
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(210, 218, 230)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 160, 175))
 			})
 			toggleGradient.Rotation = 45
 			toggleGradient.Parent = gradientOverlay
-
-			table.insert(Window.ThemeConnections, function(theme)
-				toggleGradient.Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, theme.Accent),
-					ColorSequenceKeypoint.new(1, theme.SubText)
-				})
-			end)
 
 			local tfStroke = Instance.new("UIStroke")
 			tfStroke.Color = Color3.fromRGB(255, 255, 255)
@@ -2624,35 +2361,27 @@ function EclipseUI:CreateWindow(options)
 			label.Position = UDim2.new(0, 14, 0, 10)
 			label.BackgroundTransparency = 1
 			label.Text = title
-			label.TextColor3 = currentThemeData.Text
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.ZIndex = 5
 			label.Parent = sliderContainer
 
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(label, TweenInfo.new(0.3), { TextColor3 = theme.Text }):Play()
-			end)
-
 			local valBox = Instance.new("TextBox")
 			valBox.AnchorPoint = Vector2.new(1, 0)
 			valBox.Position = UDim2.new(1, -12, 0, 8)
 			valBox.Size = UDim2.new(0, 56, 0, 22)
-			valBox.BackgroundColor3 = currentThemeData.InputBg
+			valBox.BackgroundColor3 = Color3.fromRGB(18, 22, 30)
 			valBox.BackgroundTransparency = 0.2
 			valBox.Text = tostring(default)
-			valBox.TextColor3 = currentThemeData.Text
+			valBox.TextColor3 = Color3.fromRGB(230, 238, 250)
 			valBox.TextSize = 11
 			valBox.Font = Enum.Font.GothamMedium
 			valBox.TextYAlignment = Enum.TextYAlignment.Center
 			valBox.ClearTextOnFocus = false
 			valBox.ZIndex = 6
 			valBox.Parent = sliderContainer
-
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(valBox, TweenInfo.new(0.3), { BackgroundColor3 = theme.InputBg, TextColor3 = theme.Text }):Play()
-			end)
 
 			local valBoxCorner = Instance.new("UICorner")
 			valBoxCorner.CornerRadius = UDim.new(0, 6)
@@ -2668,14 +2397,10 @@ function EclipseUI:CreateWindow(options)
 			track.AnchorPoint = Vector2.new(0.5, 0)
 			track.Position = UDim2.new(0.5, 0, 0, 38)
 			track.Size = UDim2.new(1, -32, 0, 6)
-			track.BackgroundColor3 = currentThemeData.SliderTrack
+			track.BackgroundColor3 = Color3.fromRGB(20, 24, 32)
 			track.BorderSizePixel = 0
 			track.ZIndex = 5
 			track.Parent = sliderContainer
-
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(track, TweenInfo.new(0.3), { BackgroundColor3 = theme.SliderTrack }):Play()
-			end)
 
 			local trackCorner = Instance.new("UICorner")
 			trackCorner.CornerRadius = UDim.new(1, 0)
@@ -2694,17 +2419,10 @@ function EclipseUI:CreateWindow(options)
 
 			local fillGradient = Instance.new("UIGradient")
 			fillGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, currentThemeData.Accent),
-				ColorSequenceKeypoint.new(1, currentThemeData.SubText)
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(200, 210, 225)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 160, 175))
 			})
 			fillGradient.Parent = fill
-
-			table.insert(Window.ThemeConnections, function(theme)
-				fillGradient.Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, theme.Accent),
-					ColorSequenceKeypoint.new(1, theme.SubText)
-				})
-			end)
 
 			local thumb = Instance.new("Frame")
 			thumb.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -2820,34 +2538,26 @@ function EclipseUI:CreateWindow(options)
 			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = title
-			label.TextColor3 = currentThemeData.Text
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.ZIndex = 5
 			label.Parent = kbFrame
 
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(label, TweenInfo.new(0.3), { TextColor3 = theme.Text }):Play()
-			end)
-
 			local keyBtn = Instance.new("TextButton")
 			keyBtn.AnchorPoint = Vector2.new(1, 0.5)
 			keyBtn.Position = UDim2.new(1, -12, 0.5, 0)
 			keyBtn.Size = UDim2.new(0, 90, 0, 24)
-			keyBtn.BackgroundColor3 = currentThemeData.InputBg
+			keyBtn.BackgroundColor3 = Color3.fromRGB(18, 22, 30)
 			keyBtn.BackgroundTransparency = 0.2
 			keyBtn.Text = currentKey.Name
-			keyBtn.TextColor3 = currentThemeData.Text
+			keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
 			keyBtn.TextSize = 11
 			keyBtn.Font = Enum.Font.GothamMedium
 			keyBtn.TextYAlignment = Enum.TextYAlignment.Center
 			keyBtn.ZIndex = 6
 			keyBtn.Parent = kbFrame
-
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(keyBtn, TweenInfo.new(0.3), { BackgroundColor3 = theme.InputBg, TextColor3 = theme.Text }):Play()
-			end)
 
 			local keyCorner = Instance.new("UICorner")
 			keyCorner.CornerRadius = UDim.new(0, 6)
@@ -2891,8 +2601,9 @@ function EclipseUI:CreateWindow(options)
 					listening = false
 					currentKey = input.KeyCode
 					keyBtn.Text = currentKey.Name
-					keyBtn.TextColor3 = Window.Theme.Text
+					keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
 					tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
+					-- Fire callback only when the key is actually changed/rebound
 					pcall(callback, currentKey)
 				end
 			end)
@@ -2941,29 +2652,21 @@ function EclipseUI:CreateWindow(options)
 			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = title
-			label.TextColor3 = currentThemeData.Text
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.ZIndex = 5
 			label.Parent = headerBtn
 
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(label, TweenInfo.new(0.3), { TextColor3 = theme.Text }):Play()
-			end)
-
 			local selBox = Instance.new("Frame")
 			selBox.AnchorPoint = Vector2.new(1, 0.5)
 			selBox.Position = UDim2.new(1, -12, 0.5, 0)
 			selBox.Size = UDim2.new(0, 104, 0, 24)
-			selBox.BackgroundColor3 = currentThemeData.InputBg
+			selBox.BackgroundColor3 = Color3.fromRGB(18, 22, 30)
 			selBox.BackgroundTransparency = 0.2
 			selBox.ZIndex = 6
 			selBox.Parent = headerBtn
-
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(selBox, TweenInfo.new(0.3), { BackgroundColor3 = theme.InputBg }):Play()
-			end)
 
 			local selBoxCorner = Instance.new("UICorner")
 			selBoxCorner.CornerRadius = UDim.new(0, 6)
@@ -2980,7 +2683,7 @@ function EclipseUI:CreateWindow(options)
 			selLabel.Position = UDim2.new(0, 8, 0, 0)
 			selLabel.BackgroundTransparency = 1
 			selLabel.Text = tostring(selected)
-			selLabel.TextColor3 = currentThemeData.Text
+			selLabel.TextColor3 = Color3.fromRGB(230, 238, 250)
 			selLabel.TextSize = 11
 			selLabel.Font = Enum.Font.GothamMedium
 			selLabel.TextYAlignment = Enum.TextYAlignment.Center
@@ -2989,10 +2692,6 @@ function EclipseUI:CreateWindow(options)
 			selLabel.ZIndex = 7
 			selLabel.Parent = selBox
 
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(selLabel, TweenInfo.new(0.3), { TextColor3 = theme.Text }):Play()
-			end)
-
 			local arrowIcon = Instance.new("ImageLabel")
 			arrowIcon.Name = "Chevron"
 			arrowIcon.AnchorPoint = Vector2.new(1, 0.5)
@@ -3000,13 +2699,9 @@ function EclipseUI:CreateWindow(options)
 			arrowIcon.Size = UDim2.new(0, 12, 0, 12)
 			arrowIcon.BackgroundTransparency = 1
 			arrowIcon.Image = getIconAsset("chevron-down")
-			arrowIcon.ImageColor3 = currentThemeData.SubText
+			arrowIcon.ImageColor3 = Color3.fromRGB(170, 180, 200)
 			arrowIcon.ZIndex = 7
 			arrowIcon.Parent = selBox
-
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(arrowIcon, TweenInfo.new(0.3), { ImageColor3 = theme.SubText }):Play()
-			end)
 
 			if not iconsLoaded then
 				task.spawn(function()
@@ -3044,7 +2739,7 @@ function EclipseUI:CreateWindow(options)
 					tween(data.Btn, fadeTweenInfo, {
 						BackgroundTransparency = isSel and 0.82 or 0.96
 					})
-					data.Text.TextColor3 = isSel and Window.Theme.Text or Window.Theme.SubText
+					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(150, 160, 180)
 				end
 			end
 
@@ -3066,7 +2761,7 @@ function EclipseUI:CreateWindow(options)
 				itemText.Position = UDim2.new(0, 12, 0, 0)
 				itemText.BackgroundTransparency = 1
 				itemText.Text = tostring(item)
-				itemText.TextColor3 = currentThemeData.SubText
+				itemText.TextColor3 = Color3.fromRGB(150, 160, 180)
 				itemText.TextSize = 11
 				itemText.Font = Enum.Font.Gotham
 				itemText.TextYAlignment = Enum.TextYAlignment.Center
@@ -3074,27 +2769,19 @@ function EclipseUI:CreateWindow(options)
 				itemText.ZIndex = 7
 				itemText.Parent = itemBtn
 
-				table.insert(Window.ThemeConnections, function(theme)
-					if selected ~= item then
-						TweenService:Create(itemText, TweenInfo.new(0.3), { TextColor3 = theme.SubText }):Play()
-					else
-						TweenService:Create(itemText, TweenInfo.new(0.3), { TextColor3 = theme.Text }):Play()
-					end
-				end)
-
 				table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText })
 
 				itemBtn.MouseEnter:Connect(function()
 					if selected ~= item then
 						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.90 })
-						tween(itemText, fadeTweenInfo, { TextColor3 = Window.Theme.Text })
+						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(230, 238, 250) })
 					end
 				end)
 
 				itemBtn.MouseLeave:Connect(function()
 					if selected ~= item then
 						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.96 })
-						tween(itemText, fadeTweenInfo, { TextColor3 = Window.Theme.SubText })
+						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(150, 160, 180) })
 					end
 				end)
 
@@ -3155,7 +2842,7 @@ function EclipseUI:CreateWindow(options)
 						itemText.Position = UDim2.new(0, 12, 0, 0)
 						itemText.BackgroundTransparency = 1
 						itemText.Text = tostring(item)
-						itemText.TextColor3 = Window.Theme.SubText
+						itemText.TextColor3 = Color3.fromRGB(150, 160, 180)
 						itemText.TextSize = 11
 						itemText.Font = Enum.Font.Gotham
 						itemText.TextYAlignment = Enum.TextYAlignment.Center
@@ -3168,14 +2855,14 @@ function EclipseUI:CreateWindow(options)
 						itemBtn.MouseEnter:Connect(function()
 							if selected ~= item then
 								tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.90 })
-								tween(itemText, fadeTweenInfo, { TextColor3 = Window.Theme.Text })
+								tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(230, 238, 250) })
 							end
 						end)
 
 						itemBtn.MouseLeave:Connect(function()
 							if selected ~= item then
 								tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.96 })
-								tween(itemText, fadeTweenInfo, { TextColor3 = Window.Theme.SubText })
+								tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(150, 160, 180) })
 							end
 						end)
 
@@ -3232,29 +2919,21 @@ function EclipseUI:CreateWindow(options)
 			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = title
-			label.TextColor3 = currentThemeData.Text
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.ZIndex = 5
 			label.Parent = headerBtn
 
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(label, TweenInfo.new(0.3), { TextColor3 = theme.Text }):Play()
-			end)
-
 			local selBox = Instance.new("Frame")
 			selBox.AnchorPoint = Vector2.new(1, 0.5)
 			selBox.Position = UDim2.new(1, -12, 0.5, 0)
 			selBox.Size = UDim2.new(0, 104, 0, 24)
-			selBox.BackgroundColor3 = currentThemeData.InputBg
+			selBox.BackgroundColor3 = Color3.fromRGB(18, 22, 30)
 			selBox.BackgroundTransparency = 0.2
 			selBox.ZIndex = 6
 			selBox.Parent = headerBtn
-
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(selBox, TweenInfo.new(0.3), { BackgroundColor3 = theme.InputBg }):Play()
-			end)
 
 			local selBoxCorner = Instance.new("UICorner")
 			selBoxCorner.CornerRadius = UDim.new(0, 6)
@@ -3270,7 +2949,7 @@ function EclipseUI:CreateWindow(options)
 			selLabel.Size = UDim2.new(1, -26, 1, 0)
 			selLabel.Position = UDim2.new(0, 8, 0, 0)
 			selLabel.BackgroundTransparency = 1
-			selLabel.TextColor3 = currentThemeData.Text
+			selLabel.TextColor3 = Color3.fromRGB(230, 238, 250)
 			selLabel.TextSize = 11
 			selLabel.Font = Enum.Font.GothamMedium
 			selLabel.TextYAlignment = Enum.TextYAlignment.Center
@@ -3279,10 +2958,6 @@ function EclipseUI:CreateWindow(options)
 			selLabel.ZIndex = 7
 			selLabel.Parent = selBox
 
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(selLabel, TweenInfo.new(0.3), { TextColor3 = theme.Text }):Play()
-			end)
-
 			local arrowIcon = Instance.new("ImageLabel")
 			arrowIcon.Name = "Chevron"
 			arrowIcon.AnchorPoint = Vector2.new(1, 0.5)
@@ -3290,13 +2965,9 @@ function EclipseUI:CreateWindow(options)
 			arrowIcon.Size = UDim2.new(0, 12, 0, 12)
 			arrowIcon.BackgroundTransparency = 1
 			arrowIcon.Image = getIconAsset("chevron-down")
-			arrowIcon.ImageColor3 = currentThemeData.SubText
+			arrowIcon.ImageColor3 = Color3.fromRGB(170, 180, 200)
 			arrowIcon.ZIndex = 7
 			arrowIcon.Parent = selBox
-
-			table.insert(Window.ThemeConnections, function(theme)
-				TweenService:Create(arrowIcon, TweenInfo.new(0.3), { ImageColor3 = theme.SubText }):Play()
-			end)
 
 			if not iconsLoaded then
 				task.spawn(function()
@@ -3355,7 +3026,7 @@ function EclipseUI:CreateWindow(options)
 					tween(data.Btn, fadeTweenInfo, {
 						BackgroundTransparency = isSel and 0.82 or 0.96
 					})
-					data.Text.TextColor3 = isSel and Window.Theme.Text or Window.Theme.SubText
+					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(150, 160, 180)
 				end
 				updateDisplay()
 			end
@@ -3378,7 +3049,7 @@ function EclipseUI:CreateWindow(options)
 				itemText.Position = UDim2.new(0, 12, 0, 0)
 				itemText.BackgroundTransparency = 1
 				itemText.Text = tostring(item)
-				itemText.TextColor3 = currentThemeData.SubText
+				itemText.TextColor3 = Color3.fromRGB(150, 160, 180)
 				itemText.TextSize = 11
 				itemText.Font = Enum.Font.Gotham
 				itemText.TextYAlignment = Enum.TextYAlignment.Center
@@ -3386,27 +3057,19 @@ function EclipseUI:CreateWindow(options)
 				itemText.ZIndex = 7
 				itemText.Parent = itemBtn
 
-				table.insert(Window.ThemeConnections, function(theme)
-					if not selectedMap[item] then
-						TweenService:Create(itemText, TweenInfo.new(0.3), { TextColor3 = theme.SubText }):Play()
-					else
-						TweenService:Create(itemText, TweenInfo.new(0.3), { TextColor3 = theme.Text }):Play()
-					end
-				end)
-
 				table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText })
 
 				itemBtn.MouseEnter:Connect(function()
 					if not selectedMap[item] then
 						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.90 })
-						tween(itemText, fadeTweenInfo, { TextColor3 = Window.Theme.Text })
+						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(230, 238, 250) })
 					end
 				end)
 
 				itemBtn.MouseLeave:Connect(function()
 					if not selectedMap[item] then
 						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.96 })
-						tween(itemText, fadeTweenInfo, { TextColor3 = Window.Theme.SubText })
+						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(150, 160, 180) })
 					end
 				end)
 
