@@ -1,3 +1,4 @@
+--// EclipseUI Roblox Library Version 1.6.04
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
