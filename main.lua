@@ -2244,7 +2244,6 @@ function EclipseUI:CreateWindow(options)
 			label.ZIndex = 5
 			label.Parent = cpContainer
 
-			-- Premium Inline Preview Button with subtle gradient shine
 			local colorPreview = Instance.new("TextButton")
 			colorPreview.AnchorPoint = Vector2.new(1, 0.5)
 			colorPreview.Position = UDim2.new(1, -12, 0.5, 0)
@@ -2353,9 +2352,9 @@ function EclipseUI:CreateWindow(options)
 					drawerFrame.Position = UDim2.new(0, mainPos.X + mainSize.X + 8, 0, mainPos.Y)
 				end)
 
-				-- Side Panel Header (Font size matched to Main Window title: 14)
+				-- Side Panel Header (Font size 14 matching Main Window title)
 				local dTitle = Instance.new("TextLabel", drawerFrame)
-				dTitle.Size = UDim2.new(1, -40, 0, 42)
+				dTitle.Size = UDim2.new(1, -20, 0, 42)
 				dTitle.Position = UDim2.new(0, 16, 0, 0)
 				dTitle.BackgroundTransparency = 1
 				dTitle.Text = title
@@ -2364,17 +2363,6 @@ function EclipseUI:CreateWindow(options)
 				dTitle.Font = Enum.Font.GothamBold
 				dTitle.TextXAlignment = Enum.TextXAlignment.Left
 				dTitle.ZIndex = 101
-
-				local closeBtn = Instance.new("ImageButton", drawerFrame)
-				closeBtn.AnchorPoint = Vector2.new(1, 0.5)
-				closeBtn.Position = UDim2.new(1, -14, 0, 21)
-				closeBtn.Size = UDim2.new(0, 16, 0, 16)
-				closeBtn.BackgroundTransparency = 1
-				closeBtn.Image = "rbxassetid://10709791437"
-				closeBtn.ImageColor3 = Color3.fromRGB(160, 170, 190)
-				closeBtn.ZIndex = 101
-
-				closeBtn.MouseButton1Click:Connect(closeDrawer)
 
 				-- Perfectly aligned header separator line matching Main Window
 				local headerDivider = Instance.new("Frame", drawerFrame)
@@ -2388,7 +2376,7 @@ function EclipseUI:CreateWindow(options)
 				-- 1. Saturation & Value Box
 				local svBox = Instance.new("Frame", drawerFrame)
 				svBox.Position = UDim2.new(0, 16, 0, 56)
-				svBox.Size = UDim2.new(0, 112, 0, 112)
+				svBox.Size = UDim2.new(0, 114, 0, 114)
 				svBox.BackgroundColor3 = Color3.fromHSV(tempH, 1, 1)
 				svBox.BorderSizePixel = 0
 				svBox.ZIndex = 101
@@ -2424,8 +2412,8 @@ function EclipseUI:CreateWindow(options)
 
 				-- 2. Hue Bar
 				local hueBar = Instance.new("Frame", drawerFrame)
-				hueBar.Position = UDim2.new(0, 134, 0, 56)
-				hueBar.Size = UDim2.new(0, 12, 0, 112)
+				hueBar.Position = UDim2.new(0, 136, 0, 56)
+				hueBar.Size = UDim2.new(0, 12, 0, 114)
 				hueBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 				hueBar.BorderSizePixel = 0
 				hueBar.ZIndex = 101
@@ -2492,10 +2480,10 @@ function EclipseUI:CreateWindow(options)
 					return box
 				end
 
-				local hexBox = createInputRow("Hex", "#" .. currentColor:ToHex(), 180)
-				local rBox = createInputRow("Red", math.floor(currentColor.R * 255 + 0.5), 206)
-				local gBox = createInputRow("Green", math.floor(currentColor.G * 255 + 0.5), 232)
-				local bBox = createInputRow("Blue", math.floor(currentColor.B * 255 + 0.5), 258)
+				local hexBox = createInputRow("Hex", "#" .. currentColor:ToHex(), 182)
+				local rBox = createInputRow("Red", math.floor(currentColor.R * 255 + 0.5), 210)
+				local gBox = createInputRow("Green", math.floor(currentColor.G * 255 + 0.5), 238)
+				local bBox = createInputRow("Blue", math.floor(currentColor.B * 255 + 0.5), 266)
 
 				local function updatePicker(skipInputs)
 					local activeColor = Color3.fromHSV(tempH, tempS, tempV)
@@ -2585,19 +2573,23 @@ function EclipseUI:CreateWindow(options)
 				gBox.FocusLost:Connect(rgbLost)
 				bBox.FocusLost:Connect(rgbLost)
 
-				-- Premium Apply Button at the bottom
+				-- Reworked Premium Apply Button at the bottom
 				local applyBtn = Instance.new("TextButton", drawerFrame)
 				applyBtn.AnchorPoint = Vector2.new(0, 1)
 				applyBtn.Position = UDim2.new(0, 16, 1, -16)
-				applyBtn.Size = UDim2.new(1, -32, 0, 30)
+				applyBtn.Size = UDim2.new(1, -32, 0, 32)
 				applyBtn.BackgroundColor3 = Color3.fromRGB(65, 85, 130)
 				applyBtn.BackgroundTransparency = 0.2
 				applyBtn.Text = "Apply"
 				applyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-				applyBtn.TextSize = 11
+				applyBtn.TextSize = 12
 				applyBtn.Font = Enum.Font.GothamBold
 				applyBtn.ZIndex = 101
 				Instance.new("UICorner", applyBtn).CornerRadius = UDim.new(0, 6)
+
+				local applyStroke = Instance.new("UIStroke", applyBtn)
+				applyStroke.Color = Color3.fromRGB(255, 255, 255)
+				applyStroke.Transparency = 0.6
 
 				applyBtn.MouseButton1Click:Connect(function()
 					currentColor = Color3.fromHSV(tempH, tempS, tempV)
