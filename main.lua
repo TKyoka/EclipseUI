@@ -2901,6 +2901,68 @@ function EclipseUI:CreateWindow(options)
 					selLabel.Text = tostring(selected)
 					refreshSelectionStates()
 					pcall(callback, selected)
+				end,
+				SetItems = function(_, newItems)
+					items = newItems or {}
+					for _, data in ipairs(itemButtons) do
+						if data.Btn then data.Btn:Destroy() end
+					end
+					itemButtons = {}
+
+					for _, item in ipairs(items) do
+						local itemBtn = Instance.new("TextButton")
+						itemBtn.Size = UDim2.new(1, 0, 0, 28)
+						itemBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+						itemBtn.BackgroundTransparency = 0.96
+						itemBtn.Text = ""
+						itemBtn.ZIndex = 6
+						itemBtn.Parent = itemsList
+
+						local itemCorner = Instance.new("UICorner")
+						itemCorner.CornerRadius = UDim.new(0, 6)
+						itemCorner.Parent = itemBtn
+
+						local itemText = Instance.new("TextLabel")
+						itemText.Size = UDim2.new(1, -16, 1, 0)
+						itemText.Position = UDim2.new(0, 12, 0, 0)
+						itemText.BackgroundTransparency = 1
+						itemText.Text = tostring(item)
+						itemText.TextColor3 = Color3.fromRGB(150, 160, 180)
+						itemText.TextSize = 11
+						itemText.Font = Enum.Font.Gotham
+						itemText.TextYAlignment = Enum.TextYAlignment.Center
+						itemText.TextXAlignment = Enum.TextXAlignment.Left
+						itemText.ZIndex = 7
+						itemText.Parent = itemBtn
+
+						table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText })
+
+						itemBtn.MouseEnter:Connect(function()
+							if selected ~= item then
+								tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.90 })
+								tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(230, 238, 250) })
+							end
+						end)
+
+						itemBtn.MouseLeave:Connect(function()
+							if selected ~= item then
+								tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.96 })
+								tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(150, 160, 180) })
+							end
+						end)
+
+						itemBtn.MouseButton1Click:Connect(function()
+							selected = item
+							selLabel.Text = tostring(selected)
+							isOpen = false
+							refreshSelectionStates()
+							tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
+							tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
+							tween(ddFrame, fadeTweenInfo, { Size = UDim2.new(1, 0, 0, 38) })
+							pcall(callback, selected)
+						end)
+					end
+					refreshSelectionStates()
 				end
 			}
 
