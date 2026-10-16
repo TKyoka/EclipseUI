@@ -225,7 +225,7 @@ function EclipseUI:CreateWindow(options)
 		return item
 	end
 
-	-- WindUI-Style Built-in Config Manager Integration (Fixed Register mapping)
+	-- WindUI-Style Built-in Config Manager Integration
 	Window.ConfigManager = {}
 
 	function Window.ConfigManager:CreateConfig(configName)
@@ -711,7 +711,8 @@ function EclipseUI:CreateWindow(options)
 			end)
 		end
 
-		titleOffsetLeft = 38
+		-- Increased left offset for more breathing room from the title
+		titleOffsetLeft = 42
 	end
 
 	local titleWrapper = Instance.new("Frame")
@@ -746,7 +747,6 @@ function EclipseUI:CreateWindow(options)
 	textLayout.Padding = UDim.new(0, 1)
 	textLayout.Parent = textBlock
 
-	-- Title font size increased by +1
 	local titleLabel = Instance.new("TextLabel")
 	titleLabel.Name = "Title"
 	titleLabel.Size = UDim2.new(0, 0, 0, 16)
@@ -762,7 +762,6 @@ function EclipseUI:CreateWindow(options)
 	titleLabel.Parent = textBlock
 
 	if windowSubtitle then
-		-- Subtitle font size increased by +1
 		local subtitleLabel = Instance.new("TextLabel")
 		subtitleLabel.Name = "Subtitle"
 		subtitleLabel.Size = UDim2.new(0, 0, 0, 13)
@@ -828,14 +827,14 @@ function EclipseUI:CreateWindow(options)
 			tagPadding.PaddingRight = UDim.new(0, 8)
 			tagPadding.Parent = tagPill
 
-			-- Tags font size increased by +2
+			-- Tags font size decreased by 1 (12 -> 11)
 			local tagText = Instance.new("TextLabel")
 			tagText.Size = UDim2.new(0, 0, 1, 0)
 			tagText.AutomaticSize = Enum.AutomaticSize.X
 			tagText.BackgroundTransparency = 1
 			tagText.Text = tostring(tagName)
 			tagText.TextColor3 = Color3.fromRGB(220, 228, 240)
-			tagText.TextSize = 12
+			tagText.TextSize = 11
 			tagText.Font = Enum.Font.GothamBold
 			tagText.TextXAlignment = Enum.TextXAlignment.Left
 			tagText.ZIndex = 4
@@ -1399,7 +1398,6 @@ function EclipseUI:CreateWindow(options)
 			iconImage = Instance.new("ImageLabel")
 			iconImage.Name = "Icon"
 			iconImage.Size = UDim2.new(0, 16, 0, 16)
-			-- Tab Icon shifted slightly to the left (8px instead of 12px)
 			iconImage.Position = UDim2.new(0, 8, 0.5, -8)
 			iconImage.BackgroundTransparency = 1
 			iconImage.Image = getIconAsset(tabIcon)
@@ -1683,7 +1681,7 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
-		-- Button Component updated with Icon Support
+		-- Button Component updated with Right-Side Icon Support
 		function TabObject:Button(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -1716,17 +1714,18 @@ function EclipseUI:CreateWindow(options)
 				end
 			end)
 
-			local textOffsetLeft = 14
+			local textRightOffset = -14
 			if btnIcon then
 				local iconImg = Instance.new("ImageLabel")
 				iconImg.Size = UDim2.new(0, 16, 0, 16)
-				iconImg.Position = UDim2.new(0, 12, 0.5, -8)
+				iconImg.AnchorPoint = Vector2.new(1, 0.5)
+				iconImg.Position = UDim2.new(1, -14, 0.5, 0)
 				iconImg.BackgroundTransparency = 1
 				iconImg.Image = getIconAsset(btnIcon)
 				iconImg.ImageColor3 = Color3.fromRGB(255, 255, 255)
 				iconImg.ZIndex = 5
 				iconImg.Parent = btn
-				textOffsetLeft = 34
+				textRightOffset = -36
 
 				if not iconsLoaded and not string.find(tostring(btnIcon), "rbxassetid://") then
 					task.spawn(function()
@@ -1739,8 +1738,8 @@ function EclipseUI:CreateWindow(options)
 			end
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, -(textOffsetLeft + 14), 1, 0)
-			label.Position = UDim2.new(0, textOffsetLeft, 0, 0)
+			label.Size = UDim2.new(1, textRightOffset, 1, 0)
+			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = btnName
 			label.TextColor3 = Color3.fromRGB(255, 255, 255)
