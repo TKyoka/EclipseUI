@@ -364,8 +364,7 @@ function EclipseUI:CreateWindow(options)
 	local defaultSize = UDim2.new(0, 480, 0, 320)
 	local defaultPos = UDim2.new(0.5, 0, 0.5, 0)
 
-	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = initialToggleKey, Tags = {}, CleanupItems = {}, ThemeUpdaters = {}, ThemeName = initialThemeName }
-	Window.Theme = Themes[initialThemeName]
+	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = initialToggleKey, Tags = {}, CleanupItems = {}, ThemeUpdaters = {}, ActiveDropdowns = {}, ThemeName = initialThemeName, Theme = Themes[initialThemeName] }
 
     -- Config Manager Setup
 	local registeredElements = {}
@@ -700,6 +699,12 @@ function EclipseUI:CreateWindow(options)
 
 		if windowVisible then
 			mainGroup.Visible = true
+		else
+			for _, popup in ipairs(Window.ActiveDropdowns) do
+				if popup and popup.Parent then
+					popup.Visible = false
+				end
+			end
 		end
 
 		TweenService:Create(mainGroup, tweenInfo, { GroupTransparency = targetGroupTrans }):Play()
@@ -3061,6 +3066,7 @@ function EclipseUI:CreateWindow(options)
 			popupHolder.Visible = false
 			popupHolder.ZIndex = 999
 			popupHolder.Parent = screenGui
+			table.insert(Window.ActiveDropdowns, popupHolder)
 
 			task.spawn(function()
 				while popupHolder.IsDescendantOf(game) do
@@ -3359,6 +3365,7 @@ function EclipseUI:CreateWindow(options)
 			popupHolder.Visible = false
 			popupHolder.ZIndex = 999
 			popupHolder.Parent = screenGui
+			table.insert(Window.ActiveDropdowns, popupHolder)
 
 			task.spawn(function()
 				while popupHolder.IsDescendantOf(game) do
