@@ -2432,102 +2432,126 @@ function EclipseUI:CreateWindow(options)
 			if count == 0 then return end
 
 			local rowFrame = Instance.new("Frame")
-			rowFrame.Name = "ToggleRow"
-			rowFrame.Size = UDim2.new(1, 0, 0, 32)
+			rowFrame.Size = UDim2.new(1, 0, 0, 38)
 			rowFrame.BackgroundTransparency = 1
-			rowFrame.ZIndex = 5
 			rowFrame.Parent = targetParent
 
-			local rowLayout = Instance.new("UIListLayout")
-			rowLayout.FillDirection = Enum.FillDirection.Horizontal
-			rowLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-			rowLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-			rowLayout.SortOrder = Enum.SortOrder.LayoutOrder
-			rowLayout.Padding = UDim.new(0, 6)
-			rowLayout.Parent = rowFrame
+			local gridLayout = Instance.new("UIGridLayout")
+			gridLayout.CellSize = UDim2.new(1 / count, -((count - 1) * 6 / count), 1, 0)
+			gridLayout.CellPadding = UDim2.new(0, 6, 0, 0)
+			gridLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			gridLayout.Parent = rowFrame
 
-			local ToggleRowObj = { Toggles = {} }
+			local toggleObjs = {}
 
-			for index, toggleOpts in ipairs(togglesData) do
-				local title = toggleOpts.Title or "Toggle"
-				local default = toggleOpts.Default or false
-				local flag = toggleOpts.Flag
-				local callback = toggleOpts.Callback or function() end
+			for _, tData in ipairs(togglesData) do
+				local title = tData.Title or tData.Name or "Toggle"
+				local state = tData.Default or false
+				local callback = tData.Callback or function() end
+				local flag = tData.Flag
 
-				local toggleState = default
+				local cardFrame, stroke = createContainer(rowFrame, 38)
 
-				local btn = Instance.new("TextButton")
-				btn.Name = "ToggleBtn_" .. index
-				btn.Size = UDim2.new(1 / count, -((6 * (count - 1)) / count), 1, 0)
-				btn.BackgroundColor3 = Window.Theme.ContainerBg
-				btn.BackgroundTransparency = 0.4
-				btn.AutoButtonColor = false
-				btn.Text = ""
-				btn.ZIndex = 6
-				btn.Parent = rowFrame
-
-				local corner = Instance.new("UICorner")
-				corner.CornerRadius = UDim.new(0, 6)
-				corner.Parent = btn
-
-				local stroke = Instance.new("UIStroke")
-				stroke.Color = Color3.fromRGB(255, 255, 255)
-				stroke.Thickness = 1
-				stroke.Transparency = 0.82
-				stroke.Parent = btn
+				local toggleBtn = Instance.new("TextButton")
+				toggleBtn.Size = UDim2.new(1, 0, 1, 0)
+				toggleBtn.BackgroundTransparency = 1
+				toggleBtn.Text = ""
+				toggleBtn.ZIndex = 6
+				toggleBtn.Parent = cardFrame
 
 				local label = Instance.new("TextLabel")
-				label.Size = UDim2.new(1, -36, 1, 0)
-				label.Position = UDim2.new(0, 10, 0, 0)
+				label.Size = UDim2.new(1, -55, 1, 0)
+				label.Position = UDim2.new(0, 12, 0, 0)
 				label.BackgroundTransparency = 1
 				label.Text = title
-				label.TextColor3 = toggleState and Color3.fromRGB(255, 255, 255) or Window.Theme.TextMuted
-				label.TextSize = 11
+				label.TextColor3 = Color3.fromRGB(240, 245, 255)
+				label.TextSize = 12
 				label.Font = Enum.Font.GothamBold
 				label.TextXAlignment = Enum.TextXAlignment.Left
-				label.TextTruncate = Enum.TextTruncate.AtEnd
-				label.ZIndex = 7
-				label.Parent = btn
+				label.TextYAlignment = Enum.TextYAlignment.Center
+				label.ZIndex = 6
+				label.Parent = toggleBtn
 
-				local checkIndicator = Instance.new("Frame")
-				checkIndicator.AnchorPoint = Vector2.new(1, 0.5)
-				checkIndicator.Position = UDim2.new(1, -8, 0.5, 0)
-				checkIndicator.Size = UDim2.new(0, 16, 0, 16)
-				checkIndicator.BackgroundColor3 = toggleState and Window.Theme.LoaderBar[1] or Color3.fromRGB(255, 255, 255)
-				checkIndicator.BackgroundTransparency = toggleState and 0 or 0.9
-				checkIndicator.ZIndex = 7
-				checkIndicator.Parent = btn
+				-- Actual Pill Toggle Switch Track
+				local track = Instance.new("Frame")
+				track.AnchorPoint = Vector2.new(1, 0.5)
+				track.Position = UDim2.new(1, -12, 0.5, 0)
+				track.Size = UDim2.new(0, 38, 0, 20) -- Wider pill shape
+				track.BackgroundColor3 = state and Window.Theme.Accent or Window.Theme.ContainerBg
+				track.BackgroundTransparency = state and 0.2 or 0.4
+				track.ZIndex = 6
+				track.Parent = toggleBtn
 
-				local checkCorner = Instance.new("UICorner")
-				checkCorner.CornerRadius = UDim.new(0, 4)
-				checkCorner.Parent = checkIndicator
+				local trackCorner = Instance.new("UICorner")
+				trackCorner.CornerRadius = UDim.new(1, 0) -- Fully rounded capsule
+				trackCorner.Parent = track
 
-				local function updateToggleVisuals(state)
-					local targetColor = state and Window.Theme.LoaderBar[1] or Color3.fromRGB(255, 255, 255)
-					local targetTrans = state and 0 or 0.9
-					local targetTextCol = state and Color3.fromRGB(255, 255, 255) or Window.Theme.TextMuted
+				local trackStroke = Instance.new("UIStroke")
+				trackStroke.Color = Color3.fromRGB(255, 255, 255)
+				trackStroke.Thickness = 1
+				trackStroke.Transparency = 0.75
+				trackStroke.Parent = track
 
-					TweenService:Create(checkIndicator, TweenInfo.new(0.15), { BackgroundColor3 = targetColor, BackgroundTransparency = targetTrans }):Play()
-					TweenService:Create(label, TweenInfo.new(0.15), { TextColor3 = targetTextCol }):Play()
+				-- Toggle Switch Round Knob
+				local knob = Instance.new("Frame")
+				knob.AnchorPoint = Vector2.new(0, 0.5)
+				knob.Position = state and UDim2.new(1, -17, 0.5, 0) or UDim2.new(0, 3, 0.5, 0)
+				knob.Size = UDim2.new(0, 14, 0, 14) -- Round knob
+				knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+				knob.ZIndex = 7
+				knob.Parent = track
+
+				local knobCorner = Instance.new("UICorner")
+				knobCorner.CornerRadius = UDim.new(1, 0)
+				knobCorner.Parent = knob
+
+				local function updateVisuals(animated)
+					local targetTrackColor = state and Window.Theme.Accent or Window.Theme.ContainerBg
+					local targetTrackTrans = state and 0.2 or 0.4
+					local targetKnobPos = state and UDim2.new(1, -17, 0.5, 0) or UDim2.new(0, 3, 0.5, 0)
+
+					if animated then
+						tween(track, fadeTweenInfo, {
+							BackgroundColor3 = targetTrackColor,
+							BackgroundTransparency = targetTrackTrans
+						})
+						tween(knob, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+							Position = targetKnobPos
+						})
+					else
+						track.BackgroundColor3 = targetTrackColor
+						track.BackgroundTransparency = targetTrackTrans
+						knob.Position = targetKnobPos
+					end
 				end
 
-				btn.MouseButton1Click:Connect(function()
-					toggleState = not toggleState
-					updateToggleVisuals(toggleState)
-					pcall(callback, toggleState)
+				table.insert(Window.ThemeUpdaters, function(t)
+					updateVisuals(false)
 				end)
 
-				ToggleRowObj.Toggles[index] = {
-					Get = function() return toggleState end,
+				toggleBtn.MouseButton1Click:Connect(function()
+					state = not state
+					updateVisuals(true)
+					pcall(callback, state)
+				end)
+
+				local obj = {
+					GetValue = function() return state end,
 					Set = function(_, val)
-						toggleState = val
-						updateToggleVisuals(val)
-						pcall(callback, val)
+						state = val
+						updateVisuals(true)
+						pcall(callback, state)
 					end
 				}
+
+				if flag then
+					registeredElements[flag] = obj
+				end
+
+				table.insert(toggleObjs, obj)
 			end
 
-			return ToggleRowObj
+			return toggleObjs
 		end
 
 		function TabObject:Input(opts, targetParent)
