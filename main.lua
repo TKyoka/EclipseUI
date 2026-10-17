@@ -3132,7 +3132,6 @@ function EclipseUI:CreateWindow(options)
 			arrowIcon.ZIndex = 7
 			arrowIcon.Parent = selBox
 
-			-- Parent back to screenGui so it never gets clipped, and hook into Window visibility tracking
 			local popupHolder = Instance.new("Frame")
 			popupHolder.Name = "DropdownPopupHolder"
 			popupHolder.Size = UDim2.new(1, 0, 1, 0)
@@ -3141,7 +3140,6 @@ function EclipseUI:CreateWindow(options)
 			popupHolder.ZIndex = 999
 			popupHolder.Parent = screenGui
 
-			-- Auto-close popup if the main window visibility changes
 			task.spawn(function()
 				while popupHolder.IsDescendantOf(game) do
 					task.wait(0.1)
@@ -3286,8 +3284,9 @@ function EclipseUI:CreateWindow(options)
 						selLabel.Text = tostring(selected)
 						refreshSelectionStates()
 
-						tween(dropListFrame, TweenInfo.new(0.12, Enum.EasingStyle.Back, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
-						task.delay(0.12, function() popupHolder.Visible = false end)
+						-- Simple, gentle close animation (bottom to top collapse)
+						tween(dropListFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
+						task.delay(0.18, function() popupHolder.Visible = false end)
 
 						tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
 						tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
@@ -3301,8 +3300,9 @@ function EclipseUI:CreateWindow(options)
 
 			selBox.MouseButton1Click:Connect(function()
 				if popupHolder.Visible then
-					tween(dropListFrame, TweenInfo.new(0.12, Enum.EasingStyle.Back, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
-					task.delay(0.12, function() popupHolder.Visible = false end)
+					-- Simple close animation
+					tween(dropListFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
+					task.delay(0.18, function() popupHolder.Visible = false end)
 
 					tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
 					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
@@ -3314,15 +3314,16 @@ function EclipseUI:CreateWindow(options)
 					dropListFrame.GroupTransparency = 1
 
 					local targetH = dropLayout.AbsoluteContentSize.Y + 12
-					tween(dropListFrame, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.new(0, 120, 0, targetH), GroupTransparency = 0 })
+					-- Simple, smooth open animation (top to bottom expansion)
+					tween(dropListFrame, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.new(0, 120, 0, targetH), GroupTransparency = 0 })
 					tween(arrowIcon, fadeTweenInfo, { Rotation = 180 })
 					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.4 })
 				end
 			end)
 
 			backdrop.MouseButton1Click:Connect(function()
-				tween(dropListFrame, TweenInfo.new(0.12, Enum.EasingStyle.Back, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
-				task.delay(0.12, function() popupHolder.Visible = false end)
+				tween(dropListFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
+				task.delay(0.18, function() popupHolder.Visible = false end)
 
 				tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
 				tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
@@ -3607,8 +3608,8 @@ function EclipseUI:CreateWindow(options)
 
 			selBox.MouseButton1Click:Connect(function()
 				if popupHolder.Visible then
-					tween(dropListFrame, TweenInfo.new(0.12, Enum.EasingStyle.Back, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
-					task.delay(0.12, function() popupHolder.Visible = false end)
+					tween(dropListFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
+					task.delay(0.18, function() popupHolder.Visible = false end)
 
 					tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
 					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
@@ -3620,15 +3621,15 @@ function EclipseUI:CreateWindow(options)
 					dropListFrame.GroupTransparency = 1
 
 					local targetH = dropLayout.AbsoluteContentSize.Y + 12
-					tween(dropListFrame, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.new(0, 120, 0, targetH), GroupTransparency = 0 })
+					tween(dropListFrame, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.new(0, 120, 0, targetH), GroupTransparency = 0 })
 					tween(arrowIcon, fadeTweenInfo, { Rotation = 180 })
 					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.4 })
 				end
 			end)
 
 			backdrop.MouseButton1Click:Connect(function()
-				tween(dropListFrame, TweenInfo.new(0.12, Enum.EasingStyle.Back, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
-				task.delay(0.12, function() popupHolder.Visible = false end)
+				tween(dropListFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
+				task.delay(0.18, function() popupHolder.Visible = false end)
 
 				tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
 				tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
