@@ -2567,6 +2567,8 @@ function EclipseUI:CreateWindow(options)
 			textBox.Font = Enum.Font.GothamMedium
 			textBox.TextYAlignment = Enum.TextYAlignment.Center
 			textBox.ClearTextOnFocus = false
+			textBox.ClipsDescendants = true
+			textBox.TextTruncate = Enum.TextTruncate.AtEnd
 			textBox.ZIndex = 6
 			textBox.Parent = inputContainer
 
@@ -3076,7 +3078,7 @@ function EclipseUI:CreateWindow(options)
 			headerBtn.Parent = ddFrame
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, -125, 0, 38)
+			label.Size = UDim2.new(1, -140, 1, 0)
 			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = title
@@ -3084,13 +3086,13 @@ function EclipseUI:CreateWindow(options)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
-			label.ZIndex = 5
+			label.ZIndex = 6
 			label.Parent = headerBtn
 
 			local selBox = Instance.new("Frame")
 			selBox.AnchorPoint = Vector2.new(1, 0.5)
 			selBox.Position = UDim2.new(1, -12, 0.5, 0)
-			selBox.Size = UDim2.new(0, 104, 0, 24)
+			selBox.Size = UDim2.new(0, 120, 0, 24)
 			selBox.BackgroundColor3 = Window.Theme.ContainerBg
 			selBox.BackgroundTransparency = 0.2
 			selBox.ZIndex = 6
@@ -3111,7 +3113,7 @@ function EclipseUI:CreateWindow(options)
 			selBoxStroke.Parent = selBox
 
 			local selLabel = Instance.new("TextLabel")
-			selLabel.Size = UDim2.new(1, -26, 1, 0)
+			selLabel.Size = UDim2.new(1, -24, 1, 0)
 			selLabel.Position = UDim2.new(0, 8, 0, 0)
 			selLabel.BackgroundTransparency = 1
 			selLabel.Text = tostring(selected)
@@ -3127,41 +3129,38 @@ function EclipseUI:CreateWindow(options)
 			local arrowIcon = Instance.new("ImageLabel")
 			arrowIcon.Name = "Chevron"
 			arrowIcon.AnchorPoint = Vector2.new(1, 0.5)
-			arrowIcon.Position = UDim2.new(1, -8, 0.5, 0)
+			arrowIcon.Position = UDim2.new(1, -6, 0.5, 0)
 			arrowIcon.Size = UDim2.new(0, 12, 0, 12)
 			arrowIcon.BackgroundTransparency = 1
 			arrowIcon.Image = getIconAsset("chevron-down")
-			arrowIcon.ImageColor3 = Color3.fromRGB(170, 180, 200)
+			arrowIcon.ImageColor3 = Window.Theme.TextMuted
 			arrowIcon.ZIndex = 7
 			arrowIcon.Parent = selBox
 
-			if not iconsLoaded then
-				task.spawn(function()
-					repeat task.wait() until iconsLoaded or not arrowIcon:IsDescendantOf(game)
-					if arrowIcon:IsDescendantOf(game) then
-						arrowIcon.Image = getIconAsset("chevron-down")
-					end
-				end)
-			end
+			table.insert(Window.ThemeUpdaters, function(t)
+				arrowIcon.ImageColor3 = t.TextMuted
+			end)
 
 			local isOpen = false
 
-			local itemsList = Instance.new("Frame")
-			itemsList.Position = UDim2.new(0, 10, 0, 42)
-			itemsList.Size = UDim2.new(1, -20, 0, 0)
-			itemsList.AutomaticSize = Enum.AutomaticSize.Y
-			itemsList.BackgroundTransparency = 1
-			itemsList.ZIndex = 5
-			itemsList.Parent = ddFrame
+			local itemsHolder = Instance.new("Frame")
+			itemsHolder.Position = UDim2.new(0, 10, 0, 38)
+			itemsHolder.Size = UDim2.new(1, -20, 0, 0)
+			itemsHolder.AutomaticSize = Enum.AutomaticSize.Y
+			itemsHolder.BackgroundTransparency = 1
+			itemsHolder.ClipsDescendants = true
+			itemsHolder.ZIndex = 6
+			itemsHolder.Parent = ddFrame
 
 			local listLayout = Instance.new("UIListLayout")
 			listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-			listLayout.Padding = UDim.new(0, 3)
-			listLayout.Parent = itemsList
+			listLayout.Padding = UDim.new(0, 4)
+			listLayout.Parent = itemsHolder
 
 			local listPadding = Instance.new("UIPadding")
+			listPadding.PaddingTop = UDim.new(0, 4)
 			listPadding.PaddingBottom = UDim.new(0, 8)
-			listPadding.Parent = itemsList
+			listPadding.Parent = itemsHolder
 
 			local itemButtons = {}
 
@@ -3169,9 +3168,11 @@ function EclipseUI:CreateWindow(options)
 				for _, data in ipairs(itemButtons) do
 					local isSel = (data.Item == selected)
 					tween(data.Btn, fadeTweenInfo, {
-						BackgroundTransparency = isSel and 0.82 or 0.96
+						BackgroundTransparency = isSel and 0.4 or 0.85,
+						BackgroundColor3 = isSel and Window.Theme.ContainerBg or Color3.fromRGB(255, 255, 255)
 					})
 					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Window.Theme.TextMuted
+					data.Text.Font = isSel and Enum.Font.GothamBold or Enum.Font.Gotham
 				end
 			end
 
@@ -3181,12 +3182,13 @@ function EclipseUI:CreateWindow(options)
 
 			for _, item in ipairs(items) do
 				local itemBtn = Instance.new("TextButton")
-				itemBtn.Size = UDim2.new(1, 0, 0, 28)
+				itemBtn.Size = UDim2.new(1, 0, 0, 26)
 				itemBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-				itemBtn.BackgroundTransparency = 0.96
+				itemBtn.BackgroundTransparency = 0.85
+				itemBtn.AutoButtonColor = false
 				itemBtn.Text = ""
-				itemBtn.ZIndex = 6
-				itemBtn.Parent = itemsList
+				itemBtn.ZIndex = 7
+				itemBtn.Parent = itemsHolder
 
 				local itemCorner = Instance.new("UICorner")
 				itemCorner.CornerRadius = UDim.new(0, 6)
@@ -3194,7 +3196,7 @@ function EclipseUI:CreateWindow(options)
 
 				local itemText = Instance.new("TextLabel")
 				itemText.Size = UDim2.new(1, -16, 1, 0)
-				itemText.Position = UDim2.new(0, 12, 0, 0)
+				itemText.Position = UDim2.new(0, 10, 0, 0)
 				itemText.BackgroundTransparency = 1
 				itemText.Text = tostring(item)
 				itemText.TextColor3 = Window.Theme.TextMuted
@@ -3202,27 +3204,21 @@ function EclipseUI:CreateWindow(options)
 				itemText.Font = Enum.Font.Gotham
 				itemText.TextYAlignment = Enum.TextYAlignment.Center
 				itemText.TextXAlignment = Enum.TextXAlignment.Left
-				itemText.ZIndex = 7
+				itemText.ZIndex = 8
 				itemText.Parent = itemBtn
-
-				table.insert(Window.ThemeUpdaters, function(t)
-					if selected ~= item then
-						itemText.TextColor3 = t.TextMuted
-					end
-				end)
 
 				table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText })
 
 				itemBtn.MouseEnter:Connect(function()
 					if selected ~= item then
-						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.90 })
-						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(230, 238, 250) })
+						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.70 })
+						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(240, 245, 255) })
 					end
 				end)
 
 				itemBtn.MouseLeave:Connect(function()
 					if selected ~= item then
-						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.96 })
+						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.85 })
 						tween(itemText, fadeTweenInfo, { TextColor3 = Window.Theme.TextMuted })
 					end
 				end)
@@ -3243,9 +3239,11 @@ function EclipseUI:CreateWindow(options)
 
 			headerBtn.MouseButton1Click:Connect(function()
 				isOpen = not isOpen
-				local targetHeight = isOpen and (46 + listLayout.AbsoluteContentSize.Y) or 38
+				local contentHeight = listLayout.AbsoluteContentSize.Y + 12
+				local targetHeight = isOpen and (38 + contentHeight) or 38
 				local targetRotation = isOpen and 180 or 0
 				local targetStrokeTrans = isOpen and 0.4 or 0.75
+
 				tween(arrowIcon, fadeTweenInfo, { Rotation = targetRotation })
 				tween(selBoxStroke, fadeTweenInfo, { Transparency = targetStrokeTrans })
 				tween(ddFrame, fadeTweenInfo, { Size = UDim2.new(1, 0, 0, targetHeight) })
@@ -3268,12 +3266,13 @@ function EclipseUI:CreateWindow(options)
 
 					for _, item in ipairs(items) do
 						local itemBtn = Instance.new("TextButton")
-						itemBtn.Size = UDim2.new(1, 0, 0, 28)
+						itemBtn.Size = UDim2.new(1, 0, 0, 26)
 						itemBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-						itemBtn.BackgroundTransparency = 0.96
+						itemBtn.BackgroundTransparency = 0.85
+						itemBtn.AutoButtonColor = false
 						itemBtn.Text = ""
-						itemBtn.ZIndex = 6
-						itemBtn.Parent = itemsList
+						itemBtn.ZIndex = 7
+						itemBtn.Parent = itemsHolder
 
 						local itemCorner = Instance.new("UICorner")
 						itemCorner.CornerRadius = UDim.new(0, 6)
@@ -3281,7 +3280,7 @@ function EclipseUI:CreateWindow(options)
 
 						local itemText = Instance.new("TextLabel")
 						itemText.Size = UDim2.new(1, -16, 1, 0)
-						itemText.Position = UDim2.new(0, 12, 0, 0)
+						itemText.Position = UDim2.new(0, 10, 0, 0)
 						itemText.BackgroundTransparency = 1
 						itemText.Text = tostring(item)
 						itemText.TextColor3 = Window.Theme.TextMuted
@@ -3289,21 +3288,21 @@ function EclipseUI:CreateWindow(options)
 						itemText.Font = Enum.Font.Gotham
 						itemText.TextYAlignment = Enum.TextYAlignment.Center
 						itemText.TextXAlignment = Enum.TextXAlignment.Left
-						itemText.ZIndex = 7
+						itemText.ZIndex = 8
 						itemText.Parent = itemBtn
 
 						table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText })
 
 						itemBtn.MouseEnter:Connect(function()
 							if selected ~= item then
-								tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.90 })
-								tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(230, 238, 250) })
+								tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.70 })
+								tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(240, 245, 255) })
 							end
 						end)
 
 						itemBtn.MouseLeave:Connect(function()
 							if selected ~= item then
-								tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.96 })
+								tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.85 })
 								tween(itemText, fadeTweenInfo, { TextColor3 = Window.Theme.TextMuted })
 							end
 						end)
