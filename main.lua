@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.6.06 (Dynamic Multi-Theme & Custom Anonymous Profile Support)
+--// EclipseUI Roblox Library Version 1.6.06 (Dynamic Multi-Theme)
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -342,6 +342,7 @@ end
 function EclipseUI:CreateWindow(options)
 	options = options or {}
 	local windowName = options.Title or options.Name or "UI Library"
+	local customFolder = options.Folder
 	local windowSubtitle = options.Subtitle
 	local windowIcon = options.Icon
 	local initialToggleKey = options.ToggleKey or Enum.KeyCode.RightControl
@@ -366,14 +367,25 @@ function EclipseUI:CreateWindow(options)
 	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = initialToggleKey, Tags = {}, CleanupItems = {}, ThemeUpdaters = {}, ThemeName = initialThemeName }
 	Window.Theme = Themes[initialThemeName]
 
-	-- Config Manager Setup
+    -- Config Manager Setup
 	local registeredElements = {}
-	local configsFolder = "EclipseUI/" .. windowName .. "/config/"
+	local folderName = customFolder or windowName
+	local configsFolder = folderName .. "/config/"
 
 	pcall(function()
-		if not isfolder("EclipseUI") then makefolder("EclipseUI") end
-		if not isfolder("EclipseUI/" .. windowName) then makefolder("EclipseUI/" .. windowName) end
-		if not isfolder(configsFolder) then makefolder(configsFolder) end
+		local function ensureFolder(path)
+			local parts = string.split(path, "/")
+			local current = ""
+			for _, part in ipairs(parts) do
+				if part ~= "" then
+					current = current == "" and part or (current .. "/" .. part)
+					if not isfolder(current) then
+						makefolder(current)
+					end
+				end
+			end
+		end
+		ensureFolder(configsFolder)
 	end)
 
 	local ConfigManager = {}
