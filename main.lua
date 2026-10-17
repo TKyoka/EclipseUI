@@ -2445,7 +2445,6 @@ function EclipseUI:CreateWindow(options)
 			local toggleObjs = {}
 
 			for _, tData in ipairs(togglesData) do
-				-- Pass each item directly to your standard single Toggle builder using the card grid frame as the parent
 				local tObj = TabObject:Toggle(tData, rowFrame)
 				table.insert(toggleObjs, tObj)
 			end
