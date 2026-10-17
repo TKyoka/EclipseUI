@@ -2392,6 +2392,112 @@ function EclipseUI:CreateWindow(options)
 			return rowFrame
 		end
 
+		function TabObject:ToggleRow(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local togglesData = opts.Toggles or {}
+			local count = #togglesData
+			if count == 0 then return end
+
+			local rowFrame = Instance.new("Frame")
+			rowFrame.Name = "ToggleRow"
+			rowFrame.Size = UDim2.new(1, 0, 0, 32)
+			rowFrame.BackgroundTransparency = 1
+			rowFrame.ZIndex = 5
+			rowFrame.Parent = targetParent
+
+			local rowLayout = Instance.new("UIListLayout")
+			rowLayout.FillDirection = Enum.FillDirection.Horizontal
+			rowLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+			rowLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+			rowLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			rowLayout.Padding = UDim.new(0, 6)
+			rowLayout.Parent = rowFrame
+
+			local ToggleRowObj = { Toggles = {} }
+
+			for index, toggleOpts in ipairs(togglesData) do
+				local title = toggleOpts.Title or "Toggle"
+				local default = toggleOpts.Default or false
+				local flag = toggleOpts.Flag
+				local callback = toggleOpts.Callback or function() end
+
+				local toggleState = default
+
+				local btn = Instance.new("TextButton")
+				btn.Name = "ToggleBtn_" .. index
+				btn.Size = UDim2.new(1 / count, -((6 * (count - 1)) / count), 1, 0)
+				btn.BackgroundColor3 = Window.Theme.ContainerBg
+				btn.BackgroundTransparency = 0.4
+				btn.AutoButtonColor = false
+				btn.Text = ""
+				btn.ZIndex = 6
+				btn.Parent = rowFrame
+
+				local corner = Instance.new("UICorner")
+				corner.CornerRadius = UDim.new(0, 6)
+				corner.Parent = btn
+
+				local stroke = Instance.new("UIStroke")
+				stroke.Color = Color3.fromRGB(255, 255, 255)
+				stroke.Thickness = 1
+				stroke.Transparency = 0.82
+				stroke.Parent = btn
+
+				local label = Instance.new("TextLabel")
+				label.Size = UDim2.new(1, -36, 1, 0)
+				label.Position = UDim2.new(0, 10, 0, 0)
+				label.BackgroundTransparency = 1
+				label.Text = title
+				label.TextColor3 = toggleState and Color3.fromRGB(255, 255, 255) or Window.Theme.TextMuted
+				label.TextSize = 11
+				label.Font = Enum.Font.GothamBold
+				label.TextXAlignment = Enum.TextXAlignment.Left
+				label.TextTruncate = Enum.TextTruncate.AtEnd
+				label.ZIndex = 7
+				label.Parent = btn
+
+				local checkIndicator = Instance.new("Frame")
+				checkIndicator.AnchorPoint = Vector2.new(1, 0.5)
+				checkIndicator.Position = UDim2.new(1, -8, 0.5, 0)
+				checkIndicator.Size = UDim2.new(0, 16, 0, 16)
+				checkIndicator.BackgroundColor3 = toggleState and Window.Theme.LoaderBar[1] or Color3.fromRGB(255, 255, 255)
+				checkIndicator.BackgroundTransparency = toggleState and 0 or 0.9
+				checkIndicator.ZIndex = 7
+				checkIndicator.Parent = btn
+
+				local checkCorner = Instance.new("UICorner")
+				checkCorner.CornerRadius = UDim.new(0, 4)
+				checkCorner.Parent = checkIndicator
+
+				local function updateToggleVisuals(state)
+					local targetColor = state and Window.Theme.LoaderBar[1] or Color3.fromRGB(255, 255, 255)
+					local targetTrans = state and 0 or 0.9
+					local targetTextCol = state and Color3.fromRGB(255, 255, 255) or Window.Theme.TextMuted
+
+					TweenService:Create(checkIndicator, TweenInfo.new(0.15), { BackgroundColor3 = targetColor, BackgroundTransparency = targetTrans }):Play()
+					TweenService:Create(label, TweenInfo.new(0.15), { TextColor3 = targetTextCol }):Play()
+				end
+
+				btn.MouseButton1Click:Connect(function()
+					toggleState = not toggleState
+					updateToggleVisuals(toggleState)
+					pcall(callback, toggleState)
+				end)
+
+				ToggleRowObj.Toggles[index] = {
+					Get = function() return toggleState end,
+					Set = function(_, val)
+						toggleState = val
+						updateToggleVisuals(val)
+						pcall(callback, val)
+					end
+				}
+			end
+
+			return ToggleRowObj
+		end
+
 		function TabObject:Input(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
