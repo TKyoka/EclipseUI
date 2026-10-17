@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.6.06 (Dynamic Multi-Theme)
+--// Eclipse UI Library Version 1.6.07 (Dynamic Multi-Theme + SliderRow)
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -303,7 +303,6 @@ function EclipseUI:Notify(opts)
 	contentLabel.ZIndex = 101
 	contentLabel.Parent = textContainer
 
-	-- Live Theme Updater Registration for Active Notifications
 	if opts.WindowRef and opts.WindowRef.ThemeUpdaters then
 		table.insert(opts.WindowRef.ThemeUpdaters, function(t)
 			if cardGroup and cardGroup.Parent then
@@ -366,7 +365,6 @@ function EclipseUI:CreateWindow(options)
 
 	local Window = { Tabs = {}, ActiveTab = nil, ToggleKey = initialToggleKey, Tags = {}, CleanupItems = {}, ThemeUpdaters = {}, ActiveDropdowns = {}, ThemeName = initialThemeName, Theme = Themes[initialThemeName] }
 
-    -- Config Manager Setup
 	local registeredElements = {}
 	local folderName = customFolder or windowName
 	local configsFolder = folderName .. "/config/"
@@ -530,7 +528,6 @@ function EclipseUI:CreateWindow(options)
 	})
 	strokeGradient.Parent = uiStroke
 
-	-- Register Main Window Theme Updater
 	table.insert(Window.ThemeUpdaters, function(t)
 		mainGroup.BackgroundColor3 = t.MainBg
 		mainBgGradient.Color = ColorSequence.new({
@@ -563,7 +560,6 @@ function EclipseUI:CreateWindow(options)
 		end
 	end)
 
-	-- Dynamic SetTheme Method
 	function Window:SetTheme(newThemeName)
 		if Themes[newThemeName] then
 			Window.ThemeName = newThemeName
@@ -2295,7 +2291,7 @@ function EclipseUI:CreateWindow(options)
 
 			local rowFrame = Instance.new("Frame")
 			rowFrame.Name = "ButtonRow"
-			rowFrame.Size = UDim2.new(1, 0, 0, 32)
+			rowFrame.Size = UDim2.new(1, 0, 0, 38)
 			rowFrame.BackgroundTransparency = 1
 			rowFrame.ZIndex = 4
 			rowFrame.Parent = targetParent
@@ -2455,6 +2451,36 @@ function EclipseUI:CreateWindow(options)
 			end
 
 			return toggleObjs
+		end
+
+		--// NEW: SliderRow Element
+		function TabObject:SliderRow(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local slidersData = opts.Sliders or {}
+			local count = #slidersData
+			if count == 0 then return end
+
+			local rowFrame = Instance.new("Frame")
+			rowFrame.Name = "SliderRow"
+			rowFrame.Size = UDim2.new(1, 0, 0, 56)
+			rowFrame.BackgroundTransparency = 1
+			rowFrame.Parent = targetParent
+
+			local gridLayout = Instance.new("UIGridLayout")
+			gridLayout.CellSize = UDim2.new(1 / count, -((count - 1) * 6 / count), 1, 0)
+			gridLayout.CellPadding = UDim2.new(0, 6, 0, 0)
+			gridLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			gridLayout.Parent = rowFrame
+
+			local sliderObjs = {}
+
+			for _, sData in ipairs(slidersData) do
+				local sObj = TabObject:Slider(sData, rowFrame)
+				table.insert(sliderObjs, sObj)
+			end
+
+			return sliderObjs
 		end
 
 		function TabObject:Input(opts, targetParent)
@@ -3212,7 +3238,6 @@ function EclipseUI:CreateWindow(options)
 						selLabel.Text = tostring(selected)
 						refreshSelectionStates()
 
-						-- Simple, gentle close animation (bottom to top collapse)
 						tween(dropListFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
 						task.delay(0.18, function() popupHolder.Visible = false end)
 
@@ -3228,7 +3253,6 @@ function EclipseUI:CreateWindow(options)
 
 			selBox.MouseButton1Click:Connect(function()
 				if popupHolder.Visible then
-					-- Simple close animation
 					tween(dropListFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
 					task.delay(0.18, function() popupHolder.Visible = false end)
 
@@ -3242,7 +3266,6 @@ function EclipseUI:CreateWindow(options)
 					dropListFrame.GroupTransparency = 1
 
 					local targetH = dropLayout.AbsoluteContentSize.Y + 12
-					-- Simple, smooth open animation (top to bottom expansion)
 					tween(dropListFrame, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Size = UDim2.new(0, 120, 0, targetH), GroupTransparency = 0 })
 					tween(arrowIcon, fadeTweenInfo, { Rotation = 180 })
 					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.4 })
