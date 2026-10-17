@@ -2436,7 +2436,6 @@ function EclipseUI:CreateWindow(options)
 			rowFrame.BackgroundTransparency = 1
 			rowFrame.Parent = targetParent
 
-			local gridLayout = Instance.new("UIGradient") -- placeholder safe
 			local gridLayout = Instance.new("UIGridLayout")
 			gridLayout.CellSize = UDim2.new(1 / count, -((count - 1) * 6 / count), 1, 0)
 			gridLayout.CellPadding = UDim2.new(0, 6, 0, 0)
@@ -2478,8 +2477,8 @@ function EclipseUI:CreateWindow(options)
 				track.AnchorPoint = Vector2.new(1, 0.5)
 				track.Position = UDim2.new(1, -12, 0.5, 0)
 				track.Size = UDim2.new(0, 38, 0, 20)
-				track.BackgroundColor3 = state and Window.Theme.ButtonGradient[2] or Window.Theme.ContainerBg
-				track.BackgroundTransparency = state and 0.1 or 0.4
+				track.BackgroundColor3 = state and Window.Theme.Accent or Window.Theme.ContainerBg
+				track.BackgroundTransparency = state and 0 or 0.4
 				track.ZIndex = 6
 				track.Parent = toggleBtn
 
@@ -2492,16 +2491,6 @@ function EclipseUI:CreateWindow(options)
 				trackStroke.Thickness = 1
 				trackStroke.Transparency = 0.65
 				trackStroke.Parent = track
-
-				-- Optional theme-matching gradient for active state
-				local trackGradient = Instance.new("UIGradient")
-				trackGradient.Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, Window.Theme.ButtonGradient[1]),
-					ColorSequenceKeypoint.new(0.5, Window.Theme.ButtonGradient[2]),
-					ColorSequenceKeypoint.new(1, Window.Theme.ButtonGradient[3])
-				})
-				trackGradient.Enabled = state
-				trackGradient.Parent = track
 
 				-- Toggle Switch Round Knob
 				local knob = Instance.new("Frame")
@@ -2517,15 +2506,8 @@ function EclipseUI:CreateWindow(options)
 				knobCorner.Parent = knob
 
 				local function updateVisuals(animated)
-					trackGradient.Enabled = state
-					trackGradient.Color = ColorSequence.new({
-						ColorSequenceKeypoint.new(0, Window.Theme.ButtonGradient[1]),
-						ColorSequenceKeypoint.new(0.5, Window.Theme.ButtonGradient[2]),
-						ColorSequenceKeypoint.new(1, Window.Theme.ButtonGradient[3])
-					})
-
-					local targetTrackColor = state and Window.Theme.ButtonGradient[2] or Window.Theme.ContainerBg
-					local targetTrackTrans = state and 0.1 or 0.4
+					local targetTrackColor = state and Window.Theme.Accent or Window.Theme.ContainerBg
+					local targetTrackTrans = state and 0 or 0.4
 					local targetKnobPos = state and UDim2.new(1, -17, 0.5, 0) or UDim2.new(0, 3, 0.5, 0)
 
 					if animated then
