@@ -3068,17 +3068,10 @@ function EclipseUI:CreateWindow(options)
 			local flag = opts.Flag
 
 			local ddFrame, stroke = createContainer(targetParent, 38)
-			ddFrame.ClipsDescendants = true
-
-			local headerBtn = Instance.new("TextButton")
-			headerBtn.Size = UDim2.new(1, 0, 0, 38)
-			headerBtn.BackgroundTransparency = 1
-			headerBtn.Text = ""
-			headerBtn.ZIndex = 6
-			headerBtn.Parent = ddFrame
+			ddFrame.ClipsDescendants = false
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, -140, 0, 38)
+			label.Size = UDim2.new(1, -140, 1, 0)
 			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = title
@@ -3087,16 +3080,19 @@ function EclipseUI:CreateWindow(options)
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.ZIndex = 5
-			label.Parent = headerBtn
+			label.Parent = ddFrame
 
+			-- Accordion Dropdown Box
 			local selBox = Instance.new("Frame")
-			selBox.AnchorPoint = Vector2.new(1, 0.5)
-			selBox.Position = UDim2.new(1, -12, 0, 19)
+			selBox.Name = "DropdownAccordionBox"
+			selBox.AnchorPoint = Vector2.new(1, 0)
+			selBox.Position = UDim2.new(1, -12, 0, 7)
 			selBox.Size = UDim2.new(0, 120, 0, 24)
 			selBox.BackgroundColor3 = Window.Theme.ContainerBg
-			selBox.BackgroundTransparency = 0.2
-			selBox.ZIndex = 6
-			selBox.Parent = headerBtn
+			selBox.BackgroundTransparency = 0.1
+			selBox.ClipsDescendants = true
+			selBox.ZIndex = 20
+			selBox.Parent = ddFrame
 
 			table.insert(Window.ThemeUpdaters, function(t)
 				selBox.BackgroundColor3 = t.ContainerBg
@@ -3112,8 +3108,15 @@ function EclipseUI:CreateWindow(options)
 			selBoxStroke.Transparency = 0.75
 			selBoxStroke.Parent = selBox
 
+			local headerBtn = Instance.new("TextButton")
+			headerBtn.Size = UDim2.new(1, 0, 0, 24)
+			headerBtn.BackgroundTransparency = 1
+			headerBtn.Text = ""
+			headerBtn.ZIndex = 21
+			headerBtn.Parent = selBox
+
 			local selLabel = Instance.new("TextLabel")
-			selLabel.Size = UDim2.new(1, -26, 1, 0)
+			selLabel.Size = UDim2.new(1, -26, 0, 24)
 			selLabel.Position = UDim2.new(0, 8, 0, 0)
 			selLabel.BackgroundTransparency = 1
 			selLabel.Text = tostring(selected)
@@ -3123,51 +3126,45 @@ function EclipseUI:CreateWindow(options)
 			selLabel.TextYAlignment = Enum.TextYAlignment.Center
 			selLabel.TextXAlignment = Enum.TextXAlignment.Left
 			selLabel.TextTruncate = Enum.TextTruncate.AtEnd
-			selLabel.ZIndex = 7
-			selLabel.Parent = selBox
+			selLabel.ZIndex = 22
+			selLabel.Parent = headerBtn
 
 			local arrowIcon = Instance.new("ImageLabel")
 			arrowIcon.Name = "Chevron"
 			arrowIcon.AnchorPoint = Vector2.new(1, 0.5)
-			arrowIcon.Position = UDim2.new(1, -8, 0.5, 0)
+			arrowIcon.Position = UDim2.new(1, -8, 0, 12)
 			arrowIcon.Size = UDim2.new(0, 12, 0, 12)
 			arrowIcon.BackgroundTransparency = 1
 			arrowIcon.Image = getIconAsset("chevron-down")
 			arrowIcon.ImageColor3 = Window.Theme.TextMuted
-			arrowIcon.ZIndex = 7
-			arrowIcon.Parent = selBox
+			arrowIcon.ZIndex = 22
+			arrowIcon.Parent = headerBtn
 
 			table.insert(Window.ThemeUpdaters, function(t)
 				arrowIcon.ImageColor3 = t.TextMuted
 			end)
 
-			local isOpen = false
-
 			local itemsList = Instance.new("Frame")
-			itemsList.Position = UDim2.new(0, 10, 0, 42)
-			itemsList.Size = UDim2.new(1, -20, 0, 0)
-			itemsList.AutomaticSize = Enum.AutomaticSize.Y
+			itemsList.Position = UDim2.new(0, 4, 0, 28)
+			itemsList.Size = UDim2.new(1, -8, 0, 0)
 			itemsList.BackgroundTransparency = 1
-			itemsList.ZIndex = 5
-			itemsList.Parent = ddFrame
+			itemsList.ZIndex = 21
+			itemsList.Parent = selBox
 
 			local listLayout = Instance.new("UIListLayout")
 			listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-			listLayout.Padding = UDim.new(0, 4)
+			listLayout.Padding = UDim.new(0, 3)
 			listLayout.Parent = itemsList
 
-			local listPadding = Instance.new("UIPadding")
-			listPadding.PaddingBottom = UDim.new(0, 8)
-			listPadding.Parent = itemsList
-
+			local isOpen = false
 			local itemButtons = {}
 
 			local function refreshSelectionStates()
 				for _, data in ipairs(itemButtons) do
 					local isSel = (data.Item == selected)
-					data.Gradient.Enabled = isSel
+					data.WaveGradient.Enabled = isSel
 					tween(data.Btn, fadeTweenInfo, {
-						BackgroundTransparency = isSel and 0.2 or 0.92
+						BackgroundTransparency = isSel and 0.15 or 0.92
 					})
 					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Window.Theme.TextMuted
 					data.Text.Font = isSel and Enum.Font.GothamBold or Enum.Font.Gotham
@@ -3180,39 +3177,35 @@ function EclipseUI:CreateWindow(options)
 
 			for _, item in ipairs(items) do
 				local itemBtn = Instance.new("TextButton")
-				itemBtn.Size = UDim2.new(1, 0, 0, 28)
+				itemBtn.Size = UDim2.new(1, 0, 0, 26)
 				itemBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 				itemBtn.BackgroundTransparency = 0.92
 				itemBtn.AutoButtonColor = false
 				itemBtn.Text = ""
-				itemBtn.ZIndex = 6
+				itemBtn.ZIndex = 22
 				itemBtn.Parent = itemsList
 
 				local itemCorner = Instance.new("UICorner")
-				itemCorner.CornerRadius = UDim.new(0, 6)
+				itemCorner.CornerRadius = UDim.new(0, 5)
 				itemCorner.Parent = itemBtn
 
-				local itemStroke = Instance.new("UIStroke")
-				itemStroke.Color = Color3.fromRGB(255, 255, 255)
-				itemStroke.Thickness = 1
-				itemStroke.Transparency = 0.75
-				itemStroke.Parent = itemBtn
-
-				local itemGradient = Instance.new("UIGradient")
-				itemGradient.Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, Window.Theme.ButtonGradient[1]),
-					ColorSequenceKeypoint.new(0.5, Window.Theme.ButtonGradient[2]),
-					ColorSequenceKeypoint.new(1, Window.Theme.ButtonGradient[3])
+				-- Custom Wave Sheen Gradient Animation for Selected Options
+				local waveGradient = Instance.new("UIGradient")
+				waveGradient.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, Window.Theme.PillGradient[1]),
+					ColorSequenceKeypoint.new(0.5, Window.Theme.PillGradient[2]),
+					ColorSequenceKeypoint.new(1, Window.Theme.PillGradient[1])
 				})
-				itemGradient.Rotation = 0
-				itemGradient.Enabled = false
-				itemGradient.Parent = itemBtn
+				waveGradient.Rotation = 0
+				waveGradient.Offset = Vector2.new(-1, 0)
+				waveGradient.Enabled = false
+				waveGradient.Parent = itemBtn
 
 				table.insert(Window.ThemeUpdaters, function(t)
-					itemGradient.Color = ColorSequence.new({
-						ColorSequenceKeypoint.new(0, t.ButtonGradient[1]),
-						ColorSequenceKeypoint.new(0.5, t.ButtonGradient[2]),
-						ColorSequenceKeypoint.new(1, t.ButtonGradient[3])
+					waveGradient.Color = ColorSequence.new({
+						ColorSequenceKeypoint.new(0, t.PillGradient[1]),
+						ColorSequenceKeypoint.new(0.5, t.PillGradient[2]),
+						ColorSequenceKeypoint.new(1, t.PillGradient[1])
 					})
 				end)
 
@@ -3220,16 +3213,17 @@ function EclipseUI:CreateWindow(options)
 					local tAcc = 0
 					while itemBtn:IsDescendantOf(game) do
 						local dt = RunService.RenderStepped:Wait()
-						if itemGradient.Enabled then
+						if waveGradient.Enabled then
 							tAcc = tAcc + dt
-							itemGradient.Rotation = (tAcc * 50) % 360
+							local offsetVal = math.sin(tAcc * 3) * 0.6
+							waveGradient.Offset = Vector2.new(offsetVal, 0)
 						end
 					end
 				end)
 
 				local itemText = Instance.new("TextLabel")
-				itemText.Size = UDim2.new(1, -16, 1, 0)
-				itemText.Position = UDim2.new(0, 12, 0, 0)
+				itemText.Size = UDim2.new(1, -12, 1, 0)
+				itemText.Position = UDim2.new(0, 8, 0, 0)
 				itemText.BackgroundTransparency = 1
 				itemText.Text = tostring(item)
 				itemText.TextColor3 = Window.Theme.TextMuted
@@ -3237,24 +3231,10 @@ function EclipseUI:CreateWindow(options)
 				itemText.Font = Enum.Font.Gotham
 				itemText.TextYAlignment = Enum.TextYAlignment.Center
 				itemText.TextXAlignment = Enum.TextXAlignment.Left
-				itemText.ZIndex = 7
+				itemText.ZIndex = 23
 				itemText.Parent = itemBtn
 
-				table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText, Gradient = itemGradient })
-
-				itemBtn.MouseEnter:Connect(function()
-					if selected ~= item then
-						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.82 })
-						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(230, 238, 250) })
-					end
-				end)
-
-				itemBtn.MouseLeave:Connect(function()
-					if selected ~= item then
-						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.92 })
-						tween(itemText, fadeTweenInfo, { TextColor3 = Window.Theme.TextMuted })
-					end
-				end)
+				table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText, WaveGradient = waveGradient })
 
 				itemBtn.MouseButton1Click:Connect(function()
 					selected = item
@@ -3263,7 +3243,7 @@ function EclipseUI:CreateWindow(options)
 					refreshSelectionStates()
 					tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
 					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
-					tween(ddFrame, fadeTweenInfo, { Size = UDim2.new(1, 0, 0, 38) })
+					tween(selBox, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { Size = UDim2.new(0, 120, 0, 24) })
 					pcall(callback, selected)
 				end)
 			end
@@ -3272,13 +3252,14 @@ function EclipseUI:CreateWindow(options)
 
 			headerBtn.MouseButton1Click:Connect(function()
 				isOpen = not isOpen
-				local targetHeight = isOpen and (46 + listLayout.AbsoluteContentSize.Y) or 38
+				local contentHeight = listLayout.AbsoluteContentSize.Y + 34
+				local targetHeight = isOpen and contentHeight or 24
 				local targetRotation = isOpen and 180 or 0
 				local targetStrokeTrans = isOpen and 0.4 or 0.75
 
 				tween(arrowIcon, fadeTweenInfo, { Rotation = targetRotation })
 				tween(selBoxStroke, fadeTweenInfo, { Transparency = targetStrokeTrans })
-				tween(ddFrame, fadeTweenInfo, { Size = UDim2.new(1, 0, 0, targetHeight) })
+				tween(selBox, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { Size = UDim2.new(0, 120, 0, targetHeight) })
 			end)
 
 			local obj = {
@@ -3288,14 +3269,6 @@ function EclipseUI:CreateWindow(options)
 					selLabel.Text = tostring(selected)
 					refreshSelectionStates()
 					pcall(callback, selected)
-				end,
-				SetItems = function(_, newItems)
-					items = newItems or {}
-					for _, data in ipairs(itemButtons) do
-						if data.Btn then data.Btn:Destroy() end
-					end
-					itemButtons = {}
-					-- Re-populate items logic can mirror the loop above
 				end
 			}
 
@@ -3323,17 +3296,10 @@ function EclipseUI:CreateWindow(options)
 			end
 
 			local ddFrame, stroke = createContainer(targetParent, 38)
-			ddFrame.ClipsDescendants = true
-
-			local headerBtn = Instance.new("TextButton")
-			headerBtn.Size = UDim2.new(1, 0, 0, 38)
-			headerBtn.BackgroundTransparency = 1
-			headerBtn.Text = ""
-			headerBtn.ZIndex = 6
-			headerBtn.Parent = ddFrame
+			ddFrame.ClipsDescendants = false
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, -140, 0, 38)
+			label.Size = UDim2.new(1, -140, 1, 0)
 			label.Position = UDim2.new(0, 14, 0, 0)
 			label.BackgroundTransparency = 1
 			label.Text = title
@@ -3342,16 +3308,18 @@ function EclipseUI:CreateWindow(options)
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.ZIndex = 5
-			label.Parent = headerBtn
+			label.Parent = ddFrame
 
 			local selBox = Instance.new("Frame")
-			selBox.AnchorPoint = Vector2.new(1, 0.5)
-			selBox.Position = UDim2.new(1, -12, 0, 19)
+			selBox.Name = "MultiDropdownAccordionBox"
+			selBox.AnchorPoint = Vector2.new(1, 0)
+			selBox.Position = UDim2.new(1, -12, 0, 7)
 			selBox.Size = UDim2.new(0, 120, 0, 24)
 			selBox.BackgroundColor3 = Window.Theme.ContainerBg
-			selBox.BackgroundTransparency = 0.2
-			selBox.ZIndex = 6
-			selBox.Parent = headerBtn
+			selBox.BackgroundTransparency = 0.1
+			selBox.ClipsDescendants = true
+			selBox.ZIndex = 20
+			selBox.Parent = ddFrame
 
 			table.insert(Window.ThemeUpdaters, function(t)
 				selBox.BackgroundColor3 = t.ContainerBg
@@ -3367,8 +3335,15 @@ function EclipseUI:CreateWindow(options)
 			selBoxStroke.Transparency = 0.75
 			selBoxStroke.Parent = selBox
 
+			local headerBtn = Instance.new("TextButton")
+			headerBtn.Size = UDim2.new(1, 0, 0, 24)
+			headerBtn.BackgroundTransparency = 1
+			headerBtn.Text = ""
+			headerBtn.ZIndex = 21
+			headerBtn.Parent = selBox
+
 			local selLabel = Instance.new("TextLabel")
-			selLabel.Size = UDim2.new(1, -26, 1, 0)
+			selLabel.Size = UDim2.new(1, -26, 0, 24)
 			selLabel.Position = UDim2.new(0, 8, 0, 0)
 			selLabel.BackgroundTransparency = 1
 			selLabel.TextColor3 = Color3.fromRGB(230, 238, 250)
@@ -3377,43 +3352,37 @@ function EclipseUI:CreateWindow(options)
 			selLabel.TextYAlignment = Enum.TextYAlignment.Center
 			selLabel.TextXAlignment = Enum.TextXAlignment.Left
 			selLabel.TextTruncate = Enum.TextTruncate.AtEnd
-			selLabel.ZIndex = 7
-			selLabel.Parent = selBox
+			selLabel.ZIndex = 22
+			selLabel.Parent = headerBtn
 
 			local arrowIcon = Instance.new("ImageLabel")
 			arrowIcon.Name = "Chevron"
 			arrowIcon.AnchorPoint = Vector2.new(1, 0.5)
-			arrowIcon.Position = UDim2.new(1, -8, 0.5, 0)
+			arrowIcon.Position = UDim2.new(1, -8, 0, 12)
 			arrowIcon.Size = UDim2.new(0, 12, 0, 12)
 			arrowIcon.BackgroundTransparency = 1
 			arrowIcon.Image = getIconAsset("chevron-down")
 			arrowIcon.ImageColor3 = Window.Theme.TextMuted
-			arrowIcon.ZIndex = 7
-			arrowIcon.Parent = selBox
+			arrowIcon.ZIndex = 22
+			arrowIcon.Parent = headerBtn
 
 			table.insert(Window.ThemeUpdaters, function(t)
 				arrowIcon.ImageColor3 = t.TextMuted
 			end)
 
-			local isOpen = false
-
 			local itemsList = Instance.new("Frame")
-			itemsList.Position = UDim2.new(0, 10, 0, 42)
-			itemsList.Size = UDim2.new(1, -20, 0, 0)
-			itemsList.AutomaticSize = Enum.AutomaticSize.Y
+			itemsList.Position = UDim2.new(0, 4, 0, 28)
+			itemsList.Size = UDim2.new(1, -8, 0, 0)
 			itemsList.BackgroundTransparency = 1
-			itemsList.ZIndex = 5
-			itemsList.Parent = ddFrame
+			itemsList.ZIndex = 21
+			itemsList.Parent = selBox
 
 			local listLayout = Instance.new("UIListLayout")
 			listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-			listLayout.Padding = UDim.new(0, 4)
+			listLayout.Padding = UDim.new(0, 3)
 			listLayout.Parent = itemsList
 
-			local listPadding = Instance.new("UIPadding")
-			listPadding.PaddingBottom = UDim.new(0, 8)
-			listPadding.Parent = itemsList
-
+			local isOpen = false
 			local itemButtons = {}
 
 			local function getSelectedList()
@@ -3440,9 +3409,9 @@ function EclipseUI:CreateWindow(options)
 			local function refreshSelectionStates()
 				for _, data in ipairs(itemButtons) do
 					local isSel = selectedMap[data.Item] == true
-					data.Gradient.Enabled = isSel
+					data.WaveGradient.Enabled = isSel
 					tween(data.Btn, fadeTweenInfo, {
-						BackgroundTransparency = isSel and 0.2 or 0.92
+						BackgroundTransparency = isSel and 0.15 or 0.92
 					})
 					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Window.Theme.TextMuted
 					data.Text.Font = isSel and Enum.Font.GothamBold or Enum.Font.Gotham
@@ -3456,39 +3425,34 @@ function EclipseUI:CreateWindow(options)
 
 			for _, item in ipairs(items) do
 				local itemBtn = Instance.new("TextButton")
-				itemBtn.Size = UDim2.new(1, 0, 0, 28)
+				itemBtn.Size = UDim2.new(1, 0, 0, 26)
 				itemBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 				itemBtn.BackgroundTransparency = 0.92
 				itemBtn.AutoButtonColor = false
 				itemBtn.Text = ""
-				itemBtn.ZIndex = 6
+				itemBtn.ZIndex = 22
 				itemBtn.Parent = itemsList
 
 				local itemCorner = Instance.new("UICorner")
-				itemCorner.CornerRadius = UDim.new(0, 6)
+				itemCorner.CornerRadius = UDim.new(0, 5)
 				itemCorner.Parent = itemBtn
 
-				local itemStroke = Instance.new("UIStroke")
-				itemStroke.Color = Color3.fromRGB(255, 255, 255)
-				itemStroke.Thickness = 1
-				itemStroke.Transparency = 0.75
-				itemStroke.Parent = itemBtn
-
-				local itemGradient = Instance.new("UIGradient")
-				itemGradient.Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, Window.Theme.ButtonGradient[1]),
-					ColorSequenceKeypoint.new(0.5, Window.Theme.ButtonGradient[2]),
-					ColorSequenceKeypoint.new(1, Window.Theme.ButtonGradient[3])
+				local waveGradient = Instance.new("UIGradient")
+				waveGradient.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, Window.Theme.PillGradient[1]),
+					ColorSequenceKeypoint.new(0.5, Window.Theme.PillGradient[2]),
+					ColorSequenceKeypoint.new(1, Window.Theme.PillGradient[1])
 				})
-				itemGradient.Rotation = 0
-				itemGradient.Enabled = false
-				itemGradient.Parent = itemBtn
+				waveGradient.Rotation = 0
+				waveGradient.Offset = Vector2.new(-1, 0)
+				waveGradient.Enabled = false
+				waveGradient.Parent = itemBtn
 
 				table.insert(Window.ThemeUpdaters, function(t)
-					itemGradient.Color = ColorSequence.new({
-						ColorSequenceKeypoint.new(0, t.ButtonGradient[1]),
-						ColorSequenceKeypoint.new(0.5, t.ButtonGradient[2]),
-						ColorSequenceKeypoint.new(1, t.ButtonGradient[3])
+					waveGradient.Color = ColorSequence.new({
+						ColorSequenceKeypoint.new(0, t.PillGradient[1]),
+						ColorSequenceKeypoint.new(0.5, t.PillGradient[2]),
+						ColorSequenceKeypoint.new(1, t.PillGradient[1])
 					})
 				end)
 
@@ -3496,16 +3460,17 @@ function EclipseUI:CreateWindow(options)
 					local tAcc = 0
 					while itemBtn:IsDescendantOf(game) do
 						local dt = RunService.RenderStepped:Wait()
-						if itemGradient.Enabled then
+						if waveGradient.Enabled then
 							tAcc = tAcc + dt
-							itemGradient.Rotation = (tAcc * 50) % 360
+							local offsetVal = math.sin(tAcc * 3) * 0.6
+							waveGradient.Offset = Vector2.new(offsetVal, 0)
 						end
 					end
 				end)
 
 				local itemText = Instance.new("TextLabel")
-				itemText.Size = UDim2.new(1, -16, 1, 0)
-				itemText.Position = UDim2.new(0, 12, 0, 0)
+				itemText.Size = UDim2.new(1, -12, 1, 0)
+				itemText.Position = UDim2.new(0, 8, 0, 0)
 				itemText.BackgroundTransparency = 1
 				itemText.Text = tostring(item)
 				itemText.TextColor3 = Window.Theme.TextMuted
@@ -3513,24 +3478,10 @@ function EclipseUI:CreateWindow(options)
 				itemText.Font = Enum.Font.Gotham
 				itemText.TextYAlignment = Enum.TextYAlignment.Center
 				itemText.TextXAlignment = Enum.TextXAlignment.Left
-				itemText.ZIndex = 7
+				itemText.ZIndex = 23
 				itemText.Parent = itemBtn
 
-				table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText, Gradient = itemGradient })
-
-				itemBtn.MouseEnter:Connect(function()
-					if not selectedMap[item] then
-						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.82 })
-						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(230, 238, 250) })
-					end
-				end)
-
-				itemBtn.MouseLeave:Connect(function()
-					if not selectedMap[item] then
-						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.92 })
-						tween(itemText, fadeTweenInfo, { TextColor3 = Window.Theme.TextMuted })
-					end
-				end)
+				table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText, WaveGradient = waveGradient })
 
 				itemBtn.MouseButton1Click:Connect(function()
 					selectedMap[item] = not selectedMap[item]
@@ -3543,13 +3494,14 @@ function EclipseUI:CreateWindow(options)
 
 			headerBtn.MouseButton1Click:Connect(function()
 				isOpen = not isOpen
-				local targetHeight = isOpen and (46 + listLayout.AbsoluteContentSize.Y) or 38
+				local contentHeight = listLayout.AbsoluteContentSize.Y + 34
+				local targetHeight = isOpen and contentHeight or 24
 				local targetRotation = isOpen and 180 or 0
 				local targetStrokeTrans = isOpen and 0.4 or 0.75
 
 				tween(arrowIcon, fadeTweenInfo, { Rotation = targetRotation })
 				tween(selBoxStroke, fadeTweenInfo, { Transparency = targetStrokeTrans })
-				tween(ddFrame, fadeTweenInfo, { Size = UDim2.new(1, 0, 0, targetHeight) })
+				tween(selBox, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { Size = UDim2.new(0, 120, 0, targetHeight) })
 			end)
 
 			local obj = {
