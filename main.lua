@@ -3132,7 +3132,7 @@ function EclipseUI:CreateWindow(options)
 			arrowIcon.ZIndex = 7
 			arrowIcon.Parent = selBox
 
-			-- Floating Overlay Menu Container (Blocks clicks through and prevents clipping)
+			-- Floating Overlay Menu Container using CanvasGroup for smooth fade animation
 			local popupHolder = Instance.new("Frame")
 			popupHolder.Name = "DropdownPopupHolder"
 			popupHolder.Size = UDim2.new(1, 0, 1, 0)
@@ -3148,22 +3148,28 @@ function EclipseUI:CreateWindow(options)
 			backdrop.ZIndex = 99
 			backdrop.Parent = popupHolder
 
-			local dropListFrame = Instance.new("Frame")
+			local dropListFrame = Instance.new("CanvasGroup")
 			dropListFrame.Name = "DropdownMenu"
 			dropListFrame.BackgroundColor3 = Window.Theme.ContainerBg
-			dropListFrame.BackgroundTransparency = 0.05
+			dropListFrame.BackgroundTransparency = 0.1
+			dropListFrame.GroupTransparency = 1
 			dropListFrame.BorderSizePixel = 0
+			dropListFrame.ClipsDescendants = true
 			dropListFrame.ZIndex = 100
 			dropListFrame.Parent = popupHolder
 
+			table.insert(Window.ThemeUpdaters, function(t)
+				dropListFrame.BackgroundColor3 = t.ContainerBg
+			end)
+
 			local dropCorner = Instance.new("UICorner")
-			dropCorner.CornerRadius = UDim.new(0, 8)
+			dropCorner.CornerRadius = UDim.new(0, 6)
 			dropCorner.Parent = dropListFrame
 
 			local dropStroke = Instance.new("UIStroke")
 			dropStroke.Color = Color3.fromRGB(255, 255, 255)
 			dropStroke.Thickness = 1
-			dropStroke.Transparency = 0.5
+			dropStroke.Transparency = 0.75
 			dropStroke.Parent = dropListFrame
 
 			local dropLayout = Instance.new("UIListLayout")
@@ -3184,7 +3190,6 @@ function EclipseUI:CreateWindow(options)
 				local absPos = selBox.AbsolutePosition
 				local absSize = selBox.AbsoluteSize
 				dropListFrame.Position = UDim2.new(0, absPos.X - (120 - absSize.X), 0, absPos.Y + absSize.Y + 6)
-				dropListFrame.Size = UDim2.new(0, 120, 0, dropLayout.AbsoluteContentSize.Y + 12)
 			end
 
 			local function refreshSelectionStates()
@@ -3216,10 +3221,9 @@ function EclipseUI:CreateWindow(options)
 					itemBtn.Parent = dropListFrame
 
 					local itemCorner = Instance.new("UICorner")
-					itemCorner.CornerRadius = UDim.new(0, 6)
+					itemCorner.CornerRadius = UDim.new(0, 5)
 					itemCorner.Parent = itemBtn
 
-					-- Smooth Unidirectional Left-to-Right Sheen
 					local sheenGradient = Instance.new("UIGradient")
 					sheenGradient.Color = ColorSequence.new({
 						ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
@@ -3250,7 +3254,7 @@ function EclipseUI:CreateWindow(options)
 
 					local itemText = Instance.new("TextLabel")
 					itemText.Size = UDim2.new(1, -16, 1, 0)
-					itemText.Position = UDim2.new(0, 10, 0, 0)
+					itemText.Position = UDim2.new(0, 8, 0, 0)
 					itemText.BackgroundTransparency = 1
 					itemText.Text = tostring(item)
 					itemText.TextColor3 = Window.Theme.TextMuted
@@ -3266,7 +3270,12 @@ function EclipseUI:CreateWindow(options)
 					itemBtn.MouseButton1Click:Connect(function()
 						selected = item
 						selLabel.Text = tostring(selected)
-						popupHolder.Visible = false
+						
+						-- Fade out from bottom to top on close
+						local fullH = dropLayout.AbsoluteContentSize.Y + 12
+						tween(dropListFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
+						task.delay(0.15, function() popupHolder.Visible = false end)
+
 						tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
 						tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
 						pcall(callback, selected)
@@ -3278,19 +3287,33 @@ function EclipseUI:CreateWindow(options)
 			populateItems()
 
 			selBox.MouseButton1Click:Connect(function()
-				popupHolder.Visible = not popupHolder.Visible
 				if popupHolder.Visible then
-					updatePosition()
-					tween(arrowIcon, fadeTweenInfo, { Rotation = 180 })
-					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.4 })
-				else
+					-- Fade out from bottom to top
+					local fullH = dropLayout.AbsoluteContentSize.Y + 12
+					tween(dropListFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
+					task.delay(0.15, function() popupHolder.Visible = false end)
+
 					tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
 					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
+				else
+					updatePosition()
+					popupHolder.Visible = true
+					dropListFrame.Size = UDim2.new(0, 120, 0, 0)
+					dropListFrame.GroupTransparency = 1
+
+					local targetH = dropLayout.AbsoluteContentSize.Y + 12
+
+					-- Fade in from top to bottom
+					tween(dropListFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { Size = UDim2.new(0, 120, 0, targetH), GroupTransparency = 0 })
+					tween(arrowIcon, fadeTweenInfo, { Rotation = 180 })
+					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.4 })
 				end
 			end)
 
 			backdrop.MouseButton1Click:Connect(function()
-				popupHolder.Visible = false
+				tween(dropListFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
+				task.delay(0.15, function() popupHolder.Visible = false end)
+
 				tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
 				tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
 			end)
@@ -3411,22 +3434,24 @@ function EclipseUI:CreateWindow(options)
 			backdrop.ZIndex = 99
 			backdrop.Parent = popupHolder
 
-			local dropListFrame = Instance.new("Frame")
+			local dropListFrame = Instance.new("CanvasGroup")
 			dropListFrame.Name = "MultiDropdownMenu"
 			dropListFrame.BackgroundColor3 = Window.Theme.ContainerBg
-			dropListFrame.BackgroundTransparency = 0.05
+			dropListFrame.BackgroundTransparency = 0.1
+			dropListFrame.GroupTransparency = 1
 			dropListFrame.BorderSizePixel = 0
+			dropListFrame.ClipsDescendants = true
 			dropListFrame.ZIndex = 100
 			dropListFrame.Parent = popupHolder
 
 			local dropCorner = Instance.new("UICorner")
-			dropCorner.CornerRadius = UDim.new(0, 8)
+			dropCorner.CornerRadius = UDim.new(0, 6)
 			dropCorner.Parent = dropListFrame
 
 			local dropStroke = Instance.new("UIStroke")
 			dropStroke.Color = Color3.fromRGB(255, 255, 255)
 			dropStroke.Thickness = 1
-			dropStroke.Transparency = 0.5
+			dropStroke.Transparency = 0.75
 			dropStroke.Parent = dropListFrame
 
 			local dropLayout = Instance.new("UIListLayout")
@@ -3468,7 +3493,6 @@ function EclipseUI:CreateWindow(options)
 				local absPos = selBox.AbsolutePosition
 				local absSize = selBox.AbsoluteSize
 				dropListFrame.Position = UDim2.new(0, absPos.X - (120 - absSize.X), 0, absPos.Y + absSize.Y + 6)
-				dropListFrame.Size = UDim2.new(0, 120, 0, dropLayout.AbsoluteContentSize.Y + 12)
 			end
 
 			local function refreshSelectionStates()
@@ -3501,7 +3525,7 @@ function EclipseUI:CreateWindow(options)
 					itemBtn.Parent = dropListFrame
 
 					local itemCorner = Instance.new("UICorner")
-					itemCorner.CornerRadius = UDim.new(0, 6)
+					itemCorner.CornerRadius = UDim.new(0, 5)
 					itemCorner.Parent = itemBtn
 
 					local sheenGradient = Instance.new("UIGradient")
@@ -3534,7 +3558,7 @@ function EclipseUI:CreateWindow(options)
 
 					local itemText = Instance.new("TextLabel")
 					itemText.Size = UDim2.new(1, -16, 1, 0)
-					itemText.Position = UDim2.new(0, 10, 0, 0)
+					itemText.Position = UDim2.new(0, 8, 0, 0)
 					itemText.BackgroundTransparency = 1
 					itemText.Text = tostring(item)
 					itemText.TextColor3 = Window.Theme.TextMuted
@@ -3559,19 +3583,29 @@ function EclipseUI:CreateWindow(options)
 			populateItems()
 
 			selBox.MouseButton1Click:Connect(function()
-				popupHolder.Visible = not popupHolder.Visible
 				if popupHolder.Visible then
-					updatePosition()
-					tween(arrowIcon, fadeTweenInfo, { Rotation = 180 })
-					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.4 })
-				else
+					tween(dropListFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
+					task.delay(0.15, function() popupHolder.Visible = false end)
+
 					tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
 					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
+				else
+					updatePosition()
+					popupHolder.Visible = true
+					dropListFrame.Size = UDim2.new(0, 120, 0, 0)
+					dropListFrame.GroupTransparency = 1
+
+					local targetH = dropLayout.AbsoluteContentSize.Y + 12
+					tween(dropListFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { Size = UDim2.new(0, 120, 0, targetH), GroupTransparency = 0 })
+					tween(arrowIcon, fadeTweenInfo, { Rotation = 180 })
+					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.4 })
 				end
 			end)
 
 			backdrop.MouseButton1Click:Connect(function()
-				popupHolder.Visible = false
+				tween(dropListFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
+				task.delay(0.15, function() popupHolder.Visible = false end)
+
 				tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
 				tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
 			end)
