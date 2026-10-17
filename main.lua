@@ -3068,14 +3068,7 @@ function EclipseUI:CreateWindow(options)
 			local flag = opts.Flag
 
 			local ddFrame, stroke = createContainer(targetParent, 38)
-			ddFrame.ClipsDescendants = true
-
-			local headerBtn = Instance.new("TextButton")
-			headerBtn.Size = UDim2.new(1, 0, 0, 38)
-			headerBtn.BackgroundTransparency = 1
-			headerBtn.Text = ""
-			headerBtn.ZIndex = 6
-			headerBtn.Parent = ddFrame
+			ddFrame.ClipsDescendants = false -- Allow list to render outside bounds if needed, or use screen overlay
 
 			local label = Instance.new("TextLabel")
 			label.Size = UDim2.new(1, -140, 1, 0)
@@ -3086,17 +3079,19 @@ function EclipseUI:CreateWindow(options)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
-			label.ZIndex = 6
-			label.Parent = headerBtn
+			label.ZIndex = 5
+			label.Parent = ddFrame
 
-			local selBox = Instance.new("Frame")
+			local selBox = Instance.new("TextButton")
 			selBox.AnchorPoint = Vector2.new(1, 0.5)
 			selBox.Position = UDim2.new(1, -12, 0.5, 0)
 			selBox.Size = UDim2.new(0, 120, 0, 24)
 			selBox.BackgroundColor3 = Window.Theme.ContainerBg
 			selBox.BackgroundTransparency = 0.2
+			selBox.AutoButtonColor = false
+			selBox.Text = ""
 			selBox.ZIndex = 6
-			selBox.Parent = headerBtn
+			selBox.Parent = ddFrame
 
 			table.insert(Window.ThemeUpdaters, function(t)
 				selBox.BackgroundColor3 = t.ContainerBg
@@ -3141,112 +3136,158 @@ function EclipseUI:CreateWindow(options)
 				arrowIcon.ImageColor3 = t.TextMuted
 			end)
 
-			local isOpen = false
+			-- Floating Dropdown Menu Container (Rendered on a higher ZIndex layer or absolute positioning)
+			local dropListFrame = Instance.new("Frame")
+			dropListFrame.Name = "DropdownPopup"
+			dropListFrame.Visible = false
+			dropListFrame.BackgroundColor3 = Window.Theme.ContainerBg
+			dropListFrame.BackgroundTransparency = 0.1
+			dropListFrame.BorderSizePixel = 0
+			dropListFrame.ZIndex = 50
+			dropListFrame.Parent = screenGui -- Attaches directly to the main ScreenGui so it floats above everything else!
 
-			local itemsHolder = Instance.new("Frame")
-			itemsHolder.Position = UDim2.new(0, 10, 0, 38)
-			itemsHolder.Size = UDim2.new(1, -20, 0, 0)
-			itemsHolder.AutomaticSize = Enum.AutomaticSize.Y
-			itemsHolder.BackgroundTransparency = 1
-			itemsHolder.ClipsDescendants = true
-			itemsHolder.ZIndex = 6
-			itemsHolder.Parent = ddFrame
+			table.insert(Window.ThemeUpdaters, function(t)
+				dropListFrame.BackgroundColor3 = t.ContainerBg
+			end)
 
-			local listLayout = Instance.new("UIListLayout")
-			listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-			listLayout.Padding = UDim.new(0, 4)
-			listLayout.Parent = itemsHolder
+			local dropCorner = Instance.new("UICorner")
+			dropCorner.CornerRadius = UDim.new(0, 8)
+			dropCorner.Parent = dropListFrame
 
-			local listPadding = Instance.new("UIPadding")
-			listPadding.PaddingTop = UDim.new(0, 4)
-			listPadding.PaddingBottom = UDim.new(0, 8)
-			listPadding.Parent = itemsHolder
+			local dropStroke = Instance.new("UIStroke")
+			dropStroke.Color = Color3.fromRGB(255, 255, 255)
+			dropStroke.Thickness = 1
+			dropStroke.Transparency = 0.6
+			dropStroke.Parent = dropListFrame
+
+			local dropLayout = Instance.new("UIListLayout")
+			dropLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			dropLayout.Padding = UDim.new(0, 2)
+			dropLayout.Parent = dropListFrame
+
+			local dropPadding = Instance.new("UIPadding")
+			dropPadding.PaddingTop = UDim.new(0, 6)
+			dropPadding.PaddingBottom = UDim.new(0, 6)
+			dropPadding.PaddingLeft = UDim.new(0, 6)
+			dropPadding.PaddingRight = UDim.new(0, 6)
+			dropPadding.Parent = dropListFrame
 
 			local itemButtons = {}
+
+			local function updateDropListPosition()
+				local absPos = selBox.AbsolutePosition
+				local absSize = selBox.AbsoluteSize
+				dropListFrame.Position = UDim2.new(0, absPos.X, 0, absPos.Y + absSize.Y + 6)
+				dropListFrame.Size = UDim2.new(0, absSize.X, 0, dropLayout.AbsoluteContentSize.Y + 12)
+			end
 
 			local function refreshSelectionStates()
 				for _, data in ipairs(itemButtons) do
 					local isSel = (data.Item == selected)
 					tween(data.Btn, fadeTweenInfo, {
-						BackgroundTransparency = isSel and 0.4 or 0.85,
-						BackgroundColor3 = isSel and Window.Theme.ContainerBg or Color3.fromRGB(255, 255, 255)
+						BackgroundTransparency = isSel and 0.4 or 0.92,
+						BackgroundColor3 = isSel and Window.Theme.LoaderBar[1] or Color3.fromRGB(255, 255, 255)
 					})
 					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Window.Theme.TextMuted
 					data.Text.Font = isSel and Enum.Font.GothamBold or Enum.Font.Gotham
 				end
 			end
 
-			table.insert(Window.ThemeUpdaters, function(t)
+			local function populateItems()
+				for _, data in ipairs(itemButtons) do
+					if data.Btn then data.Btn:Destroy() end
+				end
+				itemButtons = {}
+
+				for _, item in ipairs(items) do
+					local itemBtn = Instance.new("TextButton")
+					itemBtn.Size = UDim2.new(1, 0, 0, 28)
+					itemBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+					itemBtn.BackgroundTransparency = 0.92
+					itemBtn.AutoButtonColor = false
+					itemBtn.Text = ""
+					itemBtn.ZIndex = 51
+					itemBtn.Parent = dropListFrame
+
+					local itemCorner = Instance.new("UICorner")
+					itemCorner.CornerRadius = UDim.new(0, 6)
+					itemCorner.Parent = itemBtn
+
+					local itemText = Instance.new("TextLabel")
+					itemText.Size = UDim2.new(1, -16, 1, 0)
+					itemText.Position = UDim2.new(0, 8, 0, 0)
+					itemText.BackgroundTransparency = 1
+					itemText.Text = tostring(item)
+					itemText.TextColor3 = Window.Theme.TextMuted
+					itemText.TextSize = 11
+					itemText.Font = Enum.Font.Gotham
+					itemText.TextYAlignment = Enum.TextYAlignment.Center
+					itemText.TextXAlignment = Enum.TextXAlignment.Left
+					itemText.ZIndex = 52
+					itemText.Parent = itemBtn
+
+					table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText })
+
+					itemBtn.MouseEnter:Connect(function()
+						if selected ~= item then
+							tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.80 })
+							tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(240, 245, 255) })
+						end
+					end)
+
+					itemBtn.MouseLeave:Connect(function()
+						if selected ~= item then
+							tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.92 })
+							tween(itemText, fadeTweenInfo, { TextColor3 = Window.Theme.TextMuted })
+						end
+					end)
+
+					itemBtn.MouseButton1Click:Connect(function()
+						selected = item
+						selLabel.Text = tostring(selected)
+						dropListFrame.Visible = false
+						tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
+						tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
+						pcall(callback, selected)
+					end)
+				end
 				refreshSelectionStates()
-			end)
-
-			for _, item in ipairs(items) do
-				local itemBtn = Instance.new("TextButton")
-				itemBtn.Size = UDim2.new(1, 0, 0, 26)
-				itemBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-				itemBtn.BackgroundTransparency = 0.85
-				itemBtn.AutoButtonColor = false
-				itemBtn.Text = ""
-				itemBtn.ZIndex = 7
-				itemBtn.Parent = itemsHolder
-
-				local itemCorner = Instance.new("UICorner")
-				itemCorner.CornerRadius = UDim.new(0, 6)
-				itemCorner.Parent = itemBtn
-
-				local itemText = Instance.new("TextLabel")
-				itemText.Size = UDim2.new(1, -16, 1, 0)
-				itemText.Position = UDim2.new(0, 10, 0, 0)
-				itemText.BackgroundTransparency = 1
-				itemText.Text = tostring(item)
-				itemText.TextColor3 = Window.Theme.TextMuted
-				itemText.TextSize = 11
-				itemText.Font = Enum.Font.Gotham
-				itemText.TextYAlignment = Enum.TextYAlignment.Center
-				itemText.TextXAlignment = Enum.TextXAlignment.Left
-				itemText.ZIndex = 8
-				itemText.Parent = itemBtn
-
-				table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText })
-
-				itemBtn.MouseEnter:Connect(function()
-					if selected ~= item then
-						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.70 })
-						tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(240, 245, 255) })
-					end
-				end)
-
-				itemBtn.MouseLeave:Connect(function()
-					if selected ~= item then
-						tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.85 })
-						tween(itemText, fadeTweenInfo, { TextColor3 = Window.Theme.TextMuted })
-					end
-				end)
-
-				itemBtn.MouseButton1Click:Connect(function()
-					selected = item
-					selLabel.Text = tostring(selected)
-					isOpen = false
-					refreshSelectionStates()
-					tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
-					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
-					tween(ddFrame, fadeTweenInfo, { Size = UDim2.new(1, 0, 0, 38) })
-					pcall(callback, selected)
-				end)
 			end
 
-			refreshSelectionStates()
+			populateItems()
 
-			headerBtn.MouseButton1Click:Connect(function()
-				isOpen = not isOpen
-				local contentHeight = listLayout.AbsoluteContentSize.Y + 12
-				local targetHeight = isOpen and (38 + contentHeight) or 38
-				local targetRotation = isOpen and 180 or 0
-				local targetStrokeTrans = isOpen and 0.4 or 0.75
+			selBox.MouseButton1Click:Connect(function()
+				dropListFrame.Visible = not dropListFrame.Visible
+				if dropListFrame.Visible then
+					updateDropListPosition()
+					tween(arrowIcon, fadeTweenInfo, { Rotation = 180 })
+					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.4 })
+				else
+					tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
+					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
+				end
+			end)
 
-				tween(arrowIcon, fadeTweenInfo, { Rotation = targetRotation })
-				tween(selBoxStroke, fadeTweenInfo, { Transparency = targetStrokeTrans })
-				tween(ddFrame, fadeTweenInfo, { Size = UDim2.new(1, 0, 0, targetHeight) })
+			-- Close dropdown if clicked outside
+			UserInputService.InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+					if dropListFrame.Visible then
+						local mousePos = input.Position
+						local absPos = dropListFrame.AbsolutePosition
+						local absSize = dropListFrame.AbsoluteSize
+						local boxPos = selBox.AbsolutePosition
+						local boxSize = selBox.AbsoluteSize
+
+						local insidePopup = (mousePos.X >= absPos.X and mousePos.X <= absPos.X + absSize.X and mousePos.Y >= absPos.Y and mousePos.Y <= absPos.Y + absSize.Y)
+						local insideBox = (mousePos.X >= boxPos.X and mousePos.X <= boxPos.X + boxSize.X and mousePos.Y >= boxPos.Y and mousePos.Y <= boxPos.Y + boxSize.Y)
+
+						if not insidePopup and not insideBox then
+							dropListFrame.Visible = false
+							tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
+							tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
+						end
+					end
+				end
 			end)
 
 			local obj = {
@@ -3259,66 +3300,7 @@ function EclipseUI:CreateWindow(options)
 				end,
 				SetItems = function(_, newItems)
 					items = newItems or {}
-					for _, data in ipairs(itemButtons) do
-						if data.Btn then data.Btn:Destroy() end
-					end
-					itemButtons = {}
-
-					for _, item in ipairs(items) do
-						local itemBtn = Instance.new("TextButton")
-						itemBtn.Size = UDim2.new(1, 0, 0, 26)
-						itemBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-						itemBtn.BackgroundTransparency = 0.85
-						itemBtn.AutoButtonColor = false
-						itemBtn.Text = ""
-						itemBtn.ZIndex = 7
-						itemBtn.Parent = itemsHolder
-
-						local itemCorner = Instance.new("UICorner")
-						itemCorner.CornerRadius = UDim.new(0, 6)
-						itemCorner.Parent = itemBtn
-
-						local itemText = Instance.new("TextLabel")
-						itemText.Size = UDim2.new(1, -16, 1, 0)
-						itemText.Position = UDim2.new(0, 10, 0, 0)
-						itemText.BackgroundTransparency = 1
-						itemText.Text = tostring(item)
-						itemText.TextColor3 = Window.Theme.TextMuted
-						itemText.TextSize = 11
-						itemText.Font = Enum.Font.Gotham
-						itemText.TextYAlignment = Enum.TextYAlignment.Center
-						itemText.TextXAlignment = Enum.TextXAlignment.Left
-						itemText.ZIndex = 8
-						itemText.Parent = itemBtn
-
-						table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText })
-
-						itemBtn.MouseEnter:Connect(function()
-							if selected ~= item then
-								tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.70 })
-								tween(itemText, fadeTweenInfo, { TextColor3 = Color3.fromRGB(240, 245, 255) })
-							end
-						end)
-
-						itemBtn.MouseLeave:Connect(function()
-							if selected ~= item then
-								tween(itemBtn, fadeTweenInfo, { BackgroundTransparency = 0.85 })
-								tween(itemText, fadeTweenInfo, { TextColor3 = Window.Theme.TextMuted })
-							end
-						end)
-
-						itemBtn.MouseButton1Click:Connect(function()
-							selected = item
-							selLabel.Text = tostring(selected)
-							isOpen = false
-							refreshSelectionStates()
-							tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
-							tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
-							tween(ddFrame, fadeTweenInfo, { Size = UDim2.new(1, 0, 0, 38) })
-							pcall(callback, selected)
-						end)
-					end
-					refreshSelectionStates()
+					populateItems()
 				end
 			}
 
