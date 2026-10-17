@@ -165,6 +165,7 @@ local Themes = {
 local EclipseUI = {}
 EclipseUI.__index = EclipseUI
 EclipseUI.Themes = Themes
+EclipseUI.CurrentTheme = "Eclipse"
 
 function EclipseUI:AddTheme(name, themeData)
 	if typeof(name) == "string" and typeof(themeData) == "table" then
@@ -178,8 +179,8 @@ function EclipseUI:Notify(opts)
 	local content = opts.Content or ""
 	local duration = opts.Duration or 4
 	local iconName = opts.Icon
-	local themeName = opts.Theme and Themes[opts.Theme] and opts.Theme or "Eclipse"
-	local Theme = Themes[themeName]
+	local themeName = opts.Theme or EclipseUI.CurrentTheme or "Eclipse"
+	local Theme = Themes[themeName] or Themes["Eclipse"]
 
 	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 	local notifGui = playerGui:FindFirstChild("EclipseNotifications")
@@ -257,8 +258,9 @@ function EclipseUI:Notify(opts)
 	end)
 
 	local textOffsetLeft = 14
+	local iconImg
 	if iconName then
-		local iconImg = Instance.new("ImageLabel")
+		iconImg = Instance.new("ImageLabel")
 		iconImg.Size = UDim2.new(0, 18, 0, 18)
 		iconImg.Position = UDim2.new(0, 14, 0.5, -9)
 		iconImg.BackgroundTransparency = 1
@@ -300,6 +302,22 @@ function EclipseUI:Notify(opts)
 	contentLabel.TextTruncate = Enum.TextTruncate.AtEnd
 	contentLabel.ZIndex = 101
 	contentLabel.Parent = textContainer
+
+	-- Live Theme Updater Registration for Active Notifications
+	if opts.WindowRef and opts.WindowRef.ThemeUpdaters then
+		table.insert(opts.WindowRef.ThemeUpdaters, function(t)
+			if cardGroup and cardGroup.Parent then
+				cardGroup.BackgroundColor3 = t.MainBg
+				contentLabel.TextColor3 = t.TextMuted
+				if iconImg then iconImg.ImageColor3 = t.TextMuted end
+				strokeGradient.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, t.StrokeColors[1]),
+					ColorSequenceKeypoint.new(0.5, t.StrokeColors[2]),
+					ColorSequenceKeypoint.new(1, t.StrokeColors[3])
+				})
+			end
+		end)
+	end
 
 	TweenService:Create(cardGroup, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
 		GroupTransparency = 0,
@@ -539,6 +557,8 @@ function EclipseUI:CreateWindow(options)
 		if Themes[newThemeName] then
 			Window.ThemeName = newThemeName
 			Window.Theme = Themes[newThemeName]
+			EclipseUI.CurrentTheme = newThemeName
+			
 			for _, updateFunc in ipairs(Window.ThemeUpdaters) do
 				pcall(updateFunc, Window.Theme)
 			end
