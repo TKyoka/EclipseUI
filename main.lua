@@ -3132,14 +3132,14 @@ function EclipseUI:CreateWindow(options)
 			arrowIcon.ZIndex = 7
 			arrowIcon.Parent = selBox
 
-			-- Floating Overlay Menu Container using CanvasGroup for smooth fade animation
+			-- Parent to main Window frame so it toggles on/off with the UI
 			local popupHolder = Instance.new("Frame")
 			popupHolder.Name = "DropdownPopupHolder"
 			popupHolder.Size = UDim2.new(1, 0, 1, 0)
 			popupHolder.BackgroundTransparency = 1
 			popupHolder.Visible = false
 			popupHolder.ZIndex = 99
-			popupHolder.Parent = screenGui
+			popupHolder.Parent = Window.MainFrame -- Changed from screenGui to MainFrame
 
 			local backdrop = Instance.new("TextButton")
 			backdrop.Size = UDim2.new(1, 0, 1, 0)
@@ -3151,7 +3151,7 @@ function EclipseUI:CreateWindow(options)
 			local dropListFrame = Instance.new("CanvasGroup")
 			dropListFrame.Name = "DropdownMenu"
 			dropListFrame.BackgroundColor3 = Window.Theme.ContainerBg
-			dropListFrame.BackgroundTransparency = 0.1
+			dropListFrame.BackgroundTransparency = 0.05
 			dropListFrame.GroupTransparency = 1
 			dropListFrame.BorderSizePixel = 0
 			dropListFrame.ClipsDescendants = true
@@ -3188,8 +3188,12 @@ function EclipseUI:CreateWindow(options)
 
 			local function updatePosition()
 				local absPos = selBox.AbsolutePosition
+				local mainPos = Window.MainFrame.AbsolutePosition
+				local relX = absPos.X - mainPos.X
+				local relY = absPos.Y - mainPos.Y
 				local absSize = selBox.AbsoluteSize
-				dropListFrame.Position = UDim2.new(0, absPos.X - (120 - absSize.X), 0, absPos.Y + absSize.Y + 6)
+				
+				dropListFrame.Position = UDim2.new(0, relX - (120 - absSize.X), 0, relY + absSize.Y + 6)
 			end
 
 			local function refreshSelectionStates()
@@ -3270,11 +3274,11 @@ function EclipseUI:CreateWindow(options)
 					itemBtn.MouseButton1Click:Connect(function()
 						selected = item
 						selLabel.Text = tostring(selected)
-						
-						-- Fade out from bottom to top on close
-						local fullH = dropLayout.AbsoluteContentSize.Y + 12
-						tween(dropListFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
-						task.delay(0.15, function() popupHolder.Visible = false end)
+						refreshSelectionStates()
+
+						-- Snappy pop-out close animation
+						tween(dropListFrame, TweenInfo.new(0.12, Enum.EasingStyle.Back, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
+						task.delay(0.12, function() popupHolder.Visible = false end)
 
 						tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
 						tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
@@ -3288,31 +3292,30 @@ function EclipseUI:CreateWindow(options)
 
 			selBox.MouseButton1Click:Connect(function()
 				if popupHolder.Visible then
-					-- Fade out from bottom to top
-					local fullH = dropLayout.AbsoluteContentSize.Y + 12
-					tween(dropListFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
-					task.delay(0.15, function() popupHolder.Visible = false end)
+					tween(dropListFrame, TweenInfo.new(0.12, Enum.EasingStyle.Back, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
+					task.delay(0.12, function() popupHolder.Visible = false end)
 
 					tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
 					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
 				else
+					refreshSelectionStates()
 					updatePosition()
 					popupHolder.Visible = true
 					dropListFrame.Size = UDim2.new(0, 120, 0, 0)
 					dropListFrame.GroupTransparency = 1
 
 					local targetH = dropLayout.AbsoluteContentSize.Y + 12
-
-					-- Fade in from top to bottom
-					tween(dropListFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { Size = UDim2.new(0, 120, 0, targetH), GroupTransparency = 0 })
+					
+					-- Dramatic pop-out open animation using Back easing style for bounce/pop effect
+					tween(dropListFrame, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.Out), { Size = UDim2.new(0, 120, 0, targetH), GroupTransparency = 0 })
 					tween(arrowIcon, fadeTweenInfo, { Rotation = 180 })
 					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.4 })
 				end
 			end)
 
 			backdrop.MouseButton1Click:Connect(function()
-				tween(dropListFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
-				task.delay(0.15, function() popupHolder.Visible = false end)
+				tween(dropListFrame, TweenInfo.new(0.12, Enum.EasingStyle.Back, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
+				task.delay(0.12, function() popupHolder.Visible = false end)
 
 				tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
 				tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
@@ -3325,302 +3328,6 @@ function EclipseUI:CreateWindow(options)
 					selLabel.Text = tostring(selected)
 					refreshSelectionStates()
 					pcall(callback, selected)
-				end,
-				SetItems = function(_, newItems)
-					items = newItems or {}
-					populateItems()
-				end
-			}
-
-			if flag then
-				registeredElements[flag] = obj
-			end
-
-			return obj
-		end
-
-		function TabObject:MultiDropdown(opts, targetParent)
-			opts = opts or {}
-			targetParent = targetParent or page
-			local title = opts.Title or opts.Name or "MultiDropdown"
-			local items = opts.Items or {}
-			local default = opts.Default or {}
-			local callback = opts.Callback or function() end
-			local flag = opts.Flag
-
-			local selectedMap = {}
-			if typeof(default) == "table" then
-				for _, item in ipairs(default) do
-					selectedMap[item] = true
-				end
-			end
-
-			local ddFrame, stroke = createContainer(targetParent, 38)
-			ddFrame.ClipsDescendants = false
-
-			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, -140, 1, 0)
-			label.Position = UDim2.new(0, 14, 0, 0)
-			label.BackgroundTransparency = 1
-			label.Text = title
-			label.TextColor3 = Color3.fromRGB(240, 245, 255)
-			label.TextSize = 12
-			label.Font = Enum.Font.GothamBold
-			label.TextXAlignment = Enum.TextXAlignment.Left
-			label.ZIndex = 5
-			label.Parent = ddFrame
-
-			local selBox = Instance.new("TextButton")
-			selBox.AnchorPoint = Vector2.new(1, 0.5)
-			selBox.Position = UDim2.new(1, -12, 0.5, 0)
-			selBox.Size = UDim2.new(0, 120, 0, 24)
-			selBox.BackgroundColor3 = Window.Theme.ContainerBg
-			selBox.BackgroundTransparency = 0.2
-			selBox.AutoButtonColor = false
-			selBox.Text = ""
-			selBox.ZIndex = 6
-			selBox.Parent = ddFrame
-
-			table.insert(Window.ThemeUpdaters, function(t)
-				selBox.BackgroundColor3 = t.ContainerBg
-			end)
-
-			local selBoxCorner = Instance.new("UICorner")
-			selBoxCorner.CornerRadius = UDim.new(0, 6)
-			selBoxCorner.Parent = selBox
-
-			local selBoxStroke = Instance.new("UIStroke")
-			selBoxStroke.Color = Color3.fromRGB(255, 255, 255)
-			selBoxStroke.Thickness = 1
-			selBoxStroke.Transparency = 0.75
-			selBoxStroke.Parent = selBox
-
-			local selLabel = Instance.new("TextLabel")
-			selLabel.Size = UDim2.new(1, -26, 1, 0)
-			selLabel.Position = UDim2.new(0, 8, 0, 0)
-			selLabel.BackgroundTransparency = 1
-			selLabel.TextColor3 = Color3.fromRGB(230, 238, 250)
-			selLabel.TextSize = 11
-			selLabel.Font = Enum.Font.GothamMedium
-			selLabel.TextYAlignment = Enum.TextYAlignment.Center
-			selLabel.TextXAlignment = Enum.TextXAlignment.Left
-			selLabel.TextTruncate = Enum.TextTruncate.AtEnd
-			selLabel.ZIndex = 7
-			selLabel.Parent = selBox
-
-			local arrowIcon = Instance.new("ImageLabel")
-			arrowIcon.Name = "Chevron"
-			arrowIcon.AnchorPoint = Vector2.new(1, 0.5)
-			arrowIcon.Position = UDim2.new(1, -8, 0.5, 0)
-			arrowIcon.Size = UDim2.new(0, 12, 0, 12)
-			arrowIcon.BackgroundTransparency = 1
-			arrowIcon.Image = getIconAsset("chevron-down")
-			arrowIcon.ImageColor3 = Window.Theme.TextMuted
-			arrowIcon.ZIndex = 7
-			arrowIcon.Parent = selBox
-
-			local popupHolder = Instance.new("Frame")
-			popupHolder.Name = "MultiDropdownPopupHolder"
-			popupHolder.Size = UDim2.new(1, 0, 1, 0)
-			popupHolder.BackgroundTransparency = 1
-			popupHolder.Visible = false
-			popupHolder.ZIndex = 99
-			popupHolder.Parent = screenGui
-
-			local backdrop = Instance.new("TextButton")
-			backdrop.Size = UDim2.new(1, 0, 1, 0)
-			backdrop.BackgroundTransparency = 1
-			backdrop.Text = ""
-			backdrop.ZIndex = 99
-			backdrop.Parent = popupHolder
-
-			local dropListFrame = Instance.new("CanvasGroup")
-			dropListFrame.Name = "MultiDropdownMenu"
-			dropListFrame.BackgroundColor3 = Window.Theme.ContainerBg
-			dropListFrame.BackgroundTransparency = 0.1
-			dropListFrame.GroupTransparency = 1
-			dropListFrame.BorderSizePixel = 0
-			dropListFrame.ClipsDescendants = true
-			dropListFrame.ZIndex = 100
-			dropListFrame.Parent = popupHolder
-
-			local dropCorner = Instance.new("UICorner")
-			dropCorner.CornerRadius = UDim.new(0, 6)
-			dropCorner.Parent = dropListFrame
-
-			local dropStroke = Instance.new("UIStroke")
-			dropStroke.Color = Color3.fromRGB(255, 255, 255)
-			dropStroke.Thickness = 1
-			dropStroke.Transparency = 0.75
-			dropStroke.Parent = dropListFrame
-
-			local dropLayout = Instance.new("UIListLayout")
-			dropLayout.SortOrder = Enum.SortOrder.LayoutOrder
-			dropLayout.Padding = UDim.new(0, 2)
-			dropLayout.Parent = dropListFrame
-
-			local dropPadding = Instance.new("UIPadding")
-			dropPadding.PaddingTop = UDim.new(0, 6)
-			dropPadding.PaddingBottom = UDim.new(0, 6)
-			dropPadding.PaddingLeft = UDim.new(0, 6)
-			dropPadding.PaddingRight = UDim.new(0, 6)
-			dropPadding.Parent = dropListFrame
-
-			local itemButtons = {}
-
-			local function getSelectedList()
-				local list = {}
-				for _, item in ipairs(items) do
-					if selectedMap[item] then
-						table.insert(list, item)
-					end
-				end
-				return list
-			end
-
-			local function updateDisplay()
-				local list = getSelectedList()
-				if #list == 0 then
-					selLabel.Text = "--"
-				elseif #list == 1 then
-					selLabel.Text = tostring(list[1])
-				else
-					selLabel.Text = #list .. " selected"
-				end
-			end
-
-			local function updatePosition()
-				local absPos = selBox.AbsolutePosition
-				local absSize = selBox.AbsoluteSize
-				dropListFrame.Position = UDim2.new(0, absPos.X - (120 - absSize.X), 0, absPos.Y + absSize.Y + 6)
-			end
-
-			local function refreshSelectionStates()
-				for _, data in ipairs(itemButtons) do
-					local isSel = selectedMap[data.Item] == true
-					data.SheenGradient.Enabled = isSel
-					tween(data.Btn, fadeTweenInfo, {
-						BackgroundTransparency = isSel and 0.35 or 0.92
-					})
-					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Window.Theme.TextMuted
-					data.Text.Font = isSel and Enum.Font.GothamBold or Enum.Font.Gotham
-				end
-				updateDisplay()
-			end
-
-			local function populateItems()
-				for _, data in ipairs(itemButtons) do
-					if data.Btn then data.Btn:Destroy() end
-				end
-				itemButtons = {}
-
-				for _, item in ipairs(items) do
-					local itemBtn = Instance.new("TextButton")
-					itemBtn.Size = UDim2.new(1, 0, 0, 28)
-					itemBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-					itemBtn.BackgroundTransparency = 0.92
-					itemBtn.AutoButtonColor = false
-					itemBtn.Text = ""
-					itemBtn.ZIndex = 101
-					itemBtn.Parent = dropListFrame
-
-					local itemCorner = Instance.new("UICorner")
-					itemCorner.CornerRadius = UDim.new(0, 5)
-					itemCorner.Parent = itemBtn
-
-					local sheenGradient = Instance.new("UIGradient")
-					sheenGradient.Color = ColorSequence.new({
-						ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-						ColorSequenceKeypoint.new(0.5, Color3.fromRGB(200, 220, 255)),
-						ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
-					})
-					sheenGradient.Transparency = NumberSequence.new({
-						NumberSequenceKeypoint.new(0, 1),
-						NumberSequenceKeypoint.new(0.5, 0.75),
-						NumberSequenceKeypoint.new(1, 1)
-					})
-					sheenGradient.Rotation = 0
-					sheenGradient.Offset = Vector2.new(-1, 0)
-					sheenGradient.Enabled = false
-					sheenGradient.Parent = itemBtn
-
-					task.spawn(function()
-						local tAcc = 0
-						while itemBtn:IsDescendantOf(game) do
-							local dt = RunService.RenderStepped:Wait()
-							if sheenGradient.Enabled then
-								tAcc = tAcc + dt
-								local offsetVal = (tAcc * 0.4) % 2 - 1
-								sheenGradient.Offset = Vector2.new(offsetVal, 0)
-							end
-						end
-					end)
-
-					local itemText = Instance.new("TextLabel")
-					itemText.Size = UDim2.new(1, -16, 1, 0)
-					itemText.Position = UDim2.new(0, 8, 0, 0)
-					itemText.BackgroundTransparency = 1
-					itemText.Text = tostring(item)
-					itemText.TextColor3 = Window.Theme.TextMuted
-					itemText.TextSize = 11
-					itemText.Font = Enum.Font.Gotham
-					itemText.TextYAlignment = Enum.TextYAlignment.Center
-					itemText.TextXAlignment = Enum.TextXAlignment.Left
-					itemText.ZIndex = 102
-					itemText.Parent = itemBtn
-
-					table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText, SheenGradient = sheenGradient })
-
-					itemBtn.MouseButton1Click:Connect(function()
-						selectedMap[item] = not selectedMap[item]
-						refreshSelectionStates()
-						pcall(callback, getSelectedList())
-					end)
-				end
-				refreshSelectionStates()
-			end
-
-			populateItems()
-
-			selBox.MouseButton1Click:Connect(function()
-				if popupHolder.Visible then
-					tween(dropListFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
-					task.delay(0.15, function() popupHolder.Visible = false end)
-
-					tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
-					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
-				else
-					updatePosition()
-					popupHolder.Visible = true
-					dropListFrame.Size = UDim2.new(0, 120, 0, 0)
-					dropListFrame.GroupTransparency = 1
-
-					local targetH = dropLayout.AbsoluteContentSize.Y + 12
-					tween(dropListFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { Size = UDim2.new(0, 120, 0, targetH), GroupTransparency = 0 })
-					tween(arrowIcon, fadeTweenInfo, { Rotation = 180 })
-					tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.4 })
-				end
-			end)
-
-			backdrop.MouseButton1Click:Connect(function()
-				tween(dropListFrame, TweenInfo.new(0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
-				task.delay(0.15, function() popupHolder.Visible = false end)
-
-				tween(arrowIcon, fadeTweenInfo, { Rotation = 0 })
-				tween(selBoxStroke, fadeTweenInfo, { Transparency = 0.75 })
-			end)
-
-			local obj = {
-				GetSelected = function() return getSelectedList() end,
-				Set = function(_, val)
-					selectedMap = {}
-					if typeof(val) == "table" then
-						for _, item in ipairs(val) do
-							selectedMap[item] = true
-						end
-					end
-					refreshSelectionStates()
-					pcall(callback, getSelectedList())
 				end,
 				SetItems = function(_, newItems)
 					items = newItems or {}
