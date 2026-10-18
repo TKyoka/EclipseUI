@@ -2183,160 +2183,195 @@ function EclipseUI:CreateWindow(options)
 		function TabObject:ProfileCard(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
+
+			local welcomeText = opts.WelcomeText or "WELCOME BACK"
 			local name = opts.Name or LocalPlayer.DisplayName
-			local subtext = opts.Subtext or ("@" .. LocalPlayer.Name)
-			local image = opts.Image or ""
-			local desc = opts.Description or opts.Desc or ""
-			local buttonText = opts.ButtonText
-			local callback = opts.Callback or function() end
+			local username = opts.Username or ("@" .. LocalPlayer.Name)
+			local pills = opts.Pills or {}
 
-			local cardFrame, cardStroke = createContainer(targetParent, 80)
-			cardFrame.AutomaticSize = Enum.AutomaticSize.Y
+			local cardFrame, cardStroke = createContainer(targetParent, 110)
+			cardFrame.Name = "ProfileCard"
+			cardFrame.ClipsDescendants = true
+			cardFrame.BackgroundColor3 = Window.Theme.ContainerBg
+			cardFrame.BackgroundTransparency = 0.5
 
-			local layout = Instance.new("UIListLayout")
-			layout.Padding = UDim.new(0, 8)
-			layout.SortOrder = Enum.SortOrder.LayoutOrder
-			layout.Parent = cardFrame
+			local avatarImg = Instance.new("ImageLabel")
+			avatarImg.Name = "Avatar"
+			avatarImg.Size = UDim2.new(0, 120, 0, 120)
+			avatarImg.Position = UDim2.new(1, -125, 0.5, -55)
+			avatarImg.BackgroundTransparency = 1
+			avatarImg.ZIndex = 5
+			avatarImg.Parent = cardFrame
 
-			local padding = Instance.new("UIPadding")
-			padding.PaddingLeft = UDim.new(0, 12)
-			padding.PaddingRight = UDim.new(0, 12)
-			padding.PaddingTop = UDim.new(0, 12)
-			padding.PaddingBottom = UDim.new(0, 12)
-			padding.Parent = cardFrame
+			task.spawn(function()
+				local content, isReady = Players:GetUserThumbnailAsync(
+					LocalPlayer.UserId,
+					Enum.ThumbnailType.BustShot,
+					Enum.ThumbnailSize.Size420x420
+				)
+				if isReady and avatarImg.Parent then
+					avatarImg.Image = content
+				end
+			end)
+			
+			local contentArea = Instance.new("Frame")
+			contentArea.Name = "ContentArea"
+			contentArea.Size = UDim2.new(1, -135, 1, 0)
+			contentArea.Position = UDim2.new(0, 0, 0, 0)
+			contentArea.BackgroundTransparency = 1
+			contentArea.ZIndex = 5
+			contentArea.Parent = cardFrame
 
-			local topRow = Instance.new("Frame")
-			topRow.Size = UDim2.new(1, 0, 0, 36)
-			topRow.BackgroundTransparency = 1
-			topRow.LayoutOrder = 1
-			topRow.ZIndex = 5
-			topRow.Parent = cardFrame
+			local contentPadding = Instance.new("UIPadding")
+			contentPadding.PaddingLeft = UDim.new(0, 16)
+			contentPadding.PaddingTop = UDim.new(0, 12)
+			contentPadding.PaddingBottom = UDim.new(0, 12)
+			contentPadding.Parent = contentArea
 
-			local avatar = Instance.new("ImageLabel")
-			avatar.Size = UDim2.new(0, 36, 0, 36)
-			avatar.Position = UDim2.new(0, 0, 0, 0)
-			avatar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-			avatar.BackgroundTransparency = 0.9
-			avatar.ZIndex = 6
-			avatar.Parent = topRow
+			local contentLayout = Instance.new("UIListLayout")
+			contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			contentLayout.Padding = UDim.new(0, 2)
+			contentLayout.Parent = contentArea
 
-			local avatarCorner = Instance.new("UICorner")
-			avatarCorner.CornerRadius = UDim.new(1, 0)
-			avatarCorner.Parent = avatar
-
-			if image == "" then
-				task.spawn(function()
-					local content, isReady = Players:GetUserThumbnailAsync(
-						LocalPlayer.UserId,
-						Enum.ThumbnailType.HeadShot,
-						Enum.ThumbnailSize.Size420x420
-					)
-					if isReady and avatar.Parent then
-						avatar.Image = content
-					end
-				end)
-			else
-				avatar.Image = getIconAsset(image)
-			end
-
-			local textHolder = Instance.new("Frame")
-			textHolder.Size = UDim2.new(1, -44, 1, 0)
-			textHolder.Position = UDim2.new(0, 44, 0, 0)
-			textHolder.BackgroundTransparency = 1
-			textHolder.ZIndex = 6
-			textHolder.Parent = topRow
+			local headerLabel = Instance.new("TextLabel")
+			headerLabel.Size = UDim2.new(1, 0, 0, 14)
+			headerLabel.BackgroundTransparency = 1
+			headerLabel.Text = string.upper(welcomeText)
+			headerLabel.TextColor3 = Window.Theme.TextDim
+			headerLabel.TextSize = 9
+			headerLabel.Font = Enum.Font.GothamBold
+			headerLabel.TextXAlignment = Enum.TextXAlignment.Left
+			headerLabel.LayoutOrder = 1
+			headerLabel.ZIndex = 6
+			headerLabel.Parent = contentArea
 
 			local nameLabel = Instance.new("TextLabel")
-			nameLabel.Size = UDim2.new(1, 0, 0, 18)
+			nameLabel.Size = UDim2.new(1, 0, 0, 22)
 			nameLabel.BackgroundTransparency = 1
 			nameLabel.Text = name
 			nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-			nameLabel.TextSize = 12
+			nameLabel.TextSize = 18
 			nameLabel.Font = Enum.Font.GothamBold
 			nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+			nameLabel.LayoutOrder = 2
 			nameLabel.ZIndex = 6
-			nameLabel.Parent = textHolder
+			nameLabel.Parent = contentArea
 
-			local subLabel = Instance.new("TextLabel")
-			subLabel.Size = UDim2.new(1, 0, 0, 16)
-			subLabel.Position = UDim2.new(0, 0, 0, 18)
-			subLabel.BackgroundTransparency = 1
-			subLabel.Text = subtext
-			subLabel.TextColor3 = Window.Theme.TextMuted
-			subLabel.TextSize = 11
-			subLabel.Font = Enum.Font.Gotham
-			subLabel.TextXAlignment = Enum.TextXAlignment.Left
-			subLabel.ZIndex = 6
-			subLabel.Parent = textHolder
+			local userLabel = Instance.new("TextLabel")
+			userLabel.Size = UDim2.new(1, 0, 0, 16)
+			userLabel.BackgroundTransparency = 1
+			userLabel.Text = username
+			userLabel.TextColor3 = Window.Theme.TextMuted
+			userLabel.TextSize = 11
+			userLabel.Font = Enum.Font.Gotham
+			userLabel.TextXAlignment = Enum.TextXAlignment.Left
+			userLabel.LayoutOrder = 3
+			userLabel.ZIndex = 6
+			userLabel.Parent = contentArea
+
+			local pillContainer = Instance.new("Frame")
+			pillContainer.Name = "Pills"
+			pillContainer.Size = UDim2.new(1, 0, 0, 24)
+			pillContainer.BackgroundTransparency = 1
+			pillContainer.LayoutOrder = 4
+			pillContainer.ZIndex = 6
+			pillContainer.Parent = contentArea
+
+			local pillLayout = Instance.new("UIListLayout")
+			pillLayout.FillDirection = Enum.FillDirection.Horizontal
+			pillLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			pillLayout.Padding = UDim.new(0, 6)
+			pillLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+			pillLayout.Parent = pillContainer
+
+			local pillSpacer = Instance.new("Frame")
+			pillSpacer.Size = UDim2.new(1, 0, 0, 6)
+			pillSpacer.BackgroundTransparency = 1
+			pillSpacer.LayoutOrder = 3.5
+			pillSpacer.Parent = contentArea
+
+			for idx, pData in ipairs(pills) do
+				local pText = pData.Text or ""
+				local pIcon = pData.Icon
+				local pCallback = pData.Callback
+
+				local pill = Instance.new("Frame")
+				pill.Size = UDim2.new(0, 0, 0, 22)
+				pill.AutomaticSize = Enum.AutomaticSize.X
+				pill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+				pill.BackgroundTransparency = 0.9
+				pill.ZIndex = 6
+				pill.Parent = pillContainer
+
+				local pillCorner = Instance.new("UICorner")
+				pillCorner.CornerRadius = UDim.new(0, 6)
+				pillCorner.Parent = pill
+
+				local pillStroke = Instance.new("UIStroke")
+				pillStroke.Color = Color3.fromRGB(255, 255, 255)
+				pillStroke.Thickness = 1
+				pillStroke.Transparency = 0.85
+				pillStroke.Parent = pill
+
+				local pillPad = Instance.new("UIPadding")
+				pillPad.PaddingLeft = UDim.new(0, 8)
+				pillPad.PaddingRight = UDim.new(0, 8)
+				pillPad.Parent = pill
+
+				local pillContentLayout = Instance.new("UIListLayout")
+				pillContentLayout.FillDirection = Enum.FillDirection.Horizontal
+				pillContentLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+				pillContentLayout.Padding = UDim.new(0, 5)
+				pillContentLayout.Parent = pill
+
+				if pIcon then
+					local iconImg = Instance.new("ImageLabel")
+					iconImg.Size = UDim2.new(0, 12, 0, 12)
+					iconImg.BackgroundTransparency = 1
+					iconImg.Image = getIconAsset(pIcon)
+					iconImg.ImageColor3 = Window.Theme.TextMuted
+					iconImg.ZIndex = 7
+					iconImg.Parent = pill
+				end
+
+				local pillLabel = Instance.new("TextLabel")
+				pillLabel.Size = UDim2.new(0, 0, 1, 0)
+				pillLabel.AutomaticSize = Enum.AutomaticSize.X
+				pillLabel.BackgroundTransparency = 1
+				pillLabel.Text = pText
+				pillLabel.TextColor3 = Window.Theme.TextMuted
+				pillLabel.TextSize = 10
+				pillLabel.Font = Enum.Font.GothamBold
+				pillLabel.ZIndex = 7
+				pillLabel.Parent = pill
+
+				if pCallback then
+					local btn = Instance.new("TextButton")
+					btn.Size = UDim2.new(1, 0, 1, 0)
+					btn.BackgroundTransparency = 1
+					btn.Text = ""
+					btn.ZIndex = 8
+					btn.Parent = pill
+
+					btn.MouseEnter:Connect(function()
+						tween(pill, fadeTweenInfo, { BackgroundTransparency = 0.8 })
+					end)
+					btn.MouseLeave:Connect(function()
+						tween(pill, fadeTweenInfo, { BackgroundTransparency = 0.9 })
+					end)
+					btn.MouseButton1Click:Connect(pCallback)
+				end
+			end
 
 			table.insert(Window.ThemeUpdaters, function(t)
-				subLabel.TextColor3 = t.TextMuted
+				headerLabel.TextColor3 = t.TextDim
+				userLabel.TextColor3 = t.TextMuted
+				cardFrame.BackgroundColor3 = t.ContainerBg
 			end)
 
-			local descLabel
-			if desc ~= "" then
-				descLabel = Instance.new("TextLabel")
-				descLabel.Size = UDim2.new(1, 0, 0, 0)
-				descLabel.AutomaticSize = Enum.AutomaticSize.Y
-				descLabel.BackgroundTransparency = 1
-				descLabel.Text = desc
-				descLabel.TextColor3 = Window.Theme.TextMuted
-				descLabel.TextSize = 11
-				descLabel.Font = Enum.Font.Gotham
-				descLabel.TextXAlignment = Enum.TextXAlignment.Left
-				descLabel.TextWrapped = true
-				descLabel.LayoutOrder = 2
-				descLabel.ZIndex = 5
-				descLabel.Parent = cardFrame
-
-				table.insert(Window.ThemeUpdaters, function(t)
-					descLabel.TextColor3 = t.TextMuted
-				end)
-			end
-
-			if buttonText then
-				local cardBtn = Instance.new("TextButton")
-				cardBtn.Size = UDim2.new(1, 0, 0, 28)
-				cardBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-				cardBtn.BackgroundTransparency = 0.85
-				cardBtn.AutoButtonColor = false
-				cardBtn.Text = buttonText
-				cardBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-				cardBtn.TextSize = 11
-				cardBtn.Font = Enum.Font.GothamBold
-				cardBtn.LayoutOrder = 3
-				cardBtn.ZIndex = 6
-				cardBtn.Parent = cardFrame
-
-				local btnCorner = Instance.new("UICorner")
-				btnCorner.CornerRadius = UDim.new(0, 6)
-				btnCorner.Parent = cardBtn
-
-				local btnStroke = Instance.new("UIStroke")
-				btnStroke.Color = Color3.fromRGB(255, 255, 255)
-				btnStroke.Thickness = 1
-				btnStroke.Transparency = 0.7
-				btnStroke.Parent = cardBtn
-
-				cardBtn.MouseEnter:Connect(function()
-					tween(cardBtn, fadeTweenInfo, { BackgroundTransparency = 0.7 })
-				end)
-				cardBtn.MouseLeave:Connect(function()
-					tween(cardBtn, fadeTweenInfo, { BackgroundTransparency = 0.85 })
-				end)
-				cardBtn.MouseButton1Click:Connect(function()
-					pcall(callback)
-				end)
-			end
-
-			return {
-				SetAvatar = function(_, newImage) avatar.Image = getIconAsset(newImage) end,
-				SetName = function(_, newName) nameLabel.Text = newName end,
-				SetSubtext = function(_, newSub) subLabel.Text = newSub end,
-				SetDescription = function(_, newDesc) if descLabel then descLabel.Text = newDesc end end
-			}
+			return cardFrame
 		end
-
+		
 		function TabObject:Button(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
