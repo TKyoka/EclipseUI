@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.47 | October 18, 2026 (temp)
+    Eclipse UI | Version: 1.1.48 | October 18, 2026
 
     Author: TKyoka
 	Discord: discord.gg/ZRfJ7kdGDv
@@ -2215,6 +2215,10 @@ function EclipseUI:CreateWindow(options)
 			avatarAura.ImageTransparency = 0.5
 			avatarAura.ZIndex = 4
 			avatarAura.Parent = cardFrame
+
+			local avCorner = Instance.new("UICorner")
+			avCorner.CornerRadius = UDim.new(0, 8)
+			avCorner.Parent = avatarAura
 
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
