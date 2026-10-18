@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.1.01 (okay)
+--// EclipseUI Roblox Library Version 1.1.01 (fixed yay)
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -2190,11 +2190,11 @@ function EclipseUI:CreateWindow(options)
 			cardFrame.Name = "ProfileCard"
 			cardFrame.ClipsDescendants = false
 
-			-- HeadShot Thumbnail (Self Portrait view)
+			-- BustShot Thumbnail, moved 10 pixels to the left (-95 instead of -85)
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
 			avatarImg.Size = UDim2.new(0, 85, 0, 85)
-			avatarImg.Position = UDim2.new(1, -85, 0.5, -42)
+			avatarImg.Position = UDim2.new(1, -95, 0.5, -42)
 			avatarImg.BackgroundTransparency = 1
 			avatarImg.ZIndex = 5
 			avatarImg.Parent = cardFrame
@@ -2202,7 +2202,7 @@ function EclipseUI:CreateWindow(options)
 			task.spawn(function()
 				local content, isReady = Players:GetUserThumbnailAsync(
 					LocalPlayer.UserId,
-					Enum.ThumbnailType.HeadShot, -- Changed to HeadShot for the self portrait view
+					Enum.ThumbnailType.BustShot, -- Changed back to BustShot
 					Enum.ThumbnailSize.Size420x420
 				)
 				if content and avatarImg.Parent then
