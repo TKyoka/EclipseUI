@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.1.02 (wait its actually better)
+--// EclipseUI Roblox Library Version 1.1.02 (this is fun)
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -2196,7 +2196,12 @@ function EclipseUI:CreateWindow(options)
 
 			local cardFrame, cardStroke = createContainer(targetParent, 85)
 			cardFrame.Name = "ProfileCard"
-			cardFrame.ClipsDescendants = true -- Cuts off elements inside the container frame
+			cardFrame.ClipsDescendants = true
+
+			-- Card Frame Rounding (Matches container stroke rounding)
+			local cardCorner = Instance.new("UICorner")
+			cardCorner.CornerRadius = UDim.new(0, 8) -- Adjust radius to match library container standards
+			cardCorner.Parent = cardFrame
 
 			-- Custom Radial Glow Asset (Rotated 180° to put dark side on the right)
 			local avatarAura = Instance.new("ImageLabel")
@@ -2205,7 +2210,7 @@ function EclipseUI:CreateWindow(options)
 			avatarAura.Position = UDim2.new(1, -127, 0.5, -65)
 			avatarAura.BackgroundTransparency = 1
 			avatarAura.Image = "rbxassetid://14391650987"
-			avatarAura.Rotation = 180 -- Flips the dark side from left to right
+			avatarAura.Rotation = 180
 			avatarAura.ImageColor3 = Window.Theme.Accent or Color3.fromRGB(0, 170, 255)
 			avatarAura.ImageTransparency = 0.5
 			avatarAura.ZIndex = 4
