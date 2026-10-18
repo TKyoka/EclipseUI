@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.6.08 (Dynamic Multi-Theme + SliderRow + ToggleKeybind)
+--// EclipseUI Roblox Library Version 1.6.08 (Dynamic Multi-Theme + ProfileCard + Changelog + Top-Level ZIndex)
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -167,6 +167,13 @@ EclipseUI.__index = EclipseUI
 EclipseUI.Themes = Themes
 EclipseUI.CurrentTheme = "Eclipse"
 
+local function applyTopLevelZIndex(gui)
+	if gui and gui:IsA("ScreenGui") then
+		gui.DisplayOrder = 999999999
+		gui.ZIndexBehavior = Enum.ZIndexBehavior.Global
+	end
+end
+
 function EclipseUI:AddTheme(name, themeData)
 	if typeof(name) == "string" and typeof(themeData) == "table" then
 		Themes[name] = themeData
@@ -189,8 +196,10 @@ function EclipseUI:Notify(opts)
 		notifGui.Name = "EclipseNotifications"
 		notifGui.IgnoreGuiInset = true
 		notifGui.ResetOnSpawn = false
-		notifGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+		applyTopLevelZIndex(notifGui)
 		notifGui.Parent = playerGui
+	else
+		applyTopLevelZIndex(notifGui)
 	end
 
 	local holder = notifGui:FindFirstChild("Holder")
@@ -357,7 +366,7 @@ function EclipseUI:CreateWindow(options)
 	local screenGui = Instance.new("ScreenGui")
 	screenGui.Name = "EclipseUI"
 	screenGui.ResetOnSpawn = false
-	screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	applyTopLevelZIndex(screenGui)
 	screenGui.Parent = playerGui
 
 	local defaultSize = UDim2.new(0, 480, 0, 320)
@@ -588,6 +597,7 @@ function EclipseUI:CreateWindow(options)
 		loaderGui.Name = "EclipseLoaderGui"
 		loaderGui.IgnoreGuiInset = true
 		loaderGui.ResetOnSpawn = false
+		applyTopLevelZIndex(loaderGui)
 		loaderGui.Parent = playerGui
 		loaderGuiRef = loaderGui
 
@@ -720,7 +730,7 @@ function EclipseUI:CreateWindow(options)
 		local openBtnGui = Instance.new("ScreenGui")
 		openBtnGui.Name = "EclipseOpenButtonGui"
 		openBtnGui.ResetOnSpawn = false
-		openBtnGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+		applyTopLevelZIndex(openBtnGui)
 		openBtnGui.Parent = playerGui
 
 		local openBtn = Instance.new("ImageButton")
@@ -1928,6 +1938,299 @@ function EclipseUI:CreateWindow(options)
 			return SectionObj
 		end
 
+		function TabObject:ProfileCard(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local welcomeText = opts.WelcomeText or "WELCOME BACK"
+			local versionText = opts.Version or "v1.5"
+
+			local cardContainer, stroke = createContainer(targetParent, 110)
+			cardContainer.Name = "ProfileCard"
+			cardContainer.ClipsDescendants = true
+
+			local avatarImg = Instance.new("ImageLabel")
+			avatarImg.Name = "ProfileAvatar"
+			avatarImg.AnchorPoint = Vector2.new(1, 0.5)
+			avatarImg.Position = UDim2.new(1, 10, 0.5, 10)
+			avatarImg.Size = UDim2.new(0, 110, 0, 120)
+			avatarImg.BackgroundTransparency = 1
+			avatarImg.ScaleType = Enum.ScaleType.Fit
+			avatarImg.ZIndex = 5
+			avatarImg.Parent = cardContainer
+
+			local realBust = ""
+			local isAnonName = false
+			local isAnonAvatar = false
+
+			task.spawn(function()
+				local content, isReady = Players:GetUserThumbnailAsync(
+					LocalPlayer.UserId,
+					Enum.ThumbnailType.Bust,
+					Enum.ThumbnailSize.Size420x420
+				)
+				if isReady then
+					realBust = content
+					avatarImg.Image = realBust
+				end
+			end)
+
+			local infoFrame = Instance.new("Frame")
+			infoFrame.Size = UDim2.new(1, -120, 1, 0)
+			infoFrame.Position = UDim2.new(0, 14, 0, 0)
+			infoFrame.BackgroundTransparency = 1
+			infoFrame.ZIndex = 6
+			infoFrame.Parent = cardContainer
+
+			local welcomeLabel = Instance.new("TextLabel")
+			welcomeLabel.Position = UDim2.new(0, 0, 0, 12)
+			welcomeLabel.Size = UDim2.new(1, 0, 0, 12)
+			welcomeLabel.BackgroundTransparency = 1
+			welcomeLabel.Text = welcomeText
+			welcomeLabel.TextColor3 = Window.Theme.TextDim
+			welcomeLabel.TextSize = 9
+			welcomeLabel.Font = Enum.Font.GothamBold
+			welcomeLabel.TextXAlignment = Enum.TextXAlignment.Left
+			welcomeLabel.ZIndex = 6
+			welcomeLabel.Parent = infoFrame
+
+			local nameLabel = Instance.new("TextLabel")
+			nameLabel.Position = UDim2.new(0, 0, 0, 26)
+			nameLabel.Size = UDim2.new(1, 0, 0, 18)
+			nameLabel.BackgroundTransparency = 1
+			nameLabel.Text = LocalPlayer.DisplayName
+			nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+			nameLabel.TextSize = 16
+			nameLabel.Font = Enum.Font.GothamBold
+			nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+			nameLabel.ZIndex = 6
+			nameLabel.Parent = infoFrame
+
+			local userTagLabel = Instance.new("TextLabel")
+			userTagLabel.Position = UDim2.new(0, 0, 0, 46)
+			userTagLabel.Size = UDim2.new(1, 0, 0, 12)
+			userTagLabel.BackgroundTransparency = 1
+			userTagLabel.Text = "@" .. LocalPlayer.Name
+			userTagLabel.TextColor3 = Window.Theme.TextMuted
+			userTagLabel.TextSize = 10
+			userTagLabel.Font = Enum.Font.Gotham
+			userTagLabel.TextXAlignment = Enum.TextXAlignment.Left
+			userTagLabel.ZIndex = 6
+			userTagLabel.Parent = infoFrame
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				welcomeLabel.TextColor3 = t.TextDim
+				userTagLabel.TextColor3 = t.TextMuted
+			end)
+
+			local pillsRow = Instance.new("Frame")
+			pillsRow.Position = UDim2.new(0, 0, 0, 68)
+			pillsRow.Size = UDim2.new(1, 0, 0, 26)
+			pillsRow.BackgroundTransparency = 1
+			pillsRow.ZIndex = 6
+			pillsRow.Parent = infoFrame
+
+			local pillsLayout = Instance.new("UIListLayout")
+			pillsLayout.FillDirection = Enum.FillDirection.Horizontal
+			pillsLayout.Padding = UDim.new(0, 6)
+			pillsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			pillsLayout.Parent = pillsRow
+
+			local function createPill(iconName, textVal, callback)
+				local btn = Instance.new("TextButton")
+				btn.Size = UDim2.new(0, 0, 1, 0)
+				btn.AutomaticSize = Enum.AutomaticSize.X
+				btn.BackgroundColor3 = Window.Theme.ContainerBg
+				btn.BackgroundTransparency = 0.4
+				btn.Text = ""
+				btn.AutoButtonColor = false
+				btn.ZIndex = 7
+				btn.Parent = pillsRow
+
+				local corner = Instance.new("UICorner")
+				corner.CornerRadius = UDim.new(0, 6)
+				corner.Parent = btn
+
+				local pillStroke = Instance.new("UIStroke")
+				pillStroke.Color = Color3.fromRGB(255, 255, 255)
+				pillStroke.Thickness = 1
+				pillStroke.Transparency = 0.82
+				pillStroke.Parent = btn
+
+				local pPadding = Instance.new("UIPadding")
+				pPadding.PaddingLeft = UDim.new(0, 8)
+				pPadding.PaddingRight = UDim.new(0, 8)
+				pPadding.Parent = btn
+
+				local pLayout = Instance.new("UIListLayout")
+				pLayout.FillDirection = Enum.FillDirection.Horizontal
+				pLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+				pLayout.Padding = UDim.new(0, 4)
+				pLayout.Parent = btn
+
+				if iconName then
+					local icon = Instance.new("ImageLabel")
+					icon.Size = UDim2.new(0, 12, 0, 12)
+					icon.BackgroundTransparency = 1
+					icon.Image = getIconAsset(iconName)
+					icon.ImageColor3 = Window.Theme.TextMuted
+					icon.ZIndex = 8
+					icon.Parent = btn
+				end
+
+				local lbl = Instance.new("TextLabel")
+				lbl.Size = UDim2.new(0, 0, 1, 0)
+				lbl.AutomaticSize = Enum.AutomaticSize.X
+				lbl.BackgroundTransparency = 1
+				lbl.Text = textVal
+				lbl.TextColor3 = Color3.fromRGB(240, 245, 255)
+				lbl.TextSize = 10
+				lbl.Font = Enum.Font.GothamMedium
+				lbl.ZIndex = 8
+				lbl.Parent = btn
+
+				if callback then
+					btn.MouseButton1Click:Connect(callback)
+				end
+
+				return btn
+			end
+
+			createPill("disc", versionText, nil)
+			
+			createPill("eye-off", "Name", function()
+				isAnonName = not isAnonName
+				nameLabel.Text = isAnonName and "Eclipse Hub" or LocalPlayer.DisplayName
+				userTagLabel.Text = isAnonName and "@Kyoka" or ("@" .. LocalPlayer.Name)
+			end)
+
+			createPill("user-x", "Avatar", function()
+				isAnonAvatar = not isAnonAvatar
+				avatarImg.Image = isAnonAvatar and "rbxassetid://11984980776" or (realBust ~= "" and realBust or "rbxassetid://11984980776")
+			end)
+
+			return cardContainer
+		end
+
+		function TabObject:Changelog(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local title = opts.Title or "Changelog"
+			local date = opts.Date or os.date("%B %d, %Y")
+			local changes = opts.Changes or {}
+
+			local card, stroke = createContainer(targetParent, 0)
+			card.Name = "ChangelogCard"
+			card.AutomaticSize = Enum.AutomaticSize.Y
+
+			local cPadding = Instance.new("UIPadding")
+			cPadding.PaddingLeft = UDim.new(0, 14)
+			cPadding.PaddingRight = UDim.new(0, 14)
+			cPadding.PaddingTop = UDim.new(0, 12)
+			cPadding.PaddingBottom = UDim.new(0, 12)
+			cPadding.Parent = card
+
+			local cLayout = Instance.new("UIListLayout")
+			cLayout.Padding = UDim.new(0, 8)
+			cLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			cLayout.Parent = card
+
+			local headerRow = Instance.new("Frame")
+			headerRow.Size = UDim2.new(1, 0, 0, 18)
+			headerRow.BackgroundTransparency = 1
+			headerRow.ZIndex = 5
+			headerRow.Parent = card
+
+			local titleLbl = Instance.new("TextLabel")
+			titleLbl.Size = UDim2.new(1, -100, 1, 0)
+			titleLbl.BackgroundTransparency = 1
+			titleLbl.Text = title
+			titleLbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+			titleLbl.TextSize = 13
+			titleLbl.Font = Enum.Font.GothamBold
+			titleLbl.TextXAlignment = Enum.TextXAlignment.Left
+			titleLbl.ZIndex = 5
+			titleLbl.Parent = headerRow
+
+			local dateBadge = Instance.new("Frame")
+			dateBadge.AnchorPoint = Vector2.new(1, 0.5)
+			dateBadge.Position = UDim2.new(1, 0, 0.5, 0)
+			dateBadge.Size = UDim2.new(0, 0, 0, 18)
+			dateBadge.AutomaticSize = Enum.AutomaticSize.X
+			dateBadge.BackgroundColor3 = Window.Theme.ContainerBg
+			dateBadge.BackgroundTransparency = 0.3
+			dateBadge.ZIndex = 5
+			dateBadge.Parent = headerRow
+
+			local dbCorner = Instance.new("UICorner")
+			dbCorner.CornerRadius = UDim.new(1, 0)
+			dbCorner.Parent = dateBadge
+
+			local dbPadding = Instance.new("UIPadding")
+			dbPadding.PaddingLeft = UDim.new(0, 8)
+			dbPadding.PaddingRight = UDim.new(0, 8)
+			dbPadding.Parent = dateBadge
+
+			local dateLbl = Instance.new("TextLabel")
+			dateLbl.Size = UDim2.new(0, 0, 1, 0)
+			dateLbl.AutomaticSize = Enum.AutomaticSize.X
+			dateLbl.BackgroundTransparency = 1
+			dateLbl.Text = date
+			dateLbl.TextColor3 = Window.Theme.TextMuted
+			dateLbl.TextSize = 10
+			dateLbl.Font = Enum.Font.GothamMedium
+			dateLbl.ZIndex = 6
+			dateLbl.Parent = dateBadge
+
+			local listContainer = Instance.new("Frame")
+			listContainer.Size = UDim2.new(1, 0, 0, 0)
+			listContainer.AutomaticSize = Enum.AutomaticSize.Y
+			listContainer.BackgroundTransparency = 1
+			listContainer.ZIndex = 5
+			listContainer.Parent = card
+
+			local listLayout = Instance.new("UIListLayout")
+			listLayout.Padding = UDim.new(0, 5)
+			listLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			listLayout.Parent = listContainer
+
+			for _, change in ipairs(changes) do
+				local itemRow = Instance.new("Frame")
+				itemRow.Size = UDim2.new(1, 0, 0, 0)
+				itemRow.AutomaticSize = Enum.AutomaticSize.Y
+				itemRow.BackgroundTransparency = 1
+				itemRow.ZIndex = 5
+				itemRow.Parent = listContainer
+
+				local bullet = Instance.new("Frame")
+				bullet.Position = UDim2.new(0, 2, 0, 6)
+				bullet.Size = UDim2.new(0, 4, 0, 4)
+				bullet.BackgroundColor3 = Window.Theme.TextMuted
+				bullet.BorderSizePixel = 0
+				bullet.ZIndex = 6
+				bullet.Parent = itemRow
+
+				local bCorner = Instance.new("UICorner")
+				bCorner.CornerRadius = UDim.new(1, 0)
+				bCorner.Parent = bullet
+
+				local changeLbl = Instance.new("TextLabel")
+				changeLbl.Position = UDim2.new(0, 14, 0, 0)
+				changeLbl.Size = UDim2.new(1, -14, 0, 0)
+				changeLbl.AutomaticSize = Enum.AutomaticSize.Y
+				changeLbl.BackgroundTransparency = 1
+				changeLbl.Text = change
+				changeLbl.TextColor3 = Window.Theme.TextMuted
+				changeLbl.TextSize = 11
+				changeLbl.Font = Enum.Font.Gotham
+				changeLbl.TextXAlignment = Enum.TextXAlignment.Left
+				changeLbl.TextWrapped = true
+				changeLbl.ZIndex = 6
+				changeLbl.Parent = itemRow
+			end
+
+			return card
+		end
+
 		function TabObject:GroupBox(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -2482,7 +2785,6 @@ function EclipseUI:CreateWindow(options)
 			return sliderObjs
 		end
 
-		--// NEW: ToggleKeybind Element
 		function TabObject:ToggleKeybind(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -3306,6 +3608,7 @@ function EclipseUI:CreateWindow(options)
 			popupHolder.BackgroundTransparency = 1
 			popupHolder.Visible = false
 			popupHolder.ZIndex = 999
+			applyTopLevelZIndex(screenGui)
 			popupHolder.Parent = screenGui
 			table.insert(Window.ActiveDropdowns, popupHolder)
 
@@ -3602,6 +3905,7 @@ function EclipseUI:CreateWindow(options)
 			popupHolder.BackgroundTransparency = 1
 			popupHolder.Visible = false
 			popupHolder.ZIndex = 999
+			applyTopLevelZIndex(screenGui)
 			popupHolder.Parent = screenGui
 			table.insert(Window.ActiveDropdowns, popupHolder)
 
