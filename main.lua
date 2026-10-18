@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.1.01 (Fixed the Self-Portrait, maybe.)
+--// EclipseUI Roblox Library Version 1.1.01 (okay)
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -2180,7 +2180,7 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
-		function TabObject:ProfileCard(opts, targetParent)
+			function TabObject:ProfileCard(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
 
@@ -2188,8 +2188,9 @@ function EclipseUI:CreateWindow(options)
 
 			local cardFrame, cardStroke = createContainer(targetParent, 85)
 			cardFrame.Name = "ProfileCard"
-			cardFrame.ClipsDescendants = true
+			cardFrame.ClipsDescendants = false
 
+			-- HeadShot Thumbnail (Self Portrait view)
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
 			avatarImg.Size = UDim2.new(0, 85, 0, 85)
@@ -2201,7 +2202,7 @@ function EclipseUI:CreateWindow(options)
 			task.spawn(function()
 				local content, isReady = Players:GetUserThumbnailAsync(
 					LocalPlayer.UserId,
-					Enum.ThumbnailType.BustShot,
+					Enum.ThumbnailType.HeadShot, -- Changed to HeadShot for the self portrait view
 					Enum.ThumbnailSize.Size420x420
 				)
 				if content and avatarImg.Parent then
@@ -2209,6 +2210,7 @@ function EclipseUI:CreateWindow(options)
 				end
 			end)
 
+			-- Left Content Holder
 			local contentArea = Instance.new("Frame")
 			contentArea.Name = "ContentArea"
 			contentArea.Size = UDim2.new(1, -90, 1, 0)
@@ -2227,6 +2229,7 @@ function EclipseUI:CreateWindow(options)
 			contentLayout.Padding = UDim.new(0, 2)
 			contentLayout.Parent = contentArea
 
+			-- Header Text (Bigger, Bold, and permanently White)
 			local headerLabel = Instance.new("TextLabel")
 			headerLabel.Size = UDim2.new(1, 0, 0, 24)
 			headerLabel.BackgroundTransparency = 1
