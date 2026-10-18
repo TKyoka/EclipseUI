@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.48 | October 18, 2026
+    Eclipse UI | Version: 1.1.47 | October 18, 2026
 
     Author: TKyoka
 	Discord: discord.gg/ZRfJ7kdGDv
@@ -2202,7 +2202,18 @@ function EclipseUI:CreateWindow(options)
 
 			local cardFrame, cardStroke = createContainer(targetParent, 85)
 			cardFrame.Name = "ProfileCard"
-			cardFrame.ClipsDescendants = true
+			cardFrame.ClipsDescendants = false
+
+			local clipGroup = Instance.new("CanvasGroup")
+			clipGroup.Name = "ClipGroup"
+			clipGroup.Size = UDim2.new(1, 0, 1, 0)
+			clipGroup.BackgroundTransparency = 1
+			clipGroup.GroupTransparency = 0
+			clipGroup.Parent = cardFrame
+
+			local clipCorner = Instance.new("UICorner")
+            clipCorner.CornerRadius = UDim.new(0, 8)
+            clipCorner.Parent = clipGroup
 
 			local avatarAura = Instance.new("ImageLabel")
 			avatarAura.Name = "AvatarAura"
@@ -2210,11 +2221,11 @@ function EclipseUI:CreateWindow(options)
 			avatarAura.Position = UDim2.new(1, -127, 0.5, -65)
 			avatarAura.BackgroundTransparency = 1
 			avatarAura.Image = "rbxassetid://14391650987"
-			avatarAura.Rotation = 180 -- Flips the dark side from left to right
+			avatarAura.Rotation = 180
 			avatarAura.ImageColor3 = Window.Theme.Accent or Color3.fromRGB(0, 170, 255)
 			avatarAura.ImageTransparency = 0.5
 			avatarAura.ZIndex = 4
-			avatarAura.Parent = cardFrame
+			avatarAura.Parent = clipGroup
 
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
@@ -2222,7 +2233,7 @@ function EclipseUI:CreateWindow(options)
 			avatarImg.Position = UDim2.new(1, -105, 0.5, -42)
 			avatarImg.BackgroundTransparency = 1
 			avatarImg.ZIndex = 5
-			avatarImg.Parent = cardFrame
+			avatarImg.Parent = clipGroup
 
 			task.spawn(function()
 				local content, isReady = Players:GetUserThumbnailAsync(
