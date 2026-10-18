@@ -2180,6 +2180,163 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
+		function TabObject:ProfileCard(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local name = opts.Name or LocalPlayer.DisplayName
+			local subtext = opts.Subtext or ("@" .. LocalPlayer.Name)
+			local image = opts.Image or ""
+			local desc = opts.Description or opts.Desc or ""
+			local buttonText = opts.ButtonText
+			local callback = opts.Callback or function() end
+
+			local cardFrame, cardStroke = createContainer(targetParent, 80)
+			cardFrame.AutomaticSize = Enum.AutomaticSize.Y
+
+			local layout = Instance.new("UIListLayout")
+			layout.Padding = UDim.new(0, 8)
+			layout.SortOrder = Enum.SortOrder.LayoutOrder
+			layout.Parent = cardFrame
+
+			local padding = Instance.new("UIPadding")
+			padding.PaddingLeft = UDim.new(0, 12)
+			padding.PaddingRight = UDim.new(0, 12)
+			padding.PaddingTop = UDim.new(0, 12)
+			padding.PaddingBottom = UDim.new(0, 12)
+			padding.Parent = cardFrame
+
+			local topRow = Instance.new("Frame")
+			topRow.Size = UDim2.new(1, 0, 0, 36)
+			topRow.BackgroundTransparency = 1
+			topRow.LayoutOrder = 1
+			topRow.ZIndex = 5
+			topRow.Parent = cardFrame
+
+			local avatar = Instance.new("ImageLabel")
+			avatar.Size = UDim2.new(0, 36, 0, 36)
+			avatar.Position = UDim2.new(0, 0, 0, 0)
+			avatar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			avatar.BackgroundTransparency = 0.9
+			avatar.ZIndex = 6
+			avatar.Parent = topRow
+
+			local avatarCorner = Instance.new("UICorner")
+			avatarCorner.CornerRadius = UDim.new(1, 0)
+			avatarCorner.Parent = avatar
+
+			if image == "" then
+				task.spawn(function()
+					local content, isReady = Players:GetUserThumbnailAsync(
+						LocalPlayer.UserId,
+						Enum.ThumbnailType.HeadShot,
+						Enum.ThumbnailSize.Size420x420
+					)
+					if isReady and avatar.Parent then
+						avatar.Image = content
+					end
+				end)
+			else
+				avatar.Image = getIconAsset(image)
+			end
+
+			local textHolder = Instance.new("Frame")
+			textHolder.Size = UDim2.new(1, -44, 1, 0)
+			textHolder.Position = UDim2.new(0, 44, 0, 0)
+			textHolder.BackgroundTransparency = 1
+			textHolder.ZIndex = 6
+			textHolder.Parent = topRow
+
+			local nameLabel = Instance.new("TextLabel")
+			nameLabel.Size = UDim2.new(1, 0, 0, 18)
+			nameLabel.BackgroundTransparency = 1
+			nameLabel.Text = name
+			nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+			nameLabel.TextSize = 12
+			nameLabel.Font = Enum.Font.GothamBold
+			nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+			nameLabel.ZIndex = 6
+			nameLabel.Parent = textHolder
+
+			local subLabel = Instance.new("TextLabel")
+			subLabel.Size = UDim2.new(1, 0, 0, 16)
+			subLabel.Position = UDim2.new(0, 0, 0, 18)
+			subLabel.BackgroundTransparency = 1
+			subLabel.Text = subtext
+			subLabel.TextColor3 = Window.Theme.TextMuted
+			subLabel.TextSize = 11
+			subLabel.Font = Enum.Font.Gotham
+			subLabel.TextXAlignment = Enum.TextXAlignment.Left
+			subLabel.ZIndex = 6
+			subLabel.Parent = textHolder
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				subLabel.TextColor3 = t.TextMuted
+			end)
+
+			local descLabel
+			if desc ~= "" then
+				descLabel = Instance.new("TextLabel")
+				descLabel.Size = UDim2.new(1, 0, 0, 0)
+				descLabel.AutomaticSize = Enum.AutomaticSize.Y
+				descLabel.BackgroundTransparency = 1
+				descLabel.Text = desc
+				descLabel.TextColor3 = Window.Theme.TextMuted
+				descLabel.TextSize = 11
+				descLabel.Font = Enum.Font.Gotham
+				descLabel.TextXAlignment = Enum.TextXAlignment.Left
+				descLabel.TextWrapped = true
+				descLabel.LayoutOrder = 2
+				descLabel.ZIndex = 5
+				descLabel.Parent = cardFrame
+
+				table.insert(Window.ThemeUpdaters, function(t)
+					descLabel.TextColor3 = t.TextMuted
+				end)
+			end
+
+			if buttonText then
+				local cardBtn = Instance.new("TextButton")
+				cardBtn.Size = UDim2.new(1, 0, 0, 28)
+				cardBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+				cardBtn.BackgroundTransparency = 0.85
+				cardBtn.AutoButtonColor = false
+				cardBtn.Text = buttonText
+				cardBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+				cardBtn.TextSize = 11
+				cardBtn.Font = Enum.Font.GothamBold
+				cardBtn.LayoutOrder = 3
+				cardBtn.ZIndex = 6
+				cardBtn.Parent = cardFrame
+
+				local btnCorner = Instance.new("UICorner")
+				btnCorner.CornerRadius = UDim.new(0, 6)
+				btnCorner.Parent = cardBtn
+
+				local btnStroke = Instance.new("UIStroke")
+				btnStroke.Color = Color3.fromRGB(255, 255, 255)
+				btnStroke.Thickness = 1
+				btnStroke.Transparency = 0.7
+				btnStroke.Parent = cardBtn
+
+				cardBtn.MouseEnter:Connect(function()
+					tween(cardBtn, fadeTweenInfo, { BackgroundTransparency = 0.7 })
+				end)
+				cardBtn.MouseLeave:Connect(function()
+					tween(cardBtn, fadeTweenInfo, { BackgroundTransparency = 0.85 })
+				end)
+				cardBtn.MouseButton1Click:Connect(function()
+					pcall(callback)
+				end)
+			end
+
+			return {
+				SetAvatar = function(_, newImage) avatar.Image = getIconAsset(newImage) end,
+				SetName = function(_, newName) nameLabel.Text = newName end,
+				SetSubtext = function(_, newSub) subLabel.Text = newSub end,
+				SetDescription = function(_, newDesc) if descLabel then descLabel.Text = newDesc end end
+			}
+		end
+
 		function TabObject:Button(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
