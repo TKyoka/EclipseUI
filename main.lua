@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.1.01 (fixed yay)
+--// EclipseUI Roblox Library Version 1.1.01 (goated fix?)
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -2190,7 +2190,7 @@ function EclipseUI:CreateWindow(options)
 			cardFrame.Name = "ProfileCard"
 			cardFrame.ClipsDescendants = false
 
-			-- BustShot Thumbnail, moved 10 pixels to the left (-95 instead of -85)
+			-- Proper chest-up bust render, shifted 10px left
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
 			avatarImg.Size = UDim2.new(0, 85, 0, 85)
@@ -2202,7 +2202,7 @@ function EclipseUI:CreateWindow(options)
 			task.spawn(function()
 				local content, isReady = Players:GetUserThumbnailAsync(
 					LocalPlayer.UserId,
-					Enum.ThumbnailType.BustShot, -- Changed back to BustShot
+					Enum.ThumbnailType.AvatarBust, -- Fixed: AvatarBust is the correct enum for bust shots
 					Enum.ThumbnailSize.Size420x420
 				)
 				if content and avatarImg.Parent then
@@ -2213,7 +2213,7 @@ function EclipseUI:CreateWindow(options)
 			-- Left Content Holder
 			local contentArea = Instance.new("Frame")
 			contentArea.Name = "ContentArea"
-			contentArea.Size = UDim2.new(1, -90, 1, 0)
+			contentArea.Size = UDim2.new(1, -95, 1, 0)
 			contentArea.Position = UDim2.new(0, 0, 0, 0)
 			contentArea.BackgroundTransparency = 1
 			contentArea.ZIndex = 5
