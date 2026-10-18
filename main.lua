@@ -2185,20 +2185,17 @@ function EclipseUI:CreateWindow(options)
 			targetParent = targetParent or page
 
 			local welcomeText = opts.WelcomeText or "WELCOME BACK"
-			local name = opts.Name or LocalPlayer.DisplayName
-			local username = opts.Username or ("@" .. LocalPlayer.Name)
-			local pills = opts.Pills or {}
 
-			local cardFrame, cardStroke = createContainer(targetParent, 110)
+			-- Uses standard createContainer so the background matches your other elements perfectly
+			local cardFrame, cardStroke = createContainer(targetParent, 70)
 			cardFrame.Name = "ProfileCard"
 			cardFrame.ClipsDescendants = true
-			cardFrame.BackgroundColor3 = Window.Theme.ContainerBg
-			cardFrame.BackgroundTransparency = 0.5
 
+			-- Avatar Image (Right side)
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
-			avatarImg.Size = UDim2.new(0, 100, 0, 100)
-			avatarImg.Position = UDim2.new(1, -105, 0.5, -50)
+			avatarImg.Size = UDim2.new(0, 90, 0, 90)
+			avatarImg.Position = UDim2.new(1, -95, 0.5, -45)
 			avatarImg.BackgroundTransparency = 1
 			avatarImg.ZIndex = 5
 			avatarImg.Parent = cardFrame
@@ -2214,9 +2211,10 @@ function EclipseUI:CreateWindow(options)
 				end
 			end)
 
+			-- Left Content Holder
 			local contentArea = Instance.new("Frame")
 			contentArea.Name = "ContentArea"
-			contentArea.Size = UDim2.new(1, -115, 1, 0)
+			contentArea.Size = UDim2.new(1, -100, 1, 0)
 			contentArea.Position = UDim2.new(0, 0, 0, 0)
 			contentArea.BackgroundTransparency = 1
 			contentArea.ZIndex = 5
@@ -2224,15 +2222,10 @@ function EclipseUI:CreateWindow(options)
 
 			local contentPadding = Instance.new("UIPadding")
 			contentPadding.PaddingLeft = UDim.new(0, 14)
-			contentPadding.PaddingTop = UDim.new(0, 10)
-			contentPadding.PaddingBottom = UDim.new(0, 10)
+			contentPadding.PaddingTop = UDim.new(0, 14)
 			contentPadding.Parent = contentArea
 
-			local contentLayout = Instance.new("UIListLayout")
-			contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-			contentLayout.Padding = UDim.new(0, 2)
-			contentLayout.Parent = contentArea
-
+			-- Header ("WELCOME BACK")
 			local headerLabel = Instance.new("TextLabel")
 			headerLabel.Size = UDim2.new(1, 0, 0, 14)
 			headerLabel.BackgroundTransparency = 1
@@ -2241,138 +2234,11 @@ function EclipseUI:CreateWindow(options)
 			headerLabel.TextSize = 9
 			headerLabel.Font = Enum.Font.GothamBold
 			headerLabel.TextXAlignment = Enum.TextXAlignment.Left
-			headerLabel.LayoutOrder = 1
 			headerLabel.ZIndex = 6
 			headerLabel.Parent = contentArea
 
-			local nameLabel = Instance.new("TextLabel")
-			nameLabel.Size = UDim2.new(1, 0, 0, 20)
-			nameLabel.BackgroundTransparency = 1
-			nameLabel.Text = name
-			nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-			nameLabel.TextSize = 16
-			nameLabel.Font = Enum.Font.GothamBold
-			nameLabel.TextXAlignment = Enum.TextXAlignment.Left
-			nameLabel.LayoutOrder = 2
-			nameLabel.ZIndex = 6
-			nameLabel.Parent = contentArea
-
-			local userLabel = Instance.new("TextLabel")
-			userLabel.Size = UDim2.new(1, 0, 0, 14)
-			userLabel.BackgroundTransparency = 1
-			userLabel.Text = username
-			userLabel.TextColor3 = Window.Theme.TextMuted
-			userLabel.TextSize = 11
-			userLabel.Font = Enum.Font.Gotham
-			userLabel.TextXAlignment = Enum.TextXAlignment.Left
-			userLabel.LayoutOrder = 3
-			userLabel.ZIndex = 6
-			userLabel.Parent = contentArea
-
-			local pillSpacer = Instance.new("Frame")
-			pillSpacer.Size = UDim2.new(1, 0, 0, 6)
-			pillSpacer.BackgroundTransparency = 1
-			pillSpacer.LayoutOrder = 4
-			pillSpacer.Parent = contentArea
-
-			local pillContainer = Instance.new("Frame")
-			pillContainer.Name = "Pills"
-			pillContainer.Size = UDim2.new(1, 0, 0, 22)
-			pillContainer.BackgroundTransparency = 1
-			pillContainer.LayoutOrder = 5
-			pillContainer.ZIndex = 6
-			pillContainer.Parent = contentArea
-
-			local pillLayout = Instance.new("UIListLayout")
-			pillLayout.FillDirection = Enum.FillDirection.Horizontal
-			pillLayout.SortOrder = Enum.SortOrder.LayoutOrder
-			pillLayout.Padding = UDim.new(0, 6)
-			pillLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-			pillLayout.Parent = pillContainer
-
-			for idx, pData in ipairs(pills) do
-				local pText = pData.Text or ""
-				local pIcon = pData.Icon
-				local pCallback = pData.Callback
-
-				local pill = Instance.new("Frame")
-				pill.Name = "Pill_" .. idx
-				pill.Size = UDim2.new(0, 0, 0, 22)
-				pill.AutomaticSize = Enum.AutomaticSize.X
-				pill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-				pill.BackgroundTransparency = 0.9
-				pill.ZIndex = 6
-				pill.Parent = pillContainer
-
-				local pillCorner = Instance.new("UICorner")
-				pillCorner.CornerRadius = UDim.new(0, 6)
-				pillCorner.Parent = pill
-
-				local pillStroke = Instance.new("UIStroke")
-				pillStroke.Color = Color3.fromRGB(255, 255, 255)
-				pillStroke.Thickness = 1
-				pillStroke.Transparency = 0.85
-				pillStroke.Parent = pill
-
-				local pillPad = Instance.new("UIPadding")
-				pillPad.PaddingLeft = UDim.new(0, 8)
-				pillPad.PaddingRight = UDim.new(0, 8)
-				pillPad.Parent = pill
-
-				local pillContentLayout = Instance.new("UIListLayout")
-				pillContentLayout.FillDirection = Enum.FillDirection.Horizontal
-				pillContentLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-				pillContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-				pillContentLayout.Padding = UDim.new(0, 5)
-				pillContentLayout.Parent = pill
-
-				if pIcon then
-					local iconImg = Instance.new("ImageLabel")
-					iconImg.Size = UDim2.new(0, 12, 0, 12)
-					iconImg.BackgroundTransparency = 1
-					iconImg.Image = getIconAsset(pIcon)
-					iconImg.ImageColor3 = Window.Theme.TextMuted
-					iconImg.LayoutOrder = 1
-					iconImg.ZIndex = 7
-					iconImg.Parent = pill
-				end
-
-				if pText ~= "" then
-					local pillLabel = Instance.new("TextLabel")
-					pillLabel.Size = UDim2.new(0, 0, 1, 0)
-					pillLabel.AutomaticSize = Enum.AutomaticSize.X
-					pillLabel.BackgroundTransparency = 1
-					pillLabel.Text = pText
-					pillLabel.TextColor3 = Window.Theme.TextMuted
-					pillLabel.TextSize = 10
-					pillLabel.Font = Enum.Font.GothamBold
-					pillLabel.LayoutOrder = 2
-					pillLabel.ZIndex = 7
-					pillLabel.Parent = pill
-				end
-
-				if pCallback then
-					local btn = Instance.new("TextButton")
-					btn.Size = UDim2.new(1, 0, 1, 0)
-					btn.BackgroundTransparency = 1
-					btn.Text = ""
-					btn.ZIndex = 8
-					btn.Parent = pill
-
-					btn.MouseEnter:Connect(function()
-						tween(pill, fadeTweenInfo, { BackgroundTransparency = 0.8 })
-					end)
-					btn.MouseLeave:Connect(function()
-						tween(pill, fadeTweenInfo, { BackgroundTransparency = 0.9 })
-					end)
-					btn.MouseButton1Click:Connect(pCallback)
-				end
-			end
-
 			table.insert(Window.ThemeUpdaters, function(t)
 				headerLabel.TextColor3 = t.TextDim
-				userLabel.TextColor3 = t.TextMuted
-				cardFrame.BackgroundColor3 = t.ContainerBg
 			end)
 
 			return cardFrame
