@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.1.02 (pls better profilecard)
+--// EclipseUI Roblox Library Version 1.1.02 (maybe this time)
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -2198,17 +2198,19 @@ function EclipseUI:CreateWindow(options)
 			cardFrame.Name = "ProfileCard"
 			cardFrame.ClipsDescendants = false
 
+			-- Custom Radial Glow Asset (Theme Accent Color)
 			local avatarAura = Instance.new("ImageLabel")
 			avatarAura.Name = "AvatarAura"
 			avatarAura.Size = UDim2.new(0, 130, 0, 130)
 			avatarAura.Position = UDim2.new(1, -127, 0.5, -65)
 			avatarAura.BackgroundTransparency = 1
-			avatarAura.Image = "rbxassetid://6015808269"
+			avatarAura.Image = "rbxassetid://14391650987"
 			avatarAura.ImageColor3 = Window.Theme.Accent or Color3.fromRGB(0, 170, 255)
-			avatarAura.ImageTransparency = 0.82
+			avatarAura.ImageTransparency = 0.5
 			avatarAura.ZIndex = 4
 			avatarAura.Parent = cardFrame
 
+			-- Avatar Bust Image
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
 			avatarImg.Size = UDim2.new(0, 85, 0, 85)
@@ -2228,6 +2230,7 @@ function EclipseUI:CreateWindow(options)
 				end
 			end)
 
+			-- Left Content Area
 			local contentArea = Instance.new("Frame")
 			contentArea.Name = "ContentArea"
 			contentArea.Size = UDim2.new(1, -115, 1, 0)
@@ -2246,6 +2249,7 @@ function EclipseUI:CreateWindow(options)
 			contentLayout.Padding = UDim.new(0, 4)
 			contentLayout.Parent = contentArea
 
+			-- Header Text
 			local headerLabel = Instance.new("TextLabel")
 			headerLabel.Size = UDim2.new(1, 0, 0, 18)
 			headerLabel.BackgroundTransparency = 1
@@ -2258,6 +2262,7 @@ function EclipseUI:CreateWindow(options)
 			headerLabel.ZIndex = 6
 			headerLabel.Parent = contentArea
 
+			-- Details Row
 			local detailsRow = Instance.new("Frame")
 			detailsRow.Name = "DetailsRow"
 			detailsRow.Size = UDim2.new(1, 0, 0, 20)
@@ -2273,6 +2278,7 @@ function EclipseUI:CreateWindow(options)
 			rowLayout.Padding = UDim.new(0, 6)
 			rowLayout.Parent = detailsRow
 
+			-- Executor Badge
 			local execBadge = Instance.new("Frame")
 			execBadge.Name = "ExecutorBadge"
 			execBadge.Size = UDim2.new(0, 0, 0, 18)
@@ -2301,6 +2307,7 @@ function EclipseUI:CreateWindow(options)
 			execText.ZIndex = 7
 			execText.Parent = execBadge
 
+			-- Version Badge (Only created if passed in opts)
 			if opts.Version then
 				local verBadge = Instance.new("Frame")
 				verBadge.Name = "VersionBadge"
@@ -2330,6 +2337,12 @@ function EclipseUI:CreateWindow(options)
 				verText.ZIndex = 7
 				verText.Parent = verBadge
 			end
+
+			-- Dynamic Theme Updater Listener
+			table.insert(Window.ThemeUpdaters, function(t)
+				avatarAura.ImageColor3 = t.Accent or Color3.fromRGB(0, 170, 255)
+				execText.TextColor3 = t.TextMuted or Color3.fromRGB(180, 180, 180)
+			end)
 
 			return cardFrame
 		end
