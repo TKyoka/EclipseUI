@@ -1,4 +1,4 @@
---// Eclipse UI Library Version 1.6.07 (Dynamic Multi-Theme + SliderRow)
+--// EclipseUI Roblox Library Version 1.6.08 (Dynamic Multi-Theme + SliderRow + ToggleKeybind)
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -2453,7 +2453,6 @@ function EclipseUI:CreateWindow(options)
 			return toggleObjs
 		end
 
-		--// NEW: SliderRow Element
 		function TabObject:SliderRow(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -2481,6 +2480,222 @@ function EclipseUI:CreateWindow(options)
 			end
 
 			return sliderObjs
+		end
+
+		--// NEW: ToggleKeybind Element
+		function TabObject:ToggleKeybind(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local title = opts.Title or opts.Name or "ToggleKeybind"
+			local defaultState = opts.Default or opts.DefaultState or false
+			local currentKey = opts.DefaultKey or opts.Key or Enum.KeyCode.E
+			local callback = opts.Callback or function() end
+			local flag = opts.Flag
+
+			local container, stroke = createContainer(targetParent, 38)
+
+			local label = Instance.new("TextLabel")
+			label.Size = UDim2.new(1, -120, 1, 0)
+			label.Position = UDim2.new(0, 14, 0, 0)
+			label.BackgroundTransparency = 1
+			label.Text = title
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
+			label.TextSize = 12
+			label.Font = Enum.Font.GothamBold
+			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.ZIndex = 5
+			label.Parent = container
+
+			local keyBtn = Instance.new("TextButton")
+			keyBtn.AnchorPoint = Vector2.new(1, 0.5)
+			keyBtn.Position = UDim2.new(1, -64, 0.5, 0)
+			keyBtn.Size = UDim2.new(0, 48, 0, 22)
+			keyBtn.BackgroundColor3 = Window.Theme.ContainerBg
+			keyBtn.BackgroundTransparency = 0.2
+			keyBtn.Text = currentKey.Name
+			keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
+			keyBtn.TextSize = 11
+			keyBtn.Font = Enum.Font.GothamMedium
+			keyBtn.TextYAlignment = Enum.TextYAlignment.Center
+			keyBtn.ZIndex = 6
+			keyBtn.Parent = container
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				keyBtn.BackgroundColor3 = t.ContainerBg
+			end)
+
+			local keyCorner = Instance.new("UICorner")
+			keyCorner.CornerRadius = UDim.new(0, 6)
+			keyCorner.Parent = keyBtn
+
+			local keyStroke = Instance.new("UIStroke")
+			keyStroke.Color = Color3.fromRGB(255, 255, 255)
+			keyStroke.Thickness = 1
+			keyStroke.Transparency = 0.75
+			keyStroke.Parent = keyBtn
+
+			local toggleFrame = Instance.new("Frame")
+			toggleFrame.Name = "ToggleFrame"
+			toggleFrame.AnchorPoint = Vector2.new(1, 0.5)
+			toggleFrame.Position = UDim2.new(1, -12, 0.5, 0)
+			toggleFrame.Size = UDim2.new(0, 44, 0, 22)
+			toggleFrame.BackgroundColor3 = Window.Theme.ContainerBg
+			toggleFrame.BackgroundTransparency = 0.4
+			toggleFrame.ZIndex = 5
+			toggleFrame.Parent = container
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				toggleFrame.BackgroundColor3 = t.ContainerBg
+			end)
+
+			local tfCorner = Instance.new("UICorner")
+			tfCorner.CornerRadius = UDim.new(1, 0)
+			tfCorner.Parent = toggleFrame
+
+			local gradientOverlay = Instance.new("Frame")
+			gradientOverlay.Name = "GradientOverlay"
+			gradientOverlay.Size = UDim2.new(1, 0, 1, 0)
+			gradientOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			gradientOverlay.BackgroundTransparency = defaultState and 0 or 1
+			gradientOverlay.ZIndex = 6
+			gradientOverlay.Parent = toggleFrame
+
+			local goCorner = Instance.new("UICorner")
+			goCorner.CornerRadius = UDim.new(1, 0)
+			goCorner.Parent = gradientOverlay
+
+			local toggleGradient = Instance.new("UIGradient")
+			toggleGradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Window.Theme.ToggleGradient[1]),
+				ColorSequenceKeypoint.new(1, Window.Theme.ToggleGradient[2])
+			})
+			toggleGradient.Rotation = 45
+			toggleGradient.Parent = gradientOverlay
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				toggleGradient.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, t.ToggleGradient[1]),
+					ColorSequenceKeypoint.new(1, t.ToggleGradient[2])
+				})
+			end)
+
+			local tfStroke = Instance.new("UIStroke")
+			tfStroke.Color = Color3.fromRGB(255, 255, 255)
+			tfStroke.Thickness = 1
+			tfStroke.Transparency = defaultState and 0.5 or 0.8
+			tfStroke.Parent = toggleFrame
+
+			local bar = Instance.new("Frame")
+			bar.Name = "Bar"
+			bar.AnchorPoint = Vector2.new(0, 0.5)
+			bar.Size = UDim2.new(0, 20, 0, 16)
+			bar.Position = defaultState and UDim2.new(1, -22, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
+			bar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			bar.ZIndex = 7
+			bar.Parent = toggleFrame
+
+			local barCorner = Instance.new("UICorner")
+			barCorner.CornerRadius = UDim.new(1, 0)
+			barCorner.Parent = bar
+
+			local hitBox = Instance.new("TextButton")
+			hitBox.Name = "Hitbox"
+			hitBox.Size = UDim2.new(0, 44, 1, 0)
+			hitBox.Position = UDim2.new(1, -56, 0, 0)
+			hitBox.BackgroundTransparency = 1
+			hitBox.Text = ""
+			hitBox.ZIndex = 10
+			hitBox.Parent = container
+
+			local ToggleKeybindObj = { Value = defaultState, Key = currentKey }
+
+			local function updateToggle(newState, animate)
+				ToggleKeybindObj.Value = newState
+				local targetPos = newState and UDim2.new(1, -22, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
+				local targetOverlayTrans = newState and 0 or 1
+				local targetStrokeTrans = newState and 0.5 or 0.8
+
+				local info = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+				if animate then
+					tween(bar, info, { Position = targetPos })
+					tween(gradientOverlay, info, { BackgroundTransparency = targetOverlayTrans })
+					tween(tfStroke, info, { Transparency = targetStrokeTrans })
+				else
+					bar.Position = targetPos
+					gradientOverlay.BackgroundTransparency = targetOverlayTrans
+					tfStroke.Transparency = targetStrokeTrans
+				end
+
+				pcall(callback, newState, ToggleKeybindObj.Key)
+			end
+
+			hitBox.MouseButton1Click:Connect(function()
+				updateToggle(not ToggleKeybindObj.Value, true)
+			end)
+
+			local listening = false
+
+			keyBtn.MouseEnter:Connect(function()
+				if not listening then
+					tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.4 })
+				end
+			end)
+
+			keyBtn.MouseLeave:Connect(function()
+				if not listening then
+					tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
+				end
+			end)
+
+			keyBtn.MouseButton1Click:Connect(function()
+				listening = true
+				keyBtn.Text = "..."
+				keyBtn.TextColor3 = Color3.fromRGB(255, 220, 100)
+				tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.2 })
+			end)
+
+			local keybindInputConn
+			keybindInputConn = UserInputService.InputBegan:Connect(function(input, gpe)
+				if not container:IsDescendantOf(game) then
+					if keybindInputConn then keybindInputConn:Disconnect() end
+					return
+				end
+				if gpe then return end
+				if listening then
+					if input.UserInputType == Enum.UserInputType.Keyboard then
+						listening = false
+						ToggleKeybindObj.Key = input.KeyCode
+						keyBtn.Text = ToggleKeybindObj.Key.Name
+						keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
+						tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
+					end
+				elseif input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == ToggleKeybindObj.Key then
+					updateToggle(not ToggleKeybindObj.Value, true)
+				end
+			end)
+
+			Window:Cleanup(keybindInputConn)
+
+			ToggleKeybindObj.Set = function(_, stateVal, keyVal)
+				if stateVal ~= nil then
+					updateToggle(stateVal, true)
+				end
+				if keyVal then
+					if typeof(keyVal) == "EnumItem" then
+						ToggleKeybindObj.Key = keyVal
+						keyBtn.Text = ToggleKeybindObj.Key.Name
+					elseif typeof(keyVal) == "string" and Enum.KeyCode[keyVal] then
+						ToggleKeybindObj.Key = Enum.KeyCode[keyVal]
+						keyBtn.Text = ToggleKeybindObj.Key.Name
+					end
+				end
+			end
+
+			if flag then
+				registeredElements[flag] = ToggleKeybindObj
+			end
+
+			return ToggleKeybindObj
 		end
 
 		function TabObject:Input(opts, targetParent)
