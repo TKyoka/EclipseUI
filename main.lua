@@ -190,6 +190,7 @@ function EclipseUI:Notify(opts)
 		notifGui.IgnoreGuiInset = true
 		notifGui.ResetOnSpawn = false
 		notifGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+		notifGui.DisplayOrder = 1000000
 		notifGui.Parent = playerGui
 	end
 
@@ -358,6 +359,7 @@ function EclipseUI:CreateWindow(options)
 	screenGui.Name = "EclipseUI"
 	screenGui.ResetOnSpawn = false
 	screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	screenGui.DisplayOrder = 999999
 	screenGui.Parent = playerGui
 
 	local defaultSize = UDim2.new(0, 480, 0, 320)
@@ -721,6 +723,7 @@ function EclipseUI:CreateWindow(options)
 		openBtnGui.Name = "EclipseOpenButtonGui"
 		openBtnGui.ResetOnSpawn = false
 		openBtnGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+		openBtnGui.DisplayOrder = 999999
 		openBtnGui.Parent = playerGui
 
 		local openBtn = Instance.new("ImageButton")
