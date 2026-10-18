@@ -840,8 +840,8 @@ function EclipseUI:CreateWindow(options)
 	local showUser = true
 	local userAnon = false
 	local userCallback = function() end
-	local anonName = "Eclipse"
-	local anonUsername = "@EclipseUI"
+	local anonName = "Hidden"
+	local anonUsername = "username"
 
 	if userOptions ~= nil then
 		if typeof(userOptions) == "table" then
