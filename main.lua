@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.48 | October 18, 2026
+    Eclipse UI | Version: 1.1.47 | October 18, 2026
 
     Author: TKyoka
 	Discord: discord.gg/ZRfJ7kdGDv
@@ -2200,23 +2200,20 @@ function EclipseUI:CreateWindow(options)
 				executorName = getexecutorname()
 			end
 
-			local cardFrame = Instance.new("CanvasGroup")
+			local cardFrame, cardStroke = createContainer(targetParent, 85)
 			cardFrame.Name = "ProfileCard"
-			cardFrame.Size = UDim2.new(1, 0, 0, 85)
-			cardFrame.BackgroundColor3 = Window.Theme.Container or Color3.fromRGB(28, 32, 38)
-			cardFrame.BackgroundTransparency = 0
-			cardFrame.BorderSizePixel = 0
-			cardFrame.GroupTransparency = 0
-			cardFrame.Parent = targetParent
+			cardFrame.ClipsDescendants = false
 
-			local cardCorner = Instance.new("UICorner")
-			cardCorner.CornerRadius = UDim.new(0, 8)
-			cardCorner.Parent = cardFrame
+			local clipGroup = Instance.new("CanvasGroup")
+			clipGroup.Name = "ClipGroup"
+			clipGroup.Size = UDim2.new(1, 0, 1, 0)
+			clipGroup.BackgroundTransparency = 1
+			clipGroup.GroupTransparency = 0
+			clipGroup.Parent = cardFrame
 
-			local cardStroke = Instance.new("UIStroke")
-			cardStroke.Color = Window.Theme.Stroke or Color3.fromRGB(45, 50, 60)
-			cardStroke.Thickness = 1
-			cardStroke.Parent = cardFrame
+			local clipCorner = Instance.new("UICorner")
+			clipCorner.CornerRadius = UDim.new(0, 8)
+			clipCorner.Parent = clipGroup
 
 			local avatarAura = Instance.new("ImageLabel")
 			avatarAura.Name = "AvatarAura"
@@ -2228,7 +2225,7 @@ function EclipseUI:CreateWindow(options)
 			avatarAura.ImageColor3 = Window.Theme.Accent or Color3.fromRGB(0, 170, 255)
 			avatarAura.ImageTransparency = 0.5
 			avatarAura.ZIndex = 4
-			avatarAura.Parent = cardFrame
+			avatarAura.Parent = clipGroup
 
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
@@ -2236,7 +2233,7 @@ function EclipseUI:CreateWindow(options)
 			avatarImg.Position = UDim2.new(1, -105, 0.5, -42)
 			avatarImg.BackgroundTransparency = 1
 			avatarImg.ZIndex = 5
-			avatarImg.Parent = cardFrame
+			avatarImg.Parent = clipGroup
 
 			task.spawn(function()
 				local content, isReady = Players:GetUserThumbnailAsync(
@@ -2353,8 +2350,6 @@ function EclipseUI:CreateWindow(options)
 			end
 
 			table.insert(Window.ThemeUpdaters, function(t)
-				cardFrame.BackgroundColor3 = t.Container or Color3.fromRGB(28, 32, 38)
-				cardStroke.Color = t.Stroke or Color3.fromRGB(45, 50, 60)
 				avatarAura.ImageColor3 = t.Accent or Color3.fromRGB(0, 170, 255)
 				execText.TextColor3 = t.TextMuted or Color3.fromRGB(180, 180, 180)
 			end)
