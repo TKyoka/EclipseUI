@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.1.01 (Dynamic Multi-Theme + SliderRow + ToggleKeybind)
+--// EclipseUI Roblox Library Version 1.1.01 (Latest)
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
