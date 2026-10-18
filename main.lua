@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.1.01 (Latest)
+--// EclipseUI Roblox Library Version 1.1.01 (Fixed the Self-Portrait, maybe.)
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -2184,18 +2184,16 @@ function EclipseUI:CreateWindow(options)
 			opts = opts or {}
 			targetParent = targetParent or page
 
-			local welcomeText = opts.WelcomeText or "WELCOME BACK"
+			local welcomeText = opts.WelcomeText or ("HELLO, " .. string.upper(LocalPlayer.DisplayName) .. "!")
 
-			-- Uses standard createContainer so the background matches your other elements perfectly
-			local cardFrame, cardStroke = createContainer(targetParent, 70)
+			local cardFrame, cardStroke = createContainer(targetParent, 85)
 			cardFrame.Name = "ProfileCard"
 			cardFrame.ClipsDescendants = true
 
-			-- Avatar Image (Right side)
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
-			avatarImg.Size = UDim2.new(0, 90, 0, 90)
-			avatarImg.Position = UDim2.new(1, -95, 0.5, -45)
+			avatarImg.Size = UDim2.new(0, 85, 0, 85)
+			avatarImg.Position = UDim2.new(1, -85, 0.5, -42)
 			avatarImg.BackgroundTransparency = 1
 			avatarImg.ZIndex = 5
 			avatarImg.Parent = cardFrame
@@ -2211,10 +2209,9 @@ function EclipseUI:CreateWindow(options)
 				end
 			end)
 
-			-- Left Content Holder
 			local contentArea = Instance.new("Frame")
 			contentArea.Name = "ContentArea"
-			contentArea.Size = UDim2.new(1, -100, 1, 0)
+			contentArea.Size = UDim2.new(1, -90, 1, 0)
 			contentArea.Position = UDim2.new(0, 0, 0, 0)
 			contentArea.BackgroundTransparency = 1
 			contentArea.ZIndex = 5
@@ -2222,24 +2219,24 @@ function EclipseUI:CreateWindow(options)
 
 			local contentPadding = Instance.new("UIPadding")
 			contentPadding.PaddingLeft = UDim.new(0, 14)
-			contentPadding.PaddingTop = UDim.new(0, 14)
 			contentPadding.Parent = contentArea
 
-			-- Header ("WELCOME BACK")
+			local contentLayout = Instance.new("UIListLayout")
+			contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			contentLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+			contentLayout.Padding = UDim.new(0, 2)
+			contentLayout.Parent = contentArea
+
 			local headerLabel = Instance.new("TextLabel")
-			headerLabel.Size = UDim2.new(1, 0, 0, 14)
+			headerLabel.Size = UDim2.new(1, 0, 0, 24)
 			headerLabel.BackgroundTransparency = 1
-			headerLabel.Text = string.upper(welcomeText)
-			headerLabel.TextColor3 = Window.Theme.TextDim
-			headerLabel.TextSize = 9
+			headerLabel.Text = welcomeText
+			headerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+			headerLabel.TextSize = 14
 			headerLabel.Font = Enum.Font.GothamBold
 			headerLabel.TextXAlignment = Enum.TextXAlignment.Left
 			headerLabel.ZIndex = 6
 			headerLabel.Parent = contentArea
-
-			table.insert(Window.ThemeUpdaters, function(t)
-				headerLabel.TextColor3 = t.TextDim
-			end)
 
 			return cardFrame
 		end
