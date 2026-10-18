@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.1.01 (goated fix?)
+--// EclipseUI Roblox Library Version 1.1.01 (HeadShot)
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -2194,7 +2194,7 @@ function EclipseUI:CreateWindow(options)
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
 			avatarImg.Size = UDim2.new(0, 85, 0, 85)
-			avatarImg.Position = UDim2.new(1, -95, 0.5, -42)
+			avatarImg.Position = UDim2.new(1, -110, 0.5, -42)
 			avatarImg.BackgroundTransparency = 1
 			avatarImg.ZIndex = 5
 			avatarImg.Parent = cardFrame
@@ -2202,7 +2202,7 @@ function EclipseUI:CreateWindow(options)
 			task.spawn(function()
 				local content, isReady = Players:GetUserThumbnailAsync(
 					LocalPlayer.UserId,
-					Enum.ThumbnailType.AvatarBust, -- Fixed: AvatarBust is the correct enum for bust shots
+					Enum.ThumbnailType.HeadShot,
 					Enum.ThumbnailSize.Size420x420
 				)
 				if content and avatarImg.Parent then
