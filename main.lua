@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.0.69 (Dynamic Multi-Theme + SliderRow + ToggleKeybind)
+--// EclipseUI Roblox Library Version 1.1.01 (Dynamic Multi-Theme + SliderRow + ToggleKeybind)
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -2197,8 +2197,8 @@ function EclipseUI:CreateWindow(options)
 
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
-			avatarImg.Size = UDim2.new(0, 120, 0, 120)
-			avatarImg.Position = UDim2.new(1, -125, 0.5, -55)
+			avatarImg.Size = UDim2.new(0, 100, 0, 100)
+			avatarImg.Position = UDim2.new(1, -105, 0.5, -50)
 			avatarImg.BackgroundTransparency = 1
 			avatarImg.ZIndex = 5
 			avatarImg.Parent = cardFrame
@@ -2209,23 +2209,23 @@ function EclipseUI:CreateWindow(options)
 					Enum.ThumbnailType.BustShot,
 					Enum.ThumbnailSize.Size420x420
 				)
-				if isReady and avatarImg.Parent then
+				if content and avatarImg.Parent then
 					avatarImg.Image = content
 				end
 			end)
-			
+
 			local contentArea = Instance.new("Frame")
 			contentArea.Name = "ContentArea"
-			contentArea.Size = UDim2.new(1, -135, 1, 0)
+			contentArea.Size = UDim2.new(1, -115, 1, 0)
 			contentArea.Position = UDim2.new(0, 0, 0, 0)
 			contentArea.BackgroundTransparency = 1
 			contentArea.ZIndex = 5
 			contentArea.Parent = cardFrame
 
 			local contentPadding = Instance.new("UIPadding")
-			contentPadding.PaddingLeft = UDim.new(0, 16)
-			contentPadding.PaddingTop = UDim.new(0, 12)
-			contentPadding.PaddingBottom = UDim.new(0, 12)
+			contentPadding.PaddingLeft = UDim.new(0, 14)
+			contentPadding.PaddingTop = UDim.new(0, 10)
+			contentPadding.PaddingBottom = UDim.new(0, 10)
 			contentPadding.Parent = contentArea
 
 			local contentLayout = Instance.new("UIListLayout")
@@ -2246,11 +2246,11 @@ function EclipseUI:CreateWindow(options)
 			headerLabel.Parent = contentArea
 
 			local nameLabel = Instance.new("TextLabel")
-			nameLabel.Size = UDim2.new(1, 0, 0, 22)
+			nameLabel.Size = UDim2.new(1, 0, 0, 20)
 			nameLabel.BackgroundTransparency = 1
 			nameLabel.Text = name
 			nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-			nameLabel.TextSize = 18
+			nameLabel.TextSize = 16
 			nameLabel.Font = Enum.Font.GothamBold
 			nameLabel.TextXAlignment = Enum.TextXAlignment.Left
 			nameLabel.LayoutOrder = 2
@@ -2258,7 +2258,7 @@ function EclipseUI:CreateWindow(options)
 			nameLabel.Parent = contentArea
 
 			local userLabel = Instance.new("TextLabel")
-			userLabel.Size = UDim2.new(1, 0, 0, 16)
+			userLabel.Size = UDim2.new(1, 0, 0, 14)
 			userLabel.BackgroundTransparency = 1
 			userLabel.Text = username
 			userLabel.TextColor3 = Window.Theme.TextMuted
@@ -2269,11 +2269,17 @@ function EclipseUI:CreateWindow(options)
 			userLabel.ZIndex = 6
 			userLabel.Parent = contentArea
 
+			local pillSpacer = Instance.new("Frame")
+			pillSpacer.Size = UDim2.new(1, 0, 0, 6)
+			pillSpacer.BackgroundTransparency = 1
+			pillSpacer.LayoutOrder = 4
+			pillSpacer.Parent = contentArea
+
 			local pillContainer = Instance.new("Frame")
 			pillContainer.Name = "Pills"
-			pillContainer.Size = UDim2.new(1, 0, 0, 24)
+			pillContainer.Size = UDim2.new(1, 0, 0, 22)
 			pillContainer.BackgroundTransparency = 1
-			pillContainer.LayoutOrder = 4
+			pillContainer.LayoutOrder = 5
 			pillContainer.ZIndex = 6
 			pillContainer.Parent = contentArea
 
@@ -2281,14 +2287,8 @@ function EclipseUI:CreateWindow(options)
 			pillLayout.FillDirection = Enum.FillDirection.Horizontal
 			pillLayout.SortOrder = Enum.SortOrder.LayoutOrder
 			pillLayout.Padding = UDim.new(0, 6)
-			pillLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+			pillLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 			pillLayout.Parent = pillContainer
-
-			local pillSpacer = Instance.new("Frame")
-			pillSpacer.Size = UDim2.new(1, 0, 0, 6)
-			pillSpacer.BackgroundTransparency = 1
-			pillSpacer.LayoutOrder = 3.5
-			pillSpacer.Parent = contentArea
 
 			for idx, pData in ipairs(pills) do
 				local pText = pData.Text or ""
@@ -2296,6 +2296,7 @@ function EclipseUI:CreateWindow(options)
 				local pCallback = pData.Callback
 
 				local pill = Instance.new("Frame")
+				pill.Name = "Pill_" .. idx
 				pill.Size = UDim2.new(0, 0, 0, 22)
 				pill.AutomaticSize = Enum.AutomaticSize.X
 				pill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -2321,6 +2322,7 @@ function EclipseUI:CreateWindow(options)
 				local pillContentLayout = Instance.new("UIListLayout")
 				pillContentLayout.FillDirection = Enum.FillDirection.Horizontal
 				pillContentLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+				pillContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
 				pillContentLayout.Padding = UDim.new(0, 5)
 				pillContentLayout.Parent = pill
 
@@ -2330,20 +2332,24 @@ function EclipseUI:CreateWindow(options)
 					iconImg.BackgroundTransparency = 1
 					iconImg.Image = getIconAsset(pIcon)
 					iconImg.ImageColor3 = Window.Theme.TextMuted
+					iconImg.LayoutOrder = 1
 					iconImg.ZIndex = 7
 					iconImg.Parent = pill
 				end
 
-				local pillLabel = Instance.new("TextLabel")
-				pillLabel.Size = UDim2.new(0, 0, 1, 0)
-				pillLabel.AutomaticSize = Enum.AutomaticSize.X
-				pillLabel.BackgroundTransparency = 1
-				pillLabel.Text = pText
-				pillLabel.TextColor3 = Window.Theme.TextMuted
-				pillLabel.TextSize = 10
-				pillLabel.Font = Enum.Font.GothamBold
-				pillLabel.ZIndex = 7
-				pillLabel.Parent = pill
+				if pText ~= "" then
+					local pillLabel = Instance.new("TextLabel")
+					pillLabel.Size = UDim2.new(0, 0, 1, 0)
+					pillLabel.AutomaticSize = Enum.AutomaticSize.X
+					pillLabel.BackgroundTransparency = 1
+					pillLabel.Text = pText
+					pillLabel.TextColor3 = Window.Theme.TextMuted
+					pillLabel.TextSize = 10
+					pillLabel.Font = Enum.Font.GothamBold
+					pillLabel.LayoutOrder = 2
+					pillLabel.ZIndex = 7
+					pillLabel.Parent = pill
+				end
 
 				if pCallback then
 					local btn = Instance.new("TextButton")
