@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.1.02 (goated fix?)
+--// EclipseUI Roblox Library Version 1.1.02 (pls better profilecard)
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -2184,9 +2184,7 @@ function EclipseUI:CreateWindow(options)
 			opts = opts or {}
 			targetParent = targetParent or page
 
-			local isAnon = opts.Anonymous or false
-			local displayName = isAnon and (opts.AnonName or opts.AnonUsername or "Anonymous") or LocalPlayer.DisplayName
-			local welcomeText = opts.WelcomeText or ("Hello, " .. string.upper(displayName) .. "!")
+			local welcomeText = opts.WelcomeText or ("Hello, " .. string.upper(LocalPlayer.DisplayName) .. "!")
 
 			-- Detect current executor
 			local executorName = "Unknown"
@@ -2200,21 +2198,17 @@ function EclipseUI:CreateWindow(options)
 			cardFrame.Name = "ProfileCard"
 			cardFrame.ClipsDescendants = false
 
-			-- Subtle Smooth Background Spotlight Disc (No harsh square edges)
-			local avatarSpotlight = Instance.new("Frame")
-			avatarSpotlight.Name = "Spotlight"
-			avatarSpotlight.Size = UDim2.new(0, 75, 0, 75)
-			avatarSpotlight.Position = UDim2.new(1, -100, 0.5, -37)
-			avatarSpotlight.BackgroundColor3 = Window.Theme.Accent or Color3.fromRGB(0, 170, 255)
-			avatarSpotlight.BackgroundTransparency = 0.88
-			avatarSpotlight.ZIndex = 4
-			avatarSpotlight.Parent = cardFrame
+			local avatarAura = Instance.new("ImageLabel")
+			avatarAura.Name = "AvatarAura"
+			avatarAura.Size = UDim2.new(0, 130, 0, 130)
+			avatarAura.Position = UDim2.new(1, -127, 0.5, -65)
+			avatarAura.BackgroundTransparency = 1
+			avatarAura.Image = "rbxassetid://6015808269"
+			avatarAura.ImageColor3 = Window.Theme.Accent or Color3.fromRGB(0, 170, 255)
+			avatarAura.ImageTransparency = 0.82
+			avatarAura.ZIndex = 4
+			avatarAura.Parent = cardFrame
 
-			local spotlightCorner = Instance.new("UICorner")
-			spotlightCorner.CornerRadius = UDim.new(1, 0) -- Pure smooth circle
-			spotlightCorner.Parent = avatarSpotlight
-
-			-- Avatar Image (Handles Anonymous vs. Real Avatar)
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
 			avatarImg.Size = UDim2.new(0, 85, 0, 85)
@@ -2223,22 +2217,17 @@ function EclipseUI:CreateWindow(options)
 			avatarImg.ZIndex = 5
 			avatarImg.Parent = cardFrame
 
-			if isAnon then
-				avatarImg.Image = "rbxassetid://81489458260315"
-			else
-				task.spawn(function()
-					local content, isReady = Players:GetUserThumbnailAsync(
-						LocalPlayer.UserId,
-						Enum.ThumbnailType.AvatarBust,
-						Enum.ThumbnailSize.Size420x420
-					)
-					if content and avatarImg.Parent then
-						avatarImg.Image = content
-					end
-				end)
-			end
+			task.spawn(function()
+				local content, isReady = Players:GetUserThumbnailAsync(
+					LocalPlayer.UserId,
+					Enum.ThumbnailType.AvatarBust,
+					Enum.ThumbnailSize.Size420x420
+				)
+				if content and avatarImg.Parent then
+					avatarImg.Image = content
+				end
+			end)
 
-			-- Left Content Area
 			local contentArea = Instance.new("Frame")
 			contentArea.Name = "ContentArea"
 			contentArea.Size = UDim2.new(1, -115, 1, 0)
@@ -2254,12 +2243,11 @@ function EclipseUI:CreateWindow(options)
 			local contentLayout = Instance.new("UIListLayout")
 			contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
 			contentLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-			contentLayout.Padding = UDim.new(0, 5)
+			contentLayout.Padding = UDim.new(0, 4)
 			contentLayout.Parent = contentArea
 
-			-- Header Label
 			local headerLabel = Instance.new("TextLabel")
-			headerLabel.Size = UDim2.new(1, 0, 0, 20)
+			headerLabel.Size = UDim2.new(1, 0, 0, 18)
 			headerLabel.BackgroundTransparency = 1
 			headerLabel.Text = welcomeText
 			headerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -2270,10 +2258,9 @@ function EclipseUI:CreateWindow(options)
 			headerLabel.ZIndex = 6
 			headerLabel.Parent = contentArea
 
-			-- Tags Row (Executor & Version)
 			local detailsRow = Instance.new("Frame")
 			detailsRow.Name = "DetailsRow"
-			detailsRow.Size = UDim2.new(1, 0, 0, 18)
+			detailsRow.Size = UDim2.new(1, 0, 0, 20)
 			detailsRow.BackgroundTransparency = 1
 			detailsRow.LayoutOrder = 2
 			detailsRow.ZIndex = 6
@@ -2286,13 +2273,12 @@ function EclipseUI:CreateWindow(options)
 			rowLayout.Padding = UDim.new(0, 6)
 			rowLayout.Parent = detailsRow
 
-			-- Styled Executor Tag (Dot + Minimal Text)
 			local execBadge = Instance.new("Frame")
 			execBadge.Name = "ExecutorBadge"
 			execBadge.Size = UDim2.new(0, 0, 0, 18)
 			execBadge.AutomaticSize = Enum.AutomaticSize.X
-			execBadge.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-			execBadge.BackgroundTransparency = 0.6
+			execBadge.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			execBadge.BackgroundTransparency = 0.92
 			execBadge.ZIndex = 6
 			execBadge.Parent = detailsRow
 
@@ -2300,53 +2286,28 @@ function EclipseUI:CreateWindow(options)
 			execCorner.CornerRadius = UDim.new(0, 4)
 			execCorner.Parent = execBadge
 
-			local execStroke = Instance.new("UIStroke")
-			execStroke.Color = Color3.fromRGB(255, 255, 255)
-			execStroke.Transparency = 0.9
-			execStroke.Thickness = 1
-			execStroke.Parent = execBadge
-
-			local execBadgeLayout = Instance.new("UIListLayout")
-			execBadgeLayout.FillDirection = Enum.FillDirection.Horizontal
-			execBadgeLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-			execBadgeLayout.Padding = UDim.new(0, 5)
-			execBadgeLayout.Parent = execBadge
-
 			local execPadding = Instance.new("UIPadding")
 			execPadding.PaddingLeft = UDim.new(0, 6)
-			execPadding.PaddingRight = UDim.new(0, 8)
+			execPadding.PaddingRight = UDim.new(0, 6)
 			execPadding.Parent = execBadge
 
-			-- Active Green Dot
-			local activeDot = Instance.new("Frame")
-			activeDot.Size = UDim2.new(0, 5, 0, 5)
-			activeDot.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
-			activeDot.ZIndex = 7
-			activeDot.Parent = execBadge
-
-			local dotCorner = Instance.new("UICorner")
-			dotCorner.CornerRadius = UDim.new(1, 0)
-			dotCorner.Parent = activeDot
-
 			local execText = Instance.new("TextLabel")
-			execText.Size = UDim2.new(0, 0, 1, 0)
-			execText.AutomaticSize = Enum.AutomaticSize.X
+			execText.Size = UDim2.new(1, 0, 1, 0)
 			execText.BackgroundTransparency = 1
-			execText.Text = string.lower(executorName)
+			execText.Text = executorName
 			execText.TextColor3 = Window.Theme.TextMuted or Color3.fromRGB(180, 180, 180)
 			execText.TextSize = 10
 			execText.Font = Enum.Font.GothamMedium
 			execText.ZIndex = 7
 			execText.Parent = execBadge
 
-			-- ONLY create Version Badge if opts.Version was passed!
 			if opts.Version then
 				local verBadge = Instance.new("Frame")
 				verBadge.Name = "VersionBadge"
 				verBadge.Size = UDim2.new(0, 0, 0, 18)
 				verBadge.AutomaticSize = Enum.AutomaticSize.X
-				verBadge.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-				verBadge.BackgroundTransparency = 0.6
+				verBadge.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+				verBadge.BackgroundTransparency = 0.92
 				verBadge.ZIndex = 6
 				verBadge.Parent = detailsRow
 
@@ -2354,20 +2315,13 @@ function EclipseUI:CreateWindow(options)
 				verCorner.CornerRadius = UDim.new(0, 4)
 				verCorner.Parent = verBadge
 
-				local verStroke = Instance.new("UIStroke")
-				verStroke.Color = Color3.fromRGB(255, 255, 255)
-				verStroke.Transparency = 0.9
-				verStroke.Thickness = 1
-				verStroke.Parent = verBadge
-
 				local verPadding = Instance.new("UIPadding")
 				verPadding.PaddingLeft = UDim.new(0, 6)
 				verPadding.PaddingRight = UDim.new(0, 6)
 				verPadding.Parent = verBadge
 
 				local verText = Instance.new("TextLabel")
-				verText.Size = UDim2.new(0, 0, 1, 0)
-				verText.AutomaticSize = Enum.AutomaticSize.X
+				verText.Size = UDim2.new(1, 0, 1, 0)
 				verText.BackgroundTransparency = 1
 				verText.Text = opts.Version
 				verText.TextColor3 = Window.Theme.TextMuted or Color3.fromRGB(180, 180, 180)
