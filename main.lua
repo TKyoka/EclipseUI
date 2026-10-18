@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.48 | October 18, 2026 should fix
+    Eclipse UI | Version: 1.1.48 | October 18, 2026
 
     Author: TKyoka
 	Discord: discord.gg/ZRfJ7kdGDv
@@ -2204,21 +2204,30 @@ function EclipseUI:CreateWindow(options)
 			cardFrame.Name = "ProfileCard"
 			cardFrame.ClipsDescendants = true
 
+			local auraHolder = Instance.new("Frame")
+			auraHolder.Name = "AuraHolder"
+			auraHolder.Size = UDim2.new(0, 130, 0, 130)
+			auraHolder.Position = UDim2.new(1, -127, 0.5, -65)
+			auraHolder.BackgroundTransparency = 1
+			auraHolder.ClipsDescendants = true
+			auraHolder.ZIndex = 4
+			auraHolder.Parent = cardFrame
+
+			local holderCorner = Instance.new("UICorner")
+			holderCorner.CornerRadius = UDim.new(0, 8)
+			holderCorner.Parent = auraHolder
+
 			local avatarAura = Instance.new("ImageLabel")
 			avatarAura.Name = "AvatarAura"
-			avatarAura.Size = UDim2.new(0, 130, 0, 130)
-			avatarAura.Position = UDim2.new(1, -127, 0.5, -65)
+			avatarAura.Size = UDim2.new(1, 0, 1, 0)
+			avatarAura.Position = UDim2.new(0, 0, 0, 0)
 			avatarAura.BackgroundTransparency = 1
 			avatarAura.Image = "rbxassetid://14391650987"
 			avatarAura.Rotation = 180
 			avatarAura.ImageColor3 = Window.Theme.Accent or Color3.fromRGB(0, 170, 255)
 			avatarAura.ImageTransparency = 0.5
 			avatarAura.ZIndex = 4
-			avatarAura.Parent = cardFrame
-
-			local avCorner = Instance.new("UICorner")
-			avCorner.CornerRadius = UDim.new(0, 8)
-			avCorner.Parent = avatarAura
+			avatarAura.Parent = auraHolder
 
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
@@ -2227,10 +2236,6 @@ function EclipseUI:CreateWindow(options)
 			avatarImg.BackgroundTransparency = 1
 			avatarImg.ZIndex = 5
 			avatarImg.Parent = cardFrame
-
-			local avImgCorner = Instance.new("UICorner")
-			avImgCorner.CornerRadius = UDim.new(0, 8)
-			avImgCorner.Parent = avatarAura
 
 			task.spawn(function()
 				local content, isReady = Players:GetUserThumbnailAsync(
