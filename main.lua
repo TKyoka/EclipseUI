@@ -2228,6 +2228,10 @@ function EclipseUI:CreateWindow(options)
 			avatarImg.ZIndex = 5
 			avatarImg.Parent = cardFrame
 
+			local avImgCorner = Instance.new("UICorner")
+			avImgCorner.CornerRadius = UDim.new(0, 8)
+			avImgCorner.Parent = avatarAura
+
 			task.spawn(function()
 				local content, isReady = Players:GetUserThumbnailAsync(
 					LocalPlayer.UserId,
