@@ -841,7 +841,7 @@ function EclipseUI:CreateWindow(options)
 	local userAnon = false
 	local userCallback = function() end
 	local anonName = "Hidden"
-	local anonUsername = "username"
+	local anonUsername = "@username"
 
 	if userOptions ~= nil then
 		if typeof(userOptions) == "table" then
