@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.46 | October 18, 2026
+    Eclipse UI | Version: 1.1.47 | October 18, 2026
 
     Author: TKyoka
 	Discord: discord.gg/ZRfJ7kdGDv
@@ -2203,7 +2203,7 @@ function EclipseUI:CreateWindow(options)
 			local cardFrame = Instance.new("CanvasGroup")
 			cardFrame.Name = "ProfileCard"
 			cardFrame.Size = UDim2.new(1, 0, 0, 85)
-			cardFrame.BackgroundColor3 = Window.Theme.Container or Color3.fromRGB(25, 25, 25)
+			cardFrame.BackgroundColor3 = Window.Theme.Container or Color3.fromRGB(28, 32, 38)
 			cardFrame.BackgroundTransparency = 0
 			cardFrame.BorderSizePixel = 0
 			cardFrame.GroupTransparency = 0
@@ -2214,7 +2214,7 @@ function EclipseUI:CreateWindow(options)
 			cardCorner.Parent = cardFrame
 
 			local cardStroke = Instance.new("UIStroke")
-			cardStroke.Color = Window.Theme.Stroke or Color3.fromRGB(45, 45, 45)
+			cardStroke.Color = Window.Theme.Stroke or Color3.fromRGB(45, 50, 60)
 			cardStroke.Thickness = 1
 			cardStroke.Parent = cardFrame
 
@@ -2353,6 +2353,8 @@ function EclipseUI:CreateWindow(options)
 			end
 
 			table.insert(Window.ThemeUpdaters, function(t)
+				cardFrame.BackgroundColor3 = t.Container or Color3.fromRGB(28, 32, 38)
+				cardStroke.Color = t.Stroke or Color3.fromRGB(45, 50, 60)
 				avatarAura.ImageColor3 = t.Accent or Color3.fromRGB(0, 170, 255)
 				execText.TextColor3 = t.TextMuted or Color3.fromRGB(180, 180, 180)
 			end)
