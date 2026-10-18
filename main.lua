@@ -1,4 +1,4 @@
---// EclipseUI Roblox Library Version 1.1.02 (maybe this time)
+--// EclipseUI Roblox Library Version 1.1.02 (wait its actually better)
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -2196,15 +2196,16 @@ function EclipseUI:CreateWindow(options)
 
 			local cardFrame, cardStroke = createContainer(targetParent, 85)
 			cardFrame.Name = "ProfileCard"
-			cardFrame.ClipsDescendants = false
+			cardFrame.ClipsDescendants = true -- Cuts off elements inside the container frame
 
-			-- Custom Radial Glow Asset (Theme Accent Color)
+			-- Custom Radial Glow Asset (Rotated 180° to put dark side on the right)
 			local avatarAura = Instance.new("ImageLabel")
 			avatarAura.Name = "AvatarAura"
 			avatarAura.Size = UDim2.new(0, 130, 0, 130)
 			avatarAura.Position = UDim2.new(1, -127, 0.5, -65)
 			avatarAura.BackgroundTransparency = 1
 			avatarAura.Image = "rbxassetid://14391650987"
+			avatarAura.Rotation = 180 -- Flips the dark side from left to right
 			avatarAura.ImageColor3 = Window.Theme.Accent or Color3.fromRGB(0, 170, 255)
 			avatarAura.ImageTransparency = 0.5
 			avatarAura.ZIndex = 4
