@@ -1,4 +1,11 @@
---// EclipseUI Roblox Library Version 1.1.02 (this is fun)
+--[[
+    Eclipse UI | Version: 1.1.46 | October 18, 2026
+
+    Author: TKyoka
+	Discord: discord.gg/ZRfJ7kdGDv
+    License: MIT
+]]
+
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -2186,7 +2193,6 @@ function EclipseUI:CreateWindow(options)
 
 			local welcomeText = opts.WelcomeText or ("Hello, " .. string.upper(LocalPlayer.DisplayName) .. "!")
 
-			-- Detect current executor
 			local executorName = "Unknown"
 			if identifyexecutor then
 				executorName = identifyexecutor()
@@ -2194,16 +2200,24 @@ function EclipseUI:CreateWindow(options)
 				executorName = getexecutorname()
 			end
 
-			local cardFrame, cardStroke = createContainer(targetParent, 85)
+			local cardFrame = Instance.new("CanvasGroup")
 			cardFrame.Name = "ProfileCard"
-			cardFrame.ClipsDescendants = true
+			cardFrame.Size = UDim2.new(1, 0, 0, 85)
+			cardFrame.BackgroundColor3 = Window.Theme.Container or Color3.fromRGB(25, 25, 25)
+			cardFrame.BackgroundTransparency = 0
+			cardFrame.BorderSizePixel = 0
+			cardFrame.GroupTransparency = 0
+			cardFrame.Parent = targetParent
 
-			-- Card Frame Rounding (Matches container stroke rounding)
 			local cardCorner = Instance.new("UICorner")
-			cardCorner.CornerRadius = UDim.new(0, 8) -- Adjust radius to match library container standards
+			cardCorner.CornerRadius = UDim.new(0, 8)
 			cardCorner.Parent = cardFrame
 
-			-- Custom Radial Glow Asset (Rotated 180° to put dark side on the right)
+			local cardStroke = Instance.new("UIStroke")
+			cardStroke.Color = Window.Theme.Stroke or Color3.fromRGB(45, 45, 45)
+			cardStroke.Thickness = 1
+			cardStroke.Parent = cardFrame
+
 			local avatarAura = Instance.new("ImageLabel")
 			avatarAura.Name = "AvatarAura"
 			avatarAura.Size = UDim2.new(0, 130, 0, 130)
@@ -2216,7 +2230,6 @@ function EclipseUI:CreateWindow(options)
 			avatarAura.ZIndex = 4
 			avatarAura.Parent = cardFrame
 
-			-- Avatar Bust Image
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
 			avatarImg.Size = UDim2.new(0, 85, 0, 85)
@@ -2236,7 +2249,6 @@ function EclipseUI:CreateWindow(options)
 				end
 			end)
 
-			-- Left Content Area
 			local contentArea = Instance.new("Frame")
 			contentArea.Name = "ContentArea"
 			contentArea.Size = UDim2.new(1, -115, 1, 0)
@@ -2255,7 +2267,6 @@ function EclipseUI:CreateWindow(options)
 			contentLayout.Padding = UDim.new(0, 4)
 			contentLayout.Parent = contentArea
 
-			-- Header Text
 			local headerLabel = Instance.new("TextLabel")
 			headerLabel.Size = UDim2.new(1, 0, 0, 18)
 			headerLabel.BackgroundTransparency = 1
@@ -2268,7 +2279,6 @@ function EclipseUI:CreateWindow(options)
 			headerLabel.ZIndex = 6
 			headerLabel.Parent = contentArea
 
-			-- Details Row
 			local detailsRow = Instance.new("Frame")
 			detailsRow.Name = "DetailsRow"
 			detailsRow.Size = UDim2.new(1, 0, 0, 20)
@@ -2284,7 +2294,6 @@ function EclipseUI:CreateWindow(options)
 			rowLayout.Padding = UDim.new(0, 6)
 			rowLayout.Parent = detailsRow
 
-			-- Executor Badge
 			local execBadge = Instance.new("Frame")
 			execBadge.Name = "ExecutorBadge"
 			execBadge.Size = UDim2.new(0, 0, 0, 18)
@@ -2313,7 +2322,6 @@ function EclipseUI:CreateWindow(options)
 			execText.ZIndex = 7
 			execText.Parent = execBadge
 
-			-- Version Badge (Only created if passed in opts)
 			if opts.Version then
 				local verBadge = Instance.new("Frame")
 				verBadge.Name = "VersionBadge"
@@ -2344,7 +2352,6 @@ function EclipseUI:CreateWindow(options)
 				verText.Parent = verBadge
 			end
 
-			-- Dynamic Theme Updater Listener
 			table.insert(Window.ThemeUpdaters, function(t)
 				avatarAura.ImageColor3 = t.Accent or Color3.fromRGB(0, 170, 255)
 				execText.TextColor3 = t.TextMuted or Color3.fromRGB(180, 180, 180)
