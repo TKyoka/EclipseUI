@@ -2185,11 +2185,33 @@ function EclipseUI:CreateWindow(options)
 			targetParent = targetParent or page
 
 			local welcomeText = opts.WelcomeText or ("Hello, " .. string.upper(LocalPlayer.DisplayName) .. "!")
+			local scriptVersion = opts.Version or "v1.5.0"
+
+			-- Detect current executor
+			local executorName = "Unknown"
+			if identifyexecutor then
+				executorName = identifyexecutor()
+			elseif getexecutorname then
+				executorName = getexecutorname()
+			end
 
 			local cardFrame, cardStroke = createContainer(targetParent, 85)
 			cardFrame.Name = "ProfileCard"
 			cardFrame.ClipsDescendants = false
 
+			-- Subtle Avatar Aura Glow (Backlight)
+			local avatarAura = Instance.new("ImageLabel")
+			avatarAura.Name = "AvatarAura"
+			avatarAura.Size = UDim2.new(0, 110, 0, 110)
+			avatarAura.Position = UDim2.new(1, -117, 0.5, -55)
+			avatarAura.BackgroundTransparency = 1
+			avatarAura.Image = "rbxassetid://5028857472" -- Smooth radial glow gradient asset
+			avatarAura.ImageColor3 = Color3.fromRGB(0, 170, 255) -- Accent color glow
+			avatarAura.ImageTransparency = 0.75
+			avatarAura.ZIndex = 4
+			avatarAura.Parent = cardFrame
+
+			-- Avatar Bust Image
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
 			avatarImg.Size = UDim2.new(0, 85, 0, 85)
@@ -2209,9 +2231,10 @@ function EclipseUI:CreateWindow(options)
 				end
 			end)
 
+			-- Left Content Holder
 			local contentArea = Instance.new("Frame")
 			contentArea.Name = "ContentArea"
-			contentArea.Size = UDim2.new(1, -95, 1, 0)
+			contentArea.Size = UDim2.new(1, -115, 1, 0)
 			contentArea.Position = UDim2.new(0, 0, 0, 0)
 			contentArea.BackgroundTransparency = 1
 			contentArea.ZIndex = 5
@@ -2224,19 +2247,100 @@ function EclipseUI:CreateWindow(options)
 			local contentLayout = Instance.new("UIListLayout")
 			contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
 			contentLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-			contentLayout.Padding = UDim.new(0, 2)
+			contentLayout.Padding = UDim.new(0, 4)
 			contentLayout.Parent = contentArea
 
+			-- Header Text (Solid White)
 			local headerLabel = Instance.new("TextLabel")
-			headerLabel.Size = UDim2.new(1, 0, 0, 24)
+			headerLabel.Size = UDim2.new(1, 0, 0, 18)
 			headerLabel.BackgroundTransparency = 1
 			headerLabel.Text = welcomeText
 			headerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 			headerLabel.TextSize = 14
 			headerLabel.Font = Enum.Font.GothamBold
 			headerLabel.TextXAlignment = Enum.TextXAlignment.Left
+			headerLabel.LayoutOrder = 1
 			headerLabel.ZIndex = 6
 			headerLabel.Parent = contentArea
+
+			-- Details Row (Executor + Version Tags)
+			local detailsRow = Instance.new("Frame")
+			detailsRow.Name = "DetailsRow"
+			detailsRow.Size = UDim2.new(1, 0, 0, 20)
+			detailsRow.BackgroundTransparency = 1
+			detailsRow.LayoutOrder = 2
+			detailsRow.ZIndex = 6
+			detailsRow.Parent = contentArea
+
+			local rowLayout = Instance.new("UIListLayout")
+			rowLayout.FillDirection = Enum.FillDirection.Horizontal
+			rowLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			rowLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+			rowLayout.Padding = UDim.new(0, 6)
+			rowLayout.Parent = detailsRow
+
+			-- Executor Badge
+			local execBadge = Instance.new("Frame")
+			execBadge.Name = "ExecutorBadge"
+			execBadge.Size = UDim2.new(0, 0, 0, 18)
+			execBadge.AutomaticSize = Enum.AutomaticSize.X
+			execBadge.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			execBadge.BackgroundTransparency = 0.92
+			execBadge.ZIndex = 6
+			execBadge.Parent = detailsRow
+
+			local execCorner = Instance.new("UICorner")
+			execCorner.CornerRadius = UDim.new(0, 4)
+			execCorner.Parent = execBadge
+
+			local execPadding = Instance.new("UIPadding")
+			execPadding.PaddingLeft = UDim.new(0, 6)
+			execPadding.PaddingRight = UDim.new(0, 6)
+			execPadding.Parent = execBadge
+
+			local execText = Instance.new("TextLabel")
+			execText.Size = UDim2.new(1, 0, 1, 0)
+			execText.BackgroundTransparency = 1
+			execText.Text = executorName
+			execText.TextColor3 = Window.Theme.TextMuted
+			execText.TextSize = 10
+			execText.Font = Enum.Font.GothamMedium
+			execText.ZIndex = 7
+			execText.Parent = execBadge
+
+			-- Version Badge
+			local verBadge = Instance.new("Frame")
+			verBadge.Name = "VersionBadge"
+			verBadge.Size = UDim2.new(0, 0, 0, 18)
+			verBadge.AutomaticSize = Enum.AutomaticSize.X
+			verBadge.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			verBadge.BackgroundTransparency = 0.92
+			verBadge.ZIndex = 6
+			verBadge.Parent = detailsRow
+
+			local verCorner = Instance.new("UICorner")
+			verCorner.CornerRadius = UDim.new(0, 4)
+			verCorner.Parent = verBadge
+
+			local verPadding = Instance.new("UIPadding")
+			verPadding.PaddingLeft = UDim.new(0, 6)
+			verPadding.PaddingRight = UDim.new(0, 6)
+			verPadding.Parent = verBadge
+
+			local verText = Instance.new("TextLabel")
+			verText.Size = UDim2.new(1, 0, 1, 0)
+			verText.BackgroundTransparency = 1
+			verText.Text = scriptVersion
+			verText.TextColor3 = Window.Theme.TextMuted
+			verText.TextSize = 10
+			verText.Font = Enum.Font.GothamMedium
+			verText.ZIndex = 7
+			verText.Parent = verBadge
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				execText.TextColor3 = t.TextMuted
+				verText.TextColor3 = t.TextMuted
+			end)
 
 			return cardFrame
 		end
