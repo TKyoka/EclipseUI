@@ -1,7 +1,7 @@
 --[[
     Eclipse UI | Version: 1.1.49 | October 18, 2026
 
-    Author: TKyoka
+    Author: TKyoka - Zyxer
 	Discord: discord.gg/uyM5Jd8knb
     License: MIT
 ]]
@@ -1302,8 +1302,8 @@ function EclipseUI:CreateWindow(options)
 
 	local pillStroke = Instance.new("UIStroke")
 	pillStroke.Color = Color3.fromRGB(255, 255, 255)
-	pillStroke.Thickness = 1
-	pillStroke.Transparency = 0.5
+	pillStroke.Thickness = 1.25
+	pillStroke.Transparency = 0.75
 	pillStroke.Parent = activePill
 
 	local strokeGradient = Instance.new("UIGradient")
