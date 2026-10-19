@@ -1,7 +1,7 @@
 --[[
     Eclipse UI | Version: 1.1.49 | October 18, 2026
 
-    Author: TKyoka - Zyxer
+    Author: TKyoka
 	Discord: discord.gg/uyM5Jd8knb
     License: MIT
 ]]
@@ -1267,6 +1267,16 @@ function EclipseUI:CreateWindow(options)
 		end)
 	end)
 
+	--// Define Tween Infos & Helper Functions Up Front
+	local pillTweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
+	local fadeTweenInfo = TweenInfo.new(0.20, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+
+	local function tween(object, info, properties)
+		if typeof(object) == "Instance" then
+			TweenService:Create(object, info, properties):Play()
+		end
+	end
+
 	local tabsCanvasGroup = Instance.new("CanvasGroup")
 	tabsCanvasGroup.Name = "TabsCanvasGroup"
 	tabsCanvasGroup.Size = UDim2.new(0, 134, 1, -bodySizeOffset)
@@ -1319,7 +1329,6 @@ function EclipseUI:CreateWindow(options)
 			local dt = RunService.RenderStepped:Wait()
 			if activePill.Visible then
 				tAcc = tAcc + dt
-				-- Creates a smooth sine-wave oscillation for transparency
 				local pulse = 0.25 + (math.sin(tAcc * 2.5) * 0.12)
 				pillGradient.Transparency = NumberSequence.new({
 					NumberSequenceKeypoint.new(0, pulse + 0.05),
@@ -1619,33 +1628,6 @@ function EclipseUI:CreateWindow(options)
 		if dragging and not isFullscreen then
 			mainGroup.Position = mainGroup.Position:Lerp(targetPos, math.clamp(dt * 20, 0, 1))
 		end
-	end)
-
-	local pillTweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
-	local fadeTweenInfo = TweenInfo.new(0.20, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-
-	local function tween(object, info, properties)
-		if typeof(object) == "Instance" then
-			TweenService:Create(object, info, properties):Play()
-		end
-	end
-
-	local function updateActivePillPosition(animate)
-		if Window.ActiveTab and Window.ActiveTab.Frame then
-			activePill.Visible = true
-			local targetY = Window.ActiveTab.Frame.AbsolutePosition.Y - tabsCanvasGroup.AbsolutePosition.Y
-			local targetPos = UDim2.new(0.5, 0, 0, targetY + 16)
-
-			if animate then
-				tween(activePill, pillTweenInfo, { Position = targetPos })
-			else
-				activePill.Position = targetPos
-			end
-		end
-	end
-
-	tabs:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
-		updateActivePillPosition(false)
 	end)
 
 	function Window:SelectTab(targetTab)
@@ -2238,7 +2220,7 @@ function EclipseUI:CreateWindow(options)
 			}
 		end
 
-			function TabObject:ProfileCard(opts, targetParent)
+		function TabObject:ProfileCard(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
 
@@ -2715,7 +2697,6 @@ function EclipseUI:CreateWindow(options)
 			return sliderObjs
 		end
 
-		--// NEW: ToggleKeybind Element
 		function TabObject:ToggleKeybind(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
