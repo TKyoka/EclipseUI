@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.48 | October 18, 2026
+    Eclipse UI | Version: 1.1.49 | October 18, 2026
 
     Author: TKyoka
 	Discord: discord.gg/ZRfJ7kdGDv
@@ -1277,26 +1277,47 @@ function EclipseUI:CreateWindow(options)
 
 	local activePill = Instance.new("Frame")
 	activePill.Name = "ActivePill"
-	activePill.AnchorPoint = Vector2.new(0.5, 1)
-	activePill.Size = UDim2.new(1, -28, 0, 2)
-	activePill.Position = UDim2.new(0.5, 0, 0, 32)
+	activePill.AnchorPoint = Vector2.new(0.5, 0.5)
+	activePill.Size = UDim2.new(1, -20, 0, 32)
+	activePill.Position = UDim2.new(0.5, 0, 0, 24)
 	activePill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	activePill.BackgroundTransparency = 0.2
+	activePill.BackgroundTransparency = 0.25 -- Smooth semi-transparent pill look
 	activePill.Visible = false
-	activePill.ZIndex = 5
+	activePill.ZIndex = 3
 	activePill.Parent = tabsCanvasGroup
 
 	local pillCorner = Instance.new("UICorner")
-	pillCorner.CornerRadius = UDim.new(1, 0)
+	pillCorner.CornerRadius = UDim.new(0, 8)
 	pillCorner.Parent = activePill
 
 	local pillGradient = Instance.new("UIGradient")
 	pillGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Window.Theme.StrokeColors[1]),
-		ColorSequenceKeypoint.new(0.5, Window.Theme.StrokeColors[2]),
-		ColorSequenceKeypoint.new(1, Window.Theme.StrokeColors[3])
+		ColorSequenceKeypoint.new(0, Window.Theme.PillGradient[1]),
+		ColorSequenceKeypoint.new(0.5, Window.Theme.PillGradient[2]),
+		ColorSequenceKeypoint.new(1, Window.Theme.PillGradient[3])
 	})
+	pillGradient.Rotation = 0
 	pillGradient.Parent = activePill
+
+	table.insert(Window.ThemeUpdaters, function(t)
+		pillGradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, t.PillGradient[1]),
+			ColorSequenceKeypoint.new(0.5, t.PillGradient[2]),
+			ColorSequenceKeypoint.new(1, t.PillGradient[3])
+		})
+	end)
+
+	-- Continuous rotation animation for the gradient
+	task.spawn(function()
+		local pillTimeAcc = 0
+		while activePill:IsDescendantOf(game) do
+			local dt = RunService.RenderStepped:Wait()
+			if activePill.Visible then
+				pillTimeAcc = pillTimeAcc + dt
+				pillGradient.Rotation = (pillTimeAcc * 40) % 360
+			end
+		end
+	end)
 
 	local tabs = Instance.new("ScrollingFrame")
 	tabs.Name = "Tabs"
@@ -1492,8 +1513,7 @@ function EclipseUI:CreateWindow(options)
 		if Window.ActiveTab and Window.ActiveTab.Frame then
 			activePill.Visible = true
 			local targetY = Window.ActiveTab.Frame.AbsolutePosition.Y - tabsCanvasGroup.AbsolutePosition.Y
-			-- Adding 30 positions the underline bar right at the bottom edge of the 32px tab frame
-			local targetPos = UDim2.new(0.5, 0, 0, targetY + 30)
+			local targetPos = UDim2.new(0.5, 0, 0, targetY + 16)
 
 			if animate then
 				tween(activePill, pillTweenInfo, { Position = targetPos })
