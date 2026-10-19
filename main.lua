@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.49 | October 18, 2026
+    Eclipse UI | Version: 1.1.49 | October 18, 2026 new pill
 
     Author: TKyoka
 	Discord: discord.gg/ZRfJ7kdGDv
@@ -1278,38 +1278,52 @@ function EclipseUI:CreateWindow(options)
 	local activePill = Instance.new("Frame")
 	activePill.Name = "ActivePill"
 	activePill.AnchorPoint = Vector2.new(0.5, 0.5)
-	activePill.Size = UDim2.new(1, -20, 0, 32)
+	activePill.Size = UDim2.new(1, -16, 0, 30)
 	activePill.Position = UDim2.new(0.5, 0, 0, 24)
-	activePill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	activePill.BackgroundTransparency = 0.82
+	activePill.BackgroundColor3 = Window.Theme.ContainerBg
+	activePill.BackgroundTransparency = 0.4
 	activePill.Visible = false
 	activePill.ZIndex = 3
 	activePill.Parent = tabsCanvasGroup
 
 	local pillCorner = Instance.new("UICorner")
-	pillCorner.CornerRadius = UDim.new(0, 7)
+	pillCorner.CornerRadius = UDim.new(0, 6)
 	pillCorner.Parent = activePill
 
 	local pillStroke = Instance.new("UIStroke")
 	pillStroke.Color = Color3.fromRGB(255, 255, 255)
 	pillStroke.Thickness = 1
-	pillStroke.Transparency = 0.75
+	pillStroke.Transparency = 0.88
 	pillStroke.Parent = activePill
 
-	local pillGradient = Instance.new("UIGradient")
-	pillGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Window.Theme.PillGradient[1]),
-		ColorSequenceKeypoint.new(0.5, Window.Theme.PillGradient[2]),
-		ColorSequenceKeypoint.new(1, Window.Theme.PillGradient[3])
+	-- Sleek Left Accent Indicator
+	local leftAccent = Instance.new("Frame")
+	leftAccent.Name = "LeftAccent"
+	leftAccent.AnchorPoint = Vector2.new(0, 0.5)
+	leftAccent.Position = UDim2.new(0, 0, 0.5, 0)
+	leftAccent.Size = UDim2.new(0, 3, 0, 18)
+	leftAccent.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	leftAccent.BorderSizePixel = 0
+	leftAccent.ZIndex = 4
+	leftAccent.Parent = activePill
+
+	local accentCorner = Instance.new("UICorner")
+	accentCorner.CornerRadius = UDim.new(1, 0)
+	accentCorner.Parent = leftAccent
+
+	local accentGradient = Instance.new("UIGradient")
+	accentGradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Window.Theme.ToggleGradient[1]),
+		ColorSequenceKeypoint.new(1, Window.Theme.ToggleGradient[2])
 	})
-	pillGradient.Rotation = 90
-	pillGradient.Parent = activePill
+	accentGradient.Rotation = 90
+	accentGradient.Parent = leftAccent
 
 	table.insert(Window.ThemeUpdaters, function(t)
-		pillGradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, t.PillGradient[1]),
-			ColorSequenceKeypoint.new(0.5, t.PillGradient[2]),
-			ColorSequenceKeypoint.new(1, t.PillGradient[3])
+		activePill.BackgroundColor3 = t.ContainerBg
+		accentGradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, t.ToggleGradient[1]),
+			ColorSequenceKeypoint.new(1, t.ToggleGradient[2])
 		})
 	end)
 
