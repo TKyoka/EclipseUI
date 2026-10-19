@@ -1,7 +1,7 @@
 --[[
     Eclipse UI | Version: 1.1.49 | October 18, 2026
 
-    Author: TKyoka
+    Author: TKyoka - Zyxer
 	Discord: discord.gg/uyM5Jd8knb
     License: MIT
 ]]
@@ -1281,7 +1281,7 @@ function EclipseUI:CreateWindow(options)
 	activePill.Size = UDim2.new(1, -16, 0, 32)
 	activePill.Position = UDim2.new(0.5, 0, 0, 24)
 	activePill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	activePill.BackgroundTransparency = 0.9
+	activePill.BackgroundTransparency = 0
 	activePill.Visible = false
 	activePill.ZIndex = 3
 	activePill.Parent = tabsCanvasGroup
@@ -1296,14 +1296,12 @@ function EclipseUI:CreateWindow(options)
 		ColorSequenceKeypoint.new(0.5, Window.Theme.StrokeColors[2]),
 		ColorSequenceKeypoint.new(1, Window.Theme.StrokeColors[1])
 	})
-
 	pillGradient.Transparency = NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 0.4),
+		NumberSequenceKeypoint.new(0, 0.3),
 		NumberSequenceKeypoint.new(0.5, 0.15),
-		NumberSequenceKeypoint.new(1, 0.85)
+		NumberSequenceKeypoint.new(1, 0.8)
 	})
 	pillGradient.Rotation = 0
-	pillGradient.Offset = Vector2.new(-1, 0)
 	pillGradient.Parent = activePill
 
 	table.insert(Window.ThemeUpdaters, function(t)
@@ -1314,14 +1312,20 @@ function EclipseUI:CreateWindow(options)
 		})
 	end)
 
+	-- Smooth breathing / pulsing highlight animation
 	task.spawn(function()
 		local tAcc = 0
 		while activePill:IsDescendantOf(game) do
 			local dt = RunService.RenderStepped:Wait()
 			if activePill.Visible then
 				tAcc = tAcc + dt
-				local offsetVal = (tAcc * 0.5) % 2 - 1
-				pillGradient.Offset = Vector2.new(offsetVal, 0)
+				-- Creates a smooth sine-wave oscillation for transparency
+				local pulse = 0.25 + (math.sin(tAcc * 2.5) * 0.12)
+				pillGradient.Transparency = NumberSequence.new({
+					NumberSequenceKeypoint.new(0, pulse + 0.05),
+					NumberSequenceKeypoint.new(0.5, pulse),
+					NumberSequenceKeypoint.new(1, math.clamp(pulse + 0.5, 0, 1))
+				})
 			end
 		end
 	end)
