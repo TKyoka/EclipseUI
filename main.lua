@@ -3207,8 +3207,8 @@ function EclipseUI:CreateWindow(options)
 
 			local boxStroke = Instance.new("UIStroke")
 			boxStroke.Color = Color3.fromRGB(255, 255, 255)
-			boxStroke.Thickness = 1
-			boxStroke.Transparency = state and 0.5 or 0.75
+			boxStroke.Thickness = 1.25
+			boxStroke.Transparency = 0.3
 			boxStroke.Parent = boxFrame
 
 			local gradientOverlay = Instance.new("Frame")
@@ -3238,26 +3238,6 @@ function EclipseUI:CreateWindow(options)
 				})
 			end)
 
-			local checkIcon = Instance.new("ImageLabel")
-			checkIcon.AnchorPoint = Vector2.new(0.5, 0.5)
-			checkIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
-			checkIcon.Size = UDim2.new(0, 12, 0, 12)
-			checkIcon.BackgroundTransparency = 1
-			checkIcon.Image = getIconAsset("check")
-			checkIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
-			checkIcon.ImageTransparency = state and 0 or 1
-			checkIcon.ZIndex = 7
-			checkIcon.Parent = boxFrame
-
-			if not iconsLoaded then
-				task.spawn(function()
-					repeat task.wait() until iconsLoaded or not checkIcon:IsDescendantOf(game)
-					if checkIcon:IsDescendantOf(game) then
-						checkIcon.Image = getIconAsset("check")
-					end
-				end)
-			end
-
 			local hitBox = Instance.new("TextButton")
 			hitBox.Name = "Hitbox"
 			hitBox.Size = UDim2.new(1, 0, 1, 0)
@@ -3272,17 +3252,14 @@ function EclipseUI:CreateWindow(options)
 				CheckboxObj.Value = newState
 				local targetOverlayTrans = newState and 0 or 1
 				local targetStrokeTrans = newState and 0.5 or 0.75
-				local targetIconTrans = newState and 0 or 1
 
 				local info = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 				if animate then
 					tween(gradientOverlay, info, { BackgroundTransparency = targetOverlayTrans })
 					tween(boxStroke, info, { Transparency = targetStrokeTrans })
-					tween(checkIcon, info, { ImageTransparency = targetIconTrans })
 				else
 					gradientOverlay.BackgroundTransparency = targetOverlayTrans
 					boxStroke.Transparency = targetStrokeTrans
-					checkIcon.ImageTransparency = targetIconTrans
 				end
 
 				pcall(callback, newState)
