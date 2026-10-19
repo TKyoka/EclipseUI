@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.49 | October 18, 2026 pill fix
+    Eclipse UI | Version: 1.1.49 | October 18, 2026
 
     Author: TKyoka
 	Discord: discord.gg/ZRfJ7kdGDv
@@ -1503,23 +1503,13 @@ function EclipseUI:CreateWindow(options)
 	local startPos = UDim2.new()
 	local targetPos = mainGroup.Position
 
-	local function updateActivePillPosition(animate)
+	local function updateActivePillPosition()
 		if Window.ActiveTab and Window.ActiveTab.Frame then
 			activePill.Visible = true
 			local targetY = Window.ActiveTab.Frame.AbsolutePosition.Y - tabsCanvasGroup.AbsolutePosition.Y
-			local targetPos = UDim2.new(0.5, 0, 0, targetY + 16)
-
-			if animate then
-				TweenService:Create(activePill, pillTweenInfo, { Position = targetPos }):Play()
-			else
-				activePill.Position = targetPos
-			end
+			activePill.Position = UDim2.new(0.5, 0, 0, targetY + 16)
 		end
 	end
-
-	tabs:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
-		updateActivePillPosition(false)
-	end)
 
 	tabs:GetPropertyChangedSignal("CanvasPosition"):Connect(updateActivePillPosition)
 
@@ -1614,6 +1604,24 @@ function EclipseUI:CreateWindow(options)
 			TweenService:Create(object, info, properties):Play()
 		end
 	end
+
+	local function updateActivePillPosition(animate)
+		if Window.ActiveTab and Window.ActiveTab.Frame then
+			activePill.Visible = true
+			local targetY = Window.ActiveTab.Frame.AbsolutePosition.Y - tabsCanvasGroup.AbsolutePosition.Y
+			local targetPos = UDim2.new(0.5, 0, 0, targetY + 16)
+
+			if animate then
+				tween(activePill, pillTweenInfo, { Position = targetPos })
+			else
+				activePill.Position = targetPos
+			end
+		end
+	end
+
+	tabs:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+		updateActivePillPosition(false)
+	end)
 
 	function Window:SelectTab(targetTab)
 		if Window.ActiveTab == targetTab then return end
