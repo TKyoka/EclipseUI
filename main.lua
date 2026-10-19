@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.49 | October 18, 2026
+    Eclipse UI | Version: 1.1.48 | October 18, 2026
 
     Author: TKyoka
 	Discord: discord.gg/ZRfJ7kdGDv
@@ -1275,19 +1275,19 @@ function EclipseUI:CreateWindow(options)
 	tabsCanvasGroup.ZIndex = 3
 	tabsCanvasGroup.Parent = bodyGroup
 
-	local activePill = Instance.new("Frame")
+	local activePill = Instance.new("CanvasGroup")
 	activePill.Name = "ActivePill"
 	activePill.AnchorPoint = Vector2.new(0.5, 0.5)
-	activePill.Size = UDim2.new(1, -20, 0, 32)
+	activePill.Size = UDim2.new(1, -16, 0, 32)
 	activePill.Position = UDim2.new(0.5, 0, 0, 24)
-	activePill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	activePill.BackgroundTransparency = 0.82
+	activePill.BackgroundColor3 = Window.Theme.MainBg
+	activePill.BackgroundTransparency = 0.3
 	activePill.Visible = false
 	activePill.ZIndex = 3
 	activePill.Parent = tabsCanvasGroup
 
 	local pillCorner = Instance.new("UICorner")
-	pillCorner.CornerRadius = UDim.new(0, 7)
+	pillCorner.CornerRadius = UDim.new(0, 8)
 	pillCorner.Parent = activePill
 
 	local pillStroke = Instance.new("UIStroke")
@@ -1302,10 +1302,44 @@ function EclipseUI:CreateWindow(options)
 		ColorSequenceKeypoint.new(0.5, Window.Theme.PillGradient[2]),
 		ColorSequenceKeypoint.new(1, Window.Theme.PillGradient[3])
 	})
-	pillGradient.Rotation = 90
+	pillGradient.Rotation = 45
 	pillGradient.Parent = activePill
 
+	-- Continuous Sheen Effect Overlay
+	local sheenOverlay = Instance.new("Frame")
+	sheenOverlay.Size = UDim2.new(1, 0, 1, 0)
+	sheenOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	sheenOverlay.BackgroundTransparency = 0.95
+	sheenOverlay.ZIndex = 4
+	sheenOverlay.Parent = activePill
+
+	local sheenGrad = Instance.new("UIGradient")
+	sheenGrad.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
+		ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+	})
+	sheenGrad.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 1),
+		NumberSequenceKeypoint.new(0.5, 0.6),
+		NumberSequenceKeypoint.new(1, 1)
+	})
+	sheenGrad.Offset = Vector2.new(-1, 0)
+	sheenGrad.Parent = sheenOverlay
+
+	task.spawn(function()
+		local tAcc = 0
+		while activePill:IsDescendantOf(game) do
+			local dt = RunService.RenderStepped:Wait()
+			if activePill.Visible then
+				tAcc = tAcc + dt
+				sheenGrad.Offset = Vector2.new((tAcc * 0.5) % 2 - 1, 0)
+			end
+		end
+	end)
+
 	table.insert(Window.ThemeUpdaters, function(t)
+		activePill.BackgroundColor3 = t.MainBg
 		pillGradient.Color = ColorSequence.new({
 			ColorSequenceKeypoint.new(0, t.PillGradient[1]),
 			ColorSequenceKeypoint.new(0.5, t.PillGradient[2]),
