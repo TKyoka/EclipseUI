@@ -3205,12 +3205,6 @@ function EclipseUI:CreateWindow(options)
 			boxCorner.CornerRadius = UDim.new(0, 5)
 			boxCorner.Parent = boxFrame
 
-			local boxStroke = Instance.new("UIStroke")
-			boxStroke.Color = Color3.fromRGB(255, 255, 255)
-			boxStroke.Thickness = 1.25
-			boxStroke.Transparency = 0.3
-			boxStroke.Parent = boxFrame
-
 			local gradientOverlay = Instance.new("Frame")
 			gradientOverlay.Name = "GradientOverlay"
 			gradientOverlay.Size = UDim2.new(1, 0, 1, 0)
@@ -3251,15 +3245,12 @@ function EclipseUI:CreateWindow(options)
 			local function updateCheckbox(newState, animate)
 				CheckboxObj.Value = newState
 				local targetOverlayTrans = newState and 0 or 1
-				local targetStrokeTrans = newState and 0.5 or 0.75
 
 				local info = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 				if animate then
 					tween(gradientOverlay, info, { BackgroundTransparency = targetOverlayTrans })
-					tween(boxStroke, info, { Transparency = targetStrokeTrans })
 				else
 					gradientOverlay.BackgroundTransparency = targetOverlayTrans
-					boxStroke.Transparency = targetStrokeTrans
 				end
 
 				pcall(callback, newState)
