@@ -2,7 +2,7 @@
     Eclipse UI | Version: 1.1.49 | October 18, 2026
 
     Author: TKyoka
-	Discord: discord.gg/ZRfJ7kdGDv
+	Discord: discord.gg/uyM5Jd8knb
     License: MIT
 ]]
 
@@ -1278,10 +1278,10 @@ function EclipseUI:CreateWindow(options)
 	local activePill = Instance.new("Frame")
 	activePill.Name = "ActivePill"
 	activePill.AnchorPoint = Vector2.new(0.5, 0.5)
-	activePill.Size = UDim2.new(1, -20, 0, 32)
+	activePill.Size = UDim2.new(1, -16, 0, 32)
 	activePill.Position = UDim2.new(0.5, 0, 0, 24)
 	activePill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	activePill.BackgroundTransparency = 0.25 -- Smooth semi-transparent pill look
+	activePill.BackgroundTransparency = 0 -- Transparency is managed by the NumberSequence gradient
 	activePill.Visible = false
 	activePill.ZIndex = 3
 	activePill.Parent = tabsCanvasGroup
@@ -1291,32 +1291,25 @@ function EclipseUI:CreateWindow(options)
 	pillCorner.Parent = activePill
 
 	local pillGradient = Instance.new("UIGradient")
+	-- Solid primary accent theme color across the pill
 	pillGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Window.Theme.PillGradient[1]),
-		ColorSequenceKeypoint.new(0.5, Window.Theme.PillGradient[2]),
-		ColorSequenceKeypoint.new(1, Window.Theme.PillGradient[3])
+		ColorSequenceKeypoint.new(0, Window.Theme.StrokeColors[1]),
+		ColorSequenceKeypoint.new(1, Window.Theme.StrokeColors[1])
 	})
-	pillGradient.Rotation = 0
+	-- Fades from semi-translucent (~0.35) on the left to almost fully transparent (0.95) on the right
+	pillGradient.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.35),
+		NumberSequenceKeypoint.new(0.65, 0.65),
+		NumberSequenceKeypoint.new(1, 0.95)
+	})
+	pillGradient.Rotation = 0 -- Horizontal direction (left-to-right fade)
 	pillGradient.Parent = activePill
 
 	table.insert(Window.ThemeUpdaters, function(t)
 		pillGradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, t.PillGradient[1]),
-			ColorSequenceKeypoint.new(0.5, t.PillGradient[2]),
-			ColorSequenceKeypoint.new(1, t.PillGradient[3])
+			ColorSequenceKeypoint.new(0, t.StrokeColors[1]),
+			ColorSequenceKeypoint.new(1, t.StrokeColors[1])
 		})
-	end)
-
-	-- Continuous rotation animation for the gradient
-	task.spawn(function()
-		local pillTimeAcc = 0
-		while activePill:IsDescendantOf(game) do
-			local dt = RunService.RenderStepped:Wait()
-			if activePill.Visible then
-				pillTimeAcc = pillTimeAcc + dt
-				pillGradient.Rotation = (pillTimeAcc * 40) % 360
-			end
-		end
 	end)
 
 	local tabs = Instance.new("ScrollingFrame")
