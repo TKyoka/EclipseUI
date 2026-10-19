@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.51 | October 18, 2026
+    Eclipse UI | Version: 1.1.49 | October 18, 2026
 
     Author: TKyoka - Zyxer
 	Discord: discord.gg/uyM5Jd8knb
@@ -1291,7 +1291,7 @@ function EclipseUI:CreateWindow(options)
 	activePill.Size = UDim2.new(1, -16, 0, 32)
 	activePill.Position = UDim2.new(0.5, 0, 0, 24)
 	activePill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	activePill.BackgroundTransparency = 0
+	activePill.BackgroundTransparency = 0.75
 	activePill.Visible = false
 	activePill.ZIndex = 3
 	activePill.Parent = tabsCanvasGroup
@@ -2396,7 +2396,7 @@ function EclipseUI:CreateWindow(options)
 				ColorSequenceKeypoint.new(0.5, Window.Theme.ButtonGradient[2]),
 				ColorSequenceKeypoint.new(1, Window.Theme.ButtonGradient[3])
 			})
-			btnGradient.Rotation = 45
+			btnGradient.Rotation = 0
 			btnGradient.Parent = btn
 
 			table.insert(Window.ThemeUpdaters, function(t)
@@ -2405,6 +2405,15 @@ function EclipseUI:CreateWindow(options)
 					ColorSequenceKeypoint.new(0.5, t.ButtonGradient[2]),
 					ColorSequenceKeypoint.new(1, t.ButtonGradient[3])
 				})
+			end)
+
+			task.spawn(function()
+				local tAcc = 0
+				while btn:IsDescendantOf(game) do
+					local dt = RunService.RenderStepped:Wait()
+					tAcc = tAcc + dt
+					btnGradient.Rotation = (tAcc * 50) % 360
+				end
 			end)
 
 			local textRightOffset = -14
@@ -2526,7 +2535,7 @@ function EclipseUI:CreateWindow(options)
 					ColorSequenceKeypoint.new(0.5, Window.Theme.ButtonGradient[2]),
 					ColorSequenceKeypoint.new(1, Window.Theme.ButtonGradient[3])
 				})
-				btnGradient.Rotation = 45
+				btnGradient.Rotation = 0
 				btnGradient.Parent = btnFrame
 
 				table.insert(Window.ThemeUpdaters, function(t)
@@ -2535,6 +2544,15 @@ function EclipseUI:CreateWindow(options)
 						ColorSequenceKeypoint.new(0.5, t.ButtonGradient[2]),
 						ColorSequenceKeypoint.new(1, t.ButtonGradient[3])
 					})
+				end)
+
+				task.spawn(function()
+					local tAcc = 0
+					while btnFrame:IsDescendantOf(game) do
+						local dt = RunService.RenderStepped:Wait()
+						tAcc = tAcc + dt
+						btnGradient.Rotation = (tAcc * 50) % 360
+					end
 				end)
 
 				local textRightOffset = -10
