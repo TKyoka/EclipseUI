@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.49 | October 18, 2026
+    Eclipse UI | Version: 1.1.48 | October 18, 2026
 
     Author: TKyoka
 	Discord: discord.gg/ZRfJ7kdGDv
@@ -1277,55 +1277,26 @@ function EclipseUI:CreateWindow(options)
 
 	local activePill = Instance.new("Frame")
 	activePill.Name = "ActivePill"
-	activePill.AnchorPoint = Vector2.new(0.5, 0.5)
-	activePill.Size = UDim2.new(1, -16, 0, 30)
-	activePill.Position = UDim2.new(0.5, 0, 0, 24)
-	activePill.BackgroundColor3 = Window.Theme.ContainerBg
-	activePill.BackgroundTransparency = 0.4
+	activePill.AnchorPoint = Vector2.new(0.5, 1)
+	activePill.Size = UDim2.new(1, -28, 0, 2)
+	activePill.Position = UDim2.new(0.5, 0, 0, 32)
+	activePill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+	activePill.BackgroundTransparency = 0.2
 	activePill.Visible = false
-	activePill.ZIndex = 3
+	activePill.ZIndex = 5
 	activePill.Parent = tabsCanvasGroup
 
 	local pillCorner = Instance.new("UICorner")
-	pillCorner.CornerRadius = UDim.new(0, 6)
+	pillCorner.CornerRadius = UDim.new(1, 0)
 	pillCorner.Parent = activePill
 
-	local pillStroke = Instance.new("UIStroke")
-	pillStroke.Color = Color3.fromRGB(255, 255, 255)
-	pillStroke.Thickness = 1
-	pillStroke.Transparency = 0.88
-	pillStroke.Parent = activePill
-
-	-- Sleek Left Accent Indicator
-	local leftAccent = Instance.new("Frame")
-	leftAccent.Name = "LeftAccent"
-	leftAccent.AnchorPoint = Vector2.new(0, 0.5)
-	leftAccent.Position = UDim2.new(0, 0, 0.5, 0)
-	leftAccent.Size = UDim2.new(0, 3, 0, 18)
-	leftAccent.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	leftAccent.BorderSizePixel = 0
-	leftAccent.ZIndex = 4
-	leftAccent.Parent = activePill
-
-	local accentCorner = Instance.new("UICorner")
-	accentCorner.CornerRadius = UDim.new(1, 0)
-	accentCorner.Parent = leftAccent
-
-	local accentGradient = Instance.new("UIGradient")
-	accentGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Window.Theme.ToggleGradient[1]),
-		ColorSequenceKeypoint.new(1, Window.Theme.ToggleGradient[2])
+	local pillGradient = Instance.new("UIGradient")
+	pillGradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Window.Theme.StrokeColors[1]),
+		ColorSequenceKeypoint.new(0.5, Window.Theme.StrokeColors[2]),
+		ColorSequenceKeypoint.new(1, Window.Theme.StrokeColors[3])
 	})
-	accentGradient.Rotation = 90
-	accentGradient.Parent = leftAccent
-
-	table.insert(Window.ThemeUpdaters, function(t)
-		activePill.BackgroundColor3 = t.ContainerBg
-		accentGradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, t.ToggleGradient[1]),
-			ColorSequenceKeypoint.new(1, t.ToggleGradient[2])
-		})
-	end)
+	pillGradient.Parent = activePill
 
 	local tabs = Instance.new("ScrollingFrame")
 	tabs.Name = "Tabs"
@@ -1517,15 +1488,24 @@ function EclipseUI:CreateWindow(options)
 	local startPos = UDim2.new()
 	local targetPos = mainGroup.Position
 
-	local function updateActivePillPosition()
+	local function updateActivePillPosition(animate)
 		if Window.ActiveTab and Window.ActiveTab.Frame then
 			activePill.Visible = true
 			local targetY = Window.ActiveTab.Frame.AbsolutePosition.Y - tabsCanvasGroup.AbsolutePosition.Y
-			activePill.Position = UDim2.new(0.5, 0, 0, targetY + 16)
+			-- Adding 30 positions the underline bar right at the bottom edge of the 32px tab frame
+			local targetPos = UDim2.new(0.5, 0, 0, targetY + 30)
+
+			if animate then
+				tween(activePill, pillTweenInfo, { Position = targetPos })
+			else
+				activePill.Position = targetPos
+			end
 		end
 	end
 
-	tabs:GetPropertyChangedSignal("CanvasPosition"):Connect(updateActivePillPosition)
+	tabs:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+		updateActivePillPosition(false)
+	end)
 
 	header.InputBegan:Connect(function(input)
 		if isFullscreen then return end
