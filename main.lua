@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.49 | October 18, 2026
+    Eclipse UI | Version: 1.1.49 | October 18, 2026 pill fix
 
     Author: TKyoka
 	Discord: discord.gg/ZRfJ7kdGDv
@@ -1503,13 +1503,23 @@ function EclipseUI:CreateWindow(options)
 	local startPos = UDim2.new()
 	local targetPos = mainGroup.Position
 
-	local function updateActivePillPosition()
+	local function updateActivePillPosition(animate)
 		if Window.ActiveTab and Window.ActiveTab.Frame then
 			activePill.Visible = true
 			local targetY = Window.ActiveTab.Frame.AbsolutePosition.Y - tabsCanvasGroup.AbsolutePosition.Y
-			activePill.Position = UDim2.new(0.5, 0, 0, targetY + 16)
+			local targetPos = UDim2.new(0.5, 0, 0, targetY + 16)
+
+			if animate then
+				TweenService:Create(activePill, pillTweenInfo, { Position = targetPos }):Play()
+			else
+				activePill.Position = targetPos
+			end
 		end
 	end
+
+	tabs:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+		updateActivePillPosition(false)
+	end)
 
 	tabs:GetPropertyChangedSignal("CanvasPosition"):Connect(updateActivePillPosition)
 
@@ -1610,7 +1620,7 @@ function EclipseUI:CreateWindow(options)
 
 		Window.ActiveTab = targetTab
 
-		updateActivePillPosition()
+		updateActivePillPosition(true)
 
 		for _, tab in ipairs(Window.Tabs) do
 			if tab == targetTab then
