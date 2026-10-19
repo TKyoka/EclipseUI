@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.48 | October 18, 2026
+    Eclipse UI | Version: 1.1.49 | October 18, 2026
 
     Author: TKyoka
 	Discord: discord.gg/ZRfJ7kdGDv
@@ -1269,7 +1269,7 @@ function EclipseUI:CreateWindow(options)
 
 	local tabsCanvasGroup = Instance.new("CanvasGroup")
 	tabsCanvasGroup.Name = "TabsCanvasGroup"
-	tabsCanvasGroup.Size = UDim2.new(0, 134, 1, -(52 + bodySizeOffset))
+	tabsCanvasGroup.Size = UDim2.new(0, 134, 1, -bodySizeOffset)
 	tabsCanvasGroup.BackgroundTransparency = 1
 	tabsCanvasGroup.GroupTransparency = 0
 	tabsCanvasGroup.ZIndex = 3
