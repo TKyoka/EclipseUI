@@ -1,7 +1,7 @@
 --[[
     Eclipse UI | Version: 1.1.49 | October 18, 2026
 
-    Author: TKyoka - Zyxer
+    Author: TKyoka
 	Discord: discord.gg/uyM5Jd8knb
     License: MIT
 ]]
@@ -1281,7 +1281,7 @@ function EclipseUI:CreateWindow(options)
 	activePill.Size = UDim2.new(1, -16, 0, 32)
 	activePill.Position = UDim2.new(0.5, 0, 0, 24)
 	activePill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	activePill.BackgroundTransparency = 0
+	activePill.BackgroundTransparency = 0.9
 	activePill.Visible = false
 	activePill.ZIndex = 3
 	activePill.Parent = tabsCanvasGroup
