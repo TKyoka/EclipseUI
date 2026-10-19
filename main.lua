@@ -1,7 +1,7 @@
 --[[
-    Eclipse UI | Version: 1.1.49 | October 18, 2026
+    Eclipse UI | Version: 1.1.51 | October 18, 2026
 
-    Author: TKyoka
+    Author: TKyoka - Zyxer
 	Discord: discord.gg/uyM5Jd8knb
     License: MIT
 ]]
@@ -1300,43 +1300,27 @@ function EclipseUI:CreateWindow(options)
 	pillCorner.CornerRadius = UDim.new(0, 8)
 	pillCorner.Parent = activePill
 
+	local pillStroke = Instance.new("UIStroke")
+	pillStroke.Color = Color3.fromRGB(255, 255, 255)
+	pillStroke.Thickness = 1
+	pillStroke.Transparency = 0.5
+	pillStroke.Parent = activePill
+
 	local pillGradient = Instance.new("UIGradient")
 	pillGradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Window.Theme.StrokeColors[1]),
-		ColorSequenceKeypoint.new(0.5, Window.Theme.StrokeColors[2]),
-		ColorSequenceKeypoint.new(1, Window.Theme.StrokeColors[1])
+		ColorSequenceKeypoint.new(0, Window.Theme.PillGradient[1]),
+		ColorSequenceKeypoint.new(0.5, Window.Theme.PillGradient[2]),
+		ColorSequenceKeypoint.new(1, Window.Theme.PillGradient[3])
 	})
-	pillGradient.Transparency = NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 0.3),
-		NumberSequenceKeypoint.new(0.5, 0.15),
-		NumberSequenceKeypoint.new(1, 0.8)
-	})
-	pillGradient.Rotation = 0
+	pillGradient.Rotation = 45
 	pillGradient.Parent = activePill
 
 	table.insert(Window.ThemeUpdaters, function(t)
 		pillGradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0, t.StrokeColors[1]),
-			ColorSequenceKeypoint.new(0.5, t.StrokeColors[2]),
-			ColorSequenceKeypoint.new(1, t.StrokeColors[1])
+			ColorSequenceKeypoint.new(0, t.PillGradient[1]),
+			ColorSequenceKeypoint.new(0.5, t.PillGradient[2]),
+			ColorSequenceKeypoint.new(1, t.PillGradient[3])
 		})
-	end)
-
-	-- Smooth breathing / pulsing highlight animation
-	task.spawn(function()
-		local tAcc = 0
-		while activePill:IsDescendantOf(game) do
-			local dt = RunService.RenderStepped:Wait()
-			if activePill.Visible then
-				tAcc = tAcc + dt
-				local pulse = 0.25 + (math.sin(tAcc * 2.5) * 0.12)
-				pillGradient.Transparency = NumberSequence.new({
-					NumberSequenceKeypoint.new(0, pulse + 0.05),
-					NumberSequenceKeypoint.new(0.5, pulse),
-					NumberSequenceKeypoint.new(1, math.clamp(pulse + 0.5, 0, 1))
-				})
-			end
-		end
 	end)
 
 	local tabs = Instance.new("ScrollingFrame")
@@ -2412,7 +2396,7 @@ function EclipseUI:CreateWindow(options)
 				ColorSequenceKeypoint.new(0.5, Window.Theme.ButtonGradient[2]),
 				ColorSequenceKeypoint.new(1, Window.Theme.ButtonGradient[3])
 			})
-			btnGradient.Rotation = 0
+			btnGradient.Rotation = 45
 			btnGradient.Parent = btn
 
 			table.insert(Window.ThemeUpdaters, function(t)
@@ -2421,15 +2405,6 @@ function EclipseUI:CreateWindow(options)
 					ColorSequenceKeypoint.new(0.5, t.ButtonGradient[2]),
 					ColorSequenceKeypoint.new(1, t.ButtonGradient[3])
 				})
-			end)
-
-			task.spawn(function()
-				local tAcc = 0
-				while btn:IsDescendantOf(game) do
-					local dt = RunService.RenderStepped:Wait()
-					tAcc = tAcc + dt
-					btnGradient.Rotation = (tAcc * 50) % 360
-				end
 			end)
 
 			local textRightOffset = -14
@@ -2551,7 +2526,7 @@ function EclipseUI:CreateWindow(options)
 					ColorSequenceKeypoint.new(0.5, Window.Theme.ButtonGradient[2]),
 					ColorSequenceKeypoint.new(1, Window.Theme.ButtonGradient[3])
 				})
-				btnGradient.Rotation = 0
+				btnGradient.Rotation = 45
 				btnGradient.Parent = btnFrame
 
 				table.insert(Window.ThemeUpdaters, function(t)
@@ -2560,15 +2535,6 @@ function EclipseUI:CreateWindow(options)
 						ColorSequenceKeypoint.new(0.5, t.ButtonGradient[2]),
 						ColorSequenceKeypoint.new(1, t.ButtonGradient[3])
 					})
-				end)
-
-				task.spawn(function()
-					local tAcc = 0
-					while btnFrame:IsDescendantOf(game) do
-						local dt = RunService.RenderStepped:Wait()
-						tAcc = tAcc + dt
-						btnGradient.Rotation = (tAcc * 50) % 360
-					end
 				end)
 
 				local textRightOffset = -10
