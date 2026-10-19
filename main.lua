@@ -6,6 +6,7 @@
     License: MIT
 ]]
 
+-- Changes: New Tab style
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -1303,7 +1304,7 @@ function EclipseUI:CreateWindow(options)
 	local pillStroke = Instance.new("UIStroke")
 	pillStroke.Color = Color3.fromRGB(255, 255, 255)
 	pillStroke.Thickness = 1.25
-	pillStroke.Transparency = 0.75
+	pillStroke.Transparency = 0.3
 	pillStroke.Parent = activePill
 
 	local strokeGradient = Instance.new("UIGradient")
