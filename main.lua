@@ -1,7 +1,7 @@
 --[[
     Eclipse UI | Version: 1.1.49 | October 18, 2026
 
-    Author: TKyoka - Zyxer
+    Author: TKyoka
 	Discord: discord.gg/uyM5Jd8knb
     License: MIT
 ]]
@@ -1291,7 +1291,7 @@ function EclipseUI:CreateWindow(options)
 	activePill.Size = UDim2.new(1, -16, 0, 32)
 	activePill.Position = UDim2.new(0.5, 0, 0, 24)
 	activePill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	activePill.BackgroundTransparency = 0.75
+	activePill.BackgroundTransparency = 0.65
 	activePill.Visible = false
 	activePill.ZIndex = 3
 	activePill.Parent = tabsCanvasGroup
@@ -1306,6 +1306,15 @@ function EclipseUI:CreateWindow(options)
 	pillStroke.Transparency = 0.5
 	pillStroke.Parent = activePill
 
+	local strokeGradient = Instance.new("UIGradient")
+	strokeGradient.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, Window.Theme.PillGradient[1]),
+		ColorSequenceKeypoint.new(0.5, Window.Theme.PillGradient[2]),
+		ColorSequenceKeypoint.new(1, Window.Theme.PillGradient[3])
+	})
+	strokeGradient.Rotation = 45
+	strokeGradient.Parent = pillStroke
+
 	local pillGradient = Instance.new("UIGradient")
 	pillGradient.Color = ColorSequence.new({
 		ColorSequenceKeypoint.new(0, Window.Theme.PillGradient[1]),
@@ -1317,6 +1326,11 @@ function EclipseUI:CreateWindow(options)
 
 	table.insert(Window.ThemeUpdaters, function(t)
 		pillGradient.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, t.PillGradient[1]),
+			ColorSequenceKeypoint.new(0.5, t.PillGradient[2]),
+			ColorSequenceKeypoint.new(1, t.PillGradient[3])
+		})
+		strokeGradient.Color = ColorSequence.new({
 			ColorSequenceKeypoint.new(0, t.PillGradient[1]),
 			ColorSequenceKeypoint.new(0.5, t.PillGradient[2]),
 			ColorSequenceKeypoint.new(1, t.PillGradient[3])
