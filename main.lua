@@ -1,12 +1,11 @@
 --[[
-    Eclipse UI | Version: 1.1.49 | October 18, 2026
+    Eclipse UI | Version: 1.1.50 | October 18, 2026
 
     Author: TKyoka - Zyxer
 	Discord: discord.gg/uyM5Jd8knb
     License: MIT
 ]]
 
--- Changes: New Tab style
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -2667,6 +2666,35 @@ function EclipseUI:CreateWindow(options)
 			return toggleObjs
 		end
 
+		function TabObject:CheckboxRow(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local checkboxesData = opts.Checkboxes or {}
+			local count = #checkboxesData
+			if count == 0 then return end
+
+			local rowFrame = Instance.new("Frame")
+			rowFrame.Name = "CheckboxRow"
+			rowFrame.Size = UDim2.new(1, 0, 0, 38)
+			rowFrame.BackgroundTransparency = 1
+			rowFrame.Parent = targetParent
+
+			local gridLayout = Instance.new("UIGridLayout")
+			gridLayout.CellSize = UDim2.new(1 / count, -((count - 1) * 6 / count), 1, 0)
+			gridLayout.CellPadding = UDim2.new(0, 6, 0, 0)
+			gridLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			gridLayout.Parent = rowFrame
+
+			local checkboxObjs = {}
+
+			for _, cData in ipairs(checkboxesData) do
+				local cObj = TabObject:Checkbox(cData, rowFrame)
+				table.insert(checkboxObjs, cObj)
+			end
+
+			return checkboxObjs
+		end
+
 		function TabObject:SliderRow(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
@@ -3135,6 +3163,154 @@ function EclipseUI:CreateWindow(options)
 			end
 
 			return ToggleObj
+		end
+
+		function TabObject:Checkbox(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local title = opts.Title or opts.Name or "Checkbox"
+			local state = opts.Default or false
+			local callback = opts.Callback or function() end
+			local flag = opts.Flag
+
+			local checkboxContainer, stroke = createContainer(targetParent, 38)
+
+			local label = Instance.new("TextLabel")
+			label.Size = UDim2.new(1, -50, 1, 0)
+			label.Position = UDim2.new(0, 14, 0, 0)
+			label.BackgroundTransparency = 1
+			label.Text = title
+			label.TextColor3 = Color3.fromRGB(240, 245, 255)
+			label.TextSize = 12
+			label.Font = Enum.Font.GothamBold
+			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.ZIndex = 5
+			label.Parent = checkboxContainer
+
+			local boxFrame = Instance.new("Frame")
+			boxFrame.Name = "CheckboxBox"
+			boxFrame.AnchorPoint = Vector2.new(1, 0.5)
+			boxFrame.Position = UDim2.new(1, -12, 0.5, 0)
+			boxFrame.Size = UDim2.new(0, 20, 0, 20)
+			boxFrame.BackgroundColor3 = Window.Theme.ContainerBg
+			boxFrame.BackgroundTransparency = 0.4
+			boxFrame.ZIndex = 5
+			boxFrame.Parent = checkboxContainer
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				boxFrame.BackgroundColor3 = t.ContainerBg
+			end)
+
+			local boxCorner = Instance.new("UICorner")
+			boxCorner.CornerRadius = UDim.new(0, 5)
+			boxCorner.Parent = boxFrame
+
+			local boxStroke = Instance.new("UIStroke")
+			boxStroke.Color = Color3.fromRGB(255, 255, 255)
+			boxStroke.Thickness = 1
+			boxStroke.Transparency = state and 0.5 or 0.75
+			boxStroke.Parent = boxFrame
+
+			local gradientOverlay = Instance.new("Frame")
+			gradientOverlay.Name = "GradientOverlay"
+			gradientOverlay.Size = UDim2.new(1, 0, 1, 0)
+			gradientOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			gradientOverlay.BackgroundTransparency = state and 0 or 1
+			gradientOverlay.ZIndex = 6
+			gradientOverlay.Parent = boxFrame
+
+			local goCorner = Instance.new("UICorner")
+			goCorner.CornerRadius = UDim.new(0, 5)
+			goCorner.Parent = gradientOverlay
+
+			local checkboxGradient = Instance.new("UIGradient")
+			checkboxGradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Window.Theme.ToggleGradient[1]),
+				ColorSequenceKeypoint.new(1, Window.Theme.ToggleGradient[2])
+			})
+			checkboxGradient.Rotation = 45
+			checkboxGradient.Parent = gradientOverlay
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				checkboxGradient.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, t.ToggleGradient[1]),
+					ColorSequenceKeypoint.new(1, t.ToggleGradient[2])
+				})
+			end)
+
+			local checkIcon = Instance.new("ImageLabel")
+			checkIcon.AnchorPoint = Vector2.new(0.5, 0.5)
+			checkIcon.Position = UDim2.new(0.5, 0, 0.5, 0)
+			checkIcon.Size = UDim2.new(0, 12, 0, 12)
+			checkIcon.BackgroundTransparency = 1
+			checkIcon.Image = getIconAsset("check")
+			checkIcon.ImageColor3 = Color3.fromRGB(255, 255, 255)
+			checkIcon.ImageTransparency = state and 0 or 1
+			checkIcon.ZIndex = 7
+			checkIcon.Parent = boxFrame
+
+			if not iconsLoaded then
+				task.spawn(function()
+					repeat task.wait() until iconsLoaded or not checkIcon:IsDescendantOf(game)
+					if checkIcon:IsDescendantOf(game) then
+						checkIcon.Image = getIconAsset("check")
+					end
+				end)
+			end
+
+			local hitBox = Instance.new("TextButton")
+			hitBox.Name = "Hitbox"
+			hitBox.Size = UDim2.new(1, 0, 1, 0)
+			hitBox.BackgroundTransparency = 1
+			hitBox.Text = ""
+			hitBox.ZIndex = 10
+			hitBox.Parent = checkboxContainer
+
+			local CheckboxObj = { Value = state }
+
+			local function updateCheckbox(newState, animate)
+				CheckboxObj.Value = newState
+				local targetOverlayTrans = newState and 0 or 1
+				local targetStrokeTrans = newState and 0.5 or 0.75
+				local targetIconTrans = newState and 0 or 1
+
+				local info = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+				if animate then
+					tween(gradientOverlay, info, { BackgroundTransparency = targetOverlayTrans })
+					tween(boxStroke, info, { Transparency = targetStrokeTrans })
+					tween(checkIcon, info, { ImageTransparency = targetIconTrans })
+				else
+					gradientOverlay.BackgroundTransparency = targetOverlayTrans
+					boxStroke.Transparency = targetStrokeTrans
+					checkIcon.ImageTransparency = targetIconTrans
+				end
+
+				pcall(callback, newState)
+			end
+
+			hitBox.MouseEnter:Connect(function()
+				tween(checkboxContainer, fadeTweenInfo, { BackgroundTransparency = 0.90 })
+				tween(stroke, fadeTweenInfo, { Transparency = 0.85 })
+			end)
+
+			hitBox.MouseLeave:Connect(function()
+				tween(checkboxContainer, fadeTweenInfo, { BackgroundTransparency = 0.95 })
+				tween(stroke, fadeTweenInfo, { Transparency = 0.92 })
+			end)
+
+			hitBox.MouseButton1Click:Connect(function()
+				updateCheckbox(not CheckboxObj.Value, true)
+			end)
+
+			CheckboxObj.Set = function(_, val)
+				updateCheckbox(val, true)
+			end
+
+			if flag then
+				registeredElements[flag] = CheckboxObj
+			end
+
+			return CheckboxObj
 		end
 
 		function TabObject:Slider(opts, targetParent)
