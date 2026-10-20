@@ -3232,6 +3232,21 @@ function EclipseUI:CreateWindow(options)
 				})
 			end)
 
+			-- RenderStepped loop matching the Main Window stroke & notification rotation animation
+			local checkTimeAcc = 0
+			local checkConn
+			checkConn = RunService.RenderStepped:Connect(function(dt)
+				if not boxFrame:IsDescendantOf(game) then
+					checkConn:Disconnect()
+					return
+				end
+				if state then
+					checkTimeAcc = checkTimeAcc + dt
+					checkboxGradient.Rotation = (checkTimeAcc * 60) % 360
+				end
+			end)
+			table.insert(Window.CleanupItems, checkConn)
+
 			local hitBox = Instance.new("TextButton")
 			hitBox.Name = "Hitbox"
 			hitBox.Size = UDim2.new(1, 0, 1, 0)
@@ -3244,6 +3259,7 @@ function EclipseUI:CreateWindow(options)
 
 			local function updateCheckbox(newState, animate)
 				CheckboxObj.Value = newState
+				state = newState -- Keeps the rotation loop synced with the active state
 				local targetOverlayTrans = newState and 0 or 1
 
 				local info = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
