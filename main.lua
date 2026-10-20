@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.51 | October 19, 2026 | Added Descriptions to All Elements
+    Eclipse UI | Version: 1.1.51 | October 19, 2026
 
     Author: TKyoka - Zyxer
 	Discord: discord.gg/uyM5Jd8knb
@@ -2588,7 +2588,7 @@ function EclipseUI:CreateWindow(options)
 					ColorSequenceKeypoint.new(0.5, Window.Theme.ButtonGradient[2]),
 					ColorSequenceKeypoint.new(1, Window.Theme.ButtonGradient[3])
 				})
-				btnGradient.Rotation = 45
+				btnGradient.Rotation = 0
 				btnGradient.Parent = btnFrame
 
 				table.insert(Window.ThemeUpdaters, function(t)
@@ -2597,6 +2597,16 @@ function EclipseUI:CreateWindow(options)
 						ColorSequenceKeypoint.new(0.5, t.ButtonGradient[2]),
 						ColorSequenceKeypoint.new(1, t.ButtonGradient[3])
 					})
+				end)
+
+				-- Restored rotation loop for row buttons
+				task.spawn(function()
+					local tAcc = 0
+					while btnFrame:IsDescendantOf(game) do
+						local dt = RunService.RenderStepped:Wait()
+						tAcc = tAcc + dt
+						btnGradient.Rotation = (tAcc * 50) % 360
+					end
 				end)
 
 				local textRightOffset = -10
