@@ -2774,11 +2774,7 @@ function EclipseUI:CreateWindow(options)
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
 
-			local baseHeight = desc and 52 or 38
-			local container, stroke = createContainer(targetParent, baseHeight)
-			if desc then
-				container.AutomaticSize = Enum.AutomaticSize.Y
-			end
+			local container, stroke = createContainer(targetParent, 38)
 
 			local textContainer = Instance.new("Frame")
 			textContainer.Size = UDim2.new(1, -120, 1, 0)
@@ -2795,7 +2791,7 @@ function EclipseUI:CreateWindow(options)
 			textLayout.Parent = textContainer
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, 0, 0, desc and 16 or 38)
+			label.Size = UDim2.new(1, 0, 0, desc and 15 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
@@ -2808,15 +2804,14 @@ function EclipseUI:CreateWindow(options)
 
 			if desc then
 				local descLabel = Instance.new("TextLabel")
-				descLabel.Size = UDim2.new(1, 0, 0, 0)
-				descLabel.AutomaticSize = Enum.AutomaticSize.Y
+				descLabel.Size = UDim2.new(1, 0, 0, 13)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
 				descLabel.TextSize = 10
 				descLabel.Font = Enum.Font.Gotham
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
-				descLabel.TextWrapped = true
+				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
 				descLabel.LayoutOrder = 2
 				descLabel.ZIndex = 5
 				descLabel.Parent = textContainer
@@ -3028,11 +3023,7 @@ function EclipseUI:CreateWindow(options)
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
 
-			local baseHeight = desc and 52 or 38
-			local inputContainer, stroke = createContainer(targetParent, baseHeight)
-			if desc then
-				inputContainer.AutomaticSize = Enum.AutomaticSize.Y
-			end
+			local inputContainer, stroke = createContainer(targetParent, 38)
 
 			local textContainer = Instance.new("Frame")
 			textContainer.Size = UDim2.new(1, -150, 1, 0)
@@ -3049,7 +3040,7 @@ function EclipseUI:CreateWindow(options)
 			textLayout.Parent = textContainer
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, 0, 0, desc and 16 or 38)
+			label.Size = UDim2.new(1, 0, 0, desc and 15 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
@@ -3062,15 +3053,14 @@ function EclipseUI:CreateWindow(options)
 
 			if desc then
 				local descLabel = Instance.new("TextLabel")
-				descLabel.Size = UDim2.new(1, 0, 0, 0)
-				descLabel.AutomaticSize = Enum.AutomaticSize.Y
+				descLabel.Size = UDim2.new(1, 0, 0, 13)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
 				descLabel.TextSize = 10
 				descLabel.Font = Enum.Font.Gotham
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
-				descLabel.TextWrapped = true
+				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
 				descLabel.LayoutOrder = 2
 				descLabel.ZIndex = 5
 				descLabel.Parent = textContainer
@@ -3151,11 +3141,7 @@ function EclipseUI:CreateWindow(options)
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
 
-			local baseHeight = desc and 52 or 38
-			local toggleContainer, stroke = createContainer(targetParent, baseHeight)
-			if desc then
-				toggleContainer.AutomaticSize = Enum.AutomaticSize.Y
-			end
+			local toggleContainer, stroke = createContainer(targetParent, 38)
 
 			local textContainer = Instance.new("Frame")
 			textContainer.Size = UDim2.new(1, -70, 1, 0)
@@ -3172,7 +3158,7 @@ function EclipseUI:CreateWindow(options)
 			textLayout.Parent = textContainer
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, 0, 0, desc and 16 or 38)
+			label.Size = UDim2.new(1, 0, 0, desc and 15 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
@@ -3185,15 +3171,14 @@ function EclipseUI:CreateWindow(options)
 
 			if desc then
 				local descLabel = Instance.new("TextLabel")
-				descLabel.Size = UDim2.new(1, 0, 0, 0)
-				descLabel.AutomaticSize = Enum.AutomaticSize.Y
+				descLabel.Size = UDim2.new(1, 0, 0, 13)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
 				descLabel.TextSize = 10
 				descLabel.Font = Enum.Font.Gotham
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
-				descLabel.TextWrapped = true
+				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
 				descLabel.LayoutOrder = 2
 				descLabel.ZIndex = 5
 				descLabel.Parent = textContainer
@@ -3331,11 +3316,7 @@ function EclipseUI:CreateWindow(options)
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
 
-			local baseHeight = desc and 52 or 38
-			local checkboxContainer, stroke = createContainer(targetParent, baseHeight)
-			if desc then
-				checkboxContainer.AutomaticSize = Enum.AutomaticSize.Y
-			end
+			local checkboxContainer, stroke = createContainer(targetParent, 38)
 
 			local textContainer = Instance.new("Frame")
 			textContainer.Size = UDim2.new(1, -50, 1, 0)
@@ -3352,7 +3333,7 @@ function EclipseUI:CreateWindow(options)
 			textLayout.Parent = textContainer
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, 0, 0, desc and 16 or 38)
+			label.Size = UDim2.new(1, 0, 0, desc and 15 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
@@ -3365,15 +3346,14 @@ function EclipseUI:CreateWindow(options)
 
 			if desc then
 				local descLabel = Instance.new("TextLabel")
-				descLabel.Size = UDim2.new(1, 0, 0, 0)
-				descLabel.AutomaticSize = Enum.AutomaticSize.Y
+				descLabel.Size = UDim2.new(1, 0, 0, 13)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
 				descLabel.TextSize = 10
 				descLabel.Font = Enum.Font.Gotham
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
-				descLabel.TextWrapped = true
+				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
 				descLabel.LayoutOrder = 2
 				descLabel.ZIndex = 5
 				descLabel.Parent = textContainer
@@ -3695,11 +3675,7 @@ function EclipseUI:CreateWindow(options)
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
 
-			local baseHeight = desc and 52 or 38
-			local kbFrame, stroke = createContainer(targetParent, baseHeight)
-			if desc then
-				kbFrame.AutomaticSize = Enum.AutomaticSize.Y
-			end
+			local kbFrame, stroke = createContainer(targetParent, 38)
 
 			local textContainer = Instance.new("Frame")
 			textContainer.Size = UDim2.new(1, -110, 1, 0)
@@ -3716,7 +3692,7 @@ function EclipseUI:CreateWindow(options)
 			textLayout.Parent = textContainer
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, 0, 0, desc and 16 or 38)
+			label.Size = UDim2.new(1, 0, 0, desc and 15 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
@@ -3729,15 +3705,14 @@ function EclipseUI:CreateWindow(options)
 
 			if desc then
 				local descLabel = Instance.new("TextLabel")
-				descLabel.Size = UDim2.new(1, 0, 0, 0)
-				descLabel.AutomaticSize = Enum.AutomaticSize.Y
+				descLabel.Size = UDim2.new(1, 0, 0, 13)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
 				descLabel.TextSize = 10
 				descLabel.Font = Enum.Font.Gotham
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
-				descLabel.TextWrapped = true
+				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
 				descLabel.LayoutOrder = 2
 				descLabel.ZIndex = 5
 				descLabel.Parent = textContainer
@@ -3843,11 +3818,7 @@ function EclipseUI:CreateWindow(options)
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
 
-			local baseHeight = desc and 52 or 38
-			local ddFrame, stroke = createContainer(targetParent, baseHeight)
-			if desc then
-				ddFrame.AutomaticSize = Enum.AutomaticSize.Y
-			end
+			local ddFrame, stroke = createContainer(targetParent, 38)
 			ddFrame.ClipsDescendants = false
 
 			local textContainer = Instance.new("Frame")
@@ -3865,7 +3836,7 @@ function EclipseUI:CreateWindow(options)
 			textLayout.Parent = textContainer
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, 0, 0, desc and 16 or 38)
+			label.Size = UDim2.new(1, 0, 0, desc and 15 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
@@ -3878,15 +3849,14 @@ function EclipseUI:CreateWindow(options)
 
 			if desc then
 				local descLabel = Instance.new("TextLabel")
-				descLabel.Size = UDim2.new(1, 0, 0, 0)
-				descLabel.AutomaticSize = Enum.AutomaticSize.Y
+				descLabel.Size = UDim2.new(1, 0, 0, 13)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
 				descLabel.TextSize = 10
 				descLabel.Font = Enum.Font.Gotham
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
-				descLabel.TextWrapped = true
+				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
 				descLabel.LayoutOrder = 2
 				descLabel.ZIndex = 5
 				descLabel.Parent = textContainer
@@ -4179,11 +4149,7 @@ function EclipseUI:CreateWindow(options)
 				end
 			end
 
-			local baseHeight = desc and 52 or 38
-			local ddFrame, stroke = createContainer(targetParent, baseHeight)
-			if desc then
-				ddFrame.AutomaticSize = Enum.AutomaticSize.Y
-			end
+			local ddFrame, stroke = createContainer(targetParent, 38)
 			ddFrame.ClipsDescendants = false
 
 			local textContainer = Instance.new("Frame")
@@ -4201,7 +4167,7 @@ function EclipseUI:CreateWindow(options)
 			textLayout.Parent = textContainer
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, 0, 0, desc and 16 or 38)
+			label.Size = UDim2.new(1, 0, 0, desc and 15 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
@@ -4214,15 +4180,14 @@ function EclipseUI:CreateWindow(options)
 
 			if desc then
 				local descLabel = Instance.new("TextLabel")
-				descLabel.Size = UDim2.new(1, 0, 0, 0)
-				descLabel.AutomaticSize = Enum.AutomaticSize.Y
+				descLabel.Size = UDim2.new(1, 0, 0, 13)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
 				descLabel.TextSize = 10
 				descLabel.Font = Enum.Font.Gotham
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
-				descLabel.TextWrapped = true
+				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
 				descLabel.LayoutOrder = 2
 				descLabel.ZIndex = 5
 				descLabel.Parent = textContainer
