@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.52 | October 19, 2026
+    Eclipse UI | Version: 1.1.51 | October 19, 2026
 
     Author: TKyoka - Zyxer
 	Discord: discord.gg/uyM5Jd8knb
@@ -358,7 +358,8 @@ function EclipseUI:CreateWindow(options)
 	local loadAnimEnabled = options.LoadAnim or false
 	local openButtonEnabled = options.OpenButton or false
 	local userOptions = options.User
-	local initialThemeName = options.Theme and Themes[options.Theme] and options.Theme or "Eclipse"
+	local initialThemeName;
+	initialThemeName, EclipseUI.CurrentTheme = options.Theme and Themes[options.Theme] and options.Theme or "Eclipse", options.Theme and Themes[options.Theme] and options.Theme or "Eclipse"
 
 	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
 
