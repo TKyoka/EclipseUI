@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.51 | October 19, 2026
+    Eclipse UI | Version: 1.1.51 | October 19, 2026 | Added Descriptions to All Elements
 
     Author: TKyoka - Zyxer
 	Discord: discord.gg/uyM5Jd8knb
@@ -1290,7 +1290,7 @@ function EclipseUI:CreateWindow(options)
 	activePill.Size = UDim2.new(1, -16, 0, 32)
 	activePill.Position = UDim2.new(0.5, 0, 0, 24)
 	activePill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	activePill.BackgroundTransparency = 0
+	activePill.BackgroundTransparency = 0.65
 	activePill.Visible = false
 	activePill.ZIndex = 3
 	activePill.Parent = tabsCanvasGroup
@@ -1300,8 +1300,9 @@ function EclipseUI:CreateWindow(options)
 	pillCorner.Parent = activePill
 
 	local pillStroke = Instance.new("UIStroke")
-	pillStroke.Thickness = 1
-	pillStroke.Transparency = 0.5
+	pillStroke.Color = Color3.fromRGB(255, 255, 255)
+	pillStroke.Thickness = 1.25
+	pillStroke.Transparency = 0.3
 	pillStroke.Parent = activePill
 
 	local strokeGradient = Instance.new("UIGradient")
@@ -2413,7 +2414,7 @@ function EclipseUI:CreateWindow(options)
 				ColorSequenceKeypoint.new(0.5, Window.Theme.ButtonGradient[2]),
 				ColorSequenceKeypoint.new(1, Window.Theme.ButtonGradient[3])
 			})
-			btnGradient.Rotation = 45
+			btnGradient.Rotation = 0
 			btnGradient.Parent = btn
 
 			table.insert(Window.ThemeUpdaters, function(t)
@@ -2422,6 +2423,16 @@ function EclipseUI:CreateWindow(options)
 					ColorSequenceKeypoint.new(0.5, t.ButtonGradient[2]),
 					ColorSequenceKeypoint.new(1, t.ButtonGradient[3])
 				})
+			end)
+
+			-- Restored rotation loop
+			task.spawn(function()
+				local tAcc = 0
+				while btn:IsDescendantOf(game) do
+					local dt = RunService.RenderStepped:Wait()
+					tAcc = tAcc + dt
+					btnGradient.Rotation = (tAcc * 50) % 360
+				end
 			end)
 
 			local textRightOffset = -14
