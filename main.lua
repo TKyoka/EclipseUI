@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.50 | October 18, 2026
+    Eclipse UI | Version: 1.1.51 | October 19, 2026
 
     Author: TKyoka - Zyxer
 	Discord: discord.gg/uyM5Jd8knb
@@ -1267,7 +1267,6 @@ function EclipseUI:CreateWindow(options)
 		end)
 	end)
 
-	--// Define Tween Infos & Helper Functions Up Front
 	local pillTweenInfo = TweenInfo.new(0.25, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
 	local fadeTweenInfo = TweenInfo.new(0.20, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 
@@ -1291,7 +1290,7 @@ function EclipseUI:CreateWindow(options)
 	activePill.Size = UDim2.new(1, -16, 0, 32)
 	activePill.Position = UDim2.new(0.5, 0, 0, 24)
 	activePill.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-	activePill.BackgroundTransparency = 0.65
+	activePill.BackgroundTransparency = 0
 	activePill.Visible = false
 	activePill.ZIndex = 3
 	activePill.Parent = tabsCanvasGroup
@@ -1301,9 +1300,8 @@ function EclipseUI:CreateWindow(options)
 	pillCorner.Parent = activePill
 
 	local pillStroke = Instance.new("UIStroke")
-	pillStroke.Color = Color3.fromRGB(255, 255, 255)
-	pillStroke.Thickness = 1.25
-	pillStroke.Transparency = 0.3
+	pillStroke.Thickness = 1
+	pillStroke.Transparency = 0.5
 	pillStroke.Parent = activePill
 
 	local strokeGradient = Instance.new("UIGradient")
@@ -2394,10 +2392,15 @@ function EclipseUI:CreateWindow(options)
 			opts = opts or {}
 			targetParent = targetParent or page
 			local btnName = opts.Title or opts.Name or "Button"
+			local desc = opts.Desc
 			local btnIcon = opts.Icon
 			local callback = opts.Callback or function() end
 
-			local btn, stroke = createContainer(targetParent, 38)
+			local baseHeight = desc and 52 or 38
+			local btn, stroke = createContainer(targetParent, baseHeight)
+			if desc then
+				btn.AutomaticSize = Enum.AutomaticSize.Y
+			end
 			btn.Name = btnName .. "Button"
 			btn.BackgroundTransparency = 0.75
 			btn.ClipsDescendants = true
@@ -2410,7 +2413,7 @@ function EclipseUI:CreateWindow(options)
 				ColorSequenceKeypoint.new(0.5, Window.Theme.ButtonGradient[2]),
 				ColorSequenceKeypoint.new(1, Window.Theme.ButtonGradient[3])
 			})
-			btnGradient.Rotation = 0
+			btnGradient.Rotation = 45
 			btnGradient.Parent = btn
 
 			table.insert(Window.ThemeUpdaters, function(t)
@@ -2419,15 +2422,6 @@ function EclipseUI:CreateWindow(options)
 					ColorSequenceKeypoint.new(0.5, t.ButtonGradient[2]),
 					ColorSequenceKeypoint.new(1, t.ButtonGradient[3])
 				})
-			end)
-
-			task.spawn(function()
-				local tAcc = 0
-				while btn:IsDescendantOf(game) do
-					local dt = RunService.RenderStepped:Wait()
-					tAcc = tAcc + dt
-					btnGradient.Rotation = (tAcc * 50) % 360
-				end
 			end)
 
 			local textRightOffset = -14
@@ -2453,17 +2447,51 @@ function EclipseUI:CreateWindow(options)
 				end
 			end
 
+			local textContainer = Instance.new("Frame")
+			textContainer.Size = UDim2.new(1, textRightOffset, 1, 0)
+			textContainer.Position = UDim2.new(0, 14, 0, 0)
+			textContainer.BackgroundTransparency = 1
+			textContainer.ZIndex = 5
+			textContainer.Parent = btn
+
+			local textLayout = Instance.new("UIListLayout")
+			textLayout.FillDirection = Enum.FillDirection.Vertical
+			textLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+			textLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			textLayout.Padding = UDim.new(0, 2)
+			textLayout.Parent = textContainer
+
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, textRightOffset, 1, 0)
-			label.Position = UDim2.new(0, 14, 0, 0)
+			label.Size = UDim2.new(1, 0, 0, desc and 16 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = btnName
 			label.TextColor3 = Color3.fromRGB(255, 255, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.LayoutOrder = 1
 			label.ZIndex = 5
-			label.Parent = btn
+			label.Parent = textContainer
+
+			if desc then
+				local descLabel = Instance.new("TextLabel")
+				descLabel.Size = UDim2.new(1, 0, 0, 0)
+				descLabel.AutomaticSize = Enum.AutomaticSize.Y
+				descLabel.BackgroundTransparency = 1
+				descLabel.Text = desc
+				descLabel.TextColor3 = Window.Theme.TextMuted
+				descLabel.TextSize = 10
+				descLabel.Font = Enum.Font.Gotham
+				descLabel.TextXAlignment = Enum.TextXAlignment.Left
+				descLabel.TextWrapped = true
+				descLabel.LayoutOrder = 2
+				descLabel.ZIndex = 5
+				descLabel.Parent = textContainer
+
+				table.insert(Window.ThemeUpdaters, function(t)
+					descLabel.TextColor3 = t.TextMuted
+				end)
+			end
 
 			local clickBtn = Instance.new("TextButton")
 			clickBtn.Size = UDim2.new(1, 0, 1, 0)
@@ -2549,7 +2577,7 @@ function EclipseUI:CreateWindow(options)
 					ColorSequenceKeypoint.new(0.5, Window.Theme.ButtonGradient[2]),
 					ColorSequenceKeypoint.new(1, Window.Theme.ButtonGradient[3])
 				})
-				btnGradient.Rotation = 0
+				btnGradient.Rotation = 45
 				btnGradient.Parent = btnFrame
 
 				table.insert(Window.ThemeUpdaters, function(t)
@@ -2558,15 +2586,6 @@ function EclipseUI:CreateWindow(options)
 						ColorSequenceKeypoint.new(0.5, t.ButtonGradient[2]),
 						ColorSequenceKeypoint.new(1, t.ButtonGradient[3])
 					})
-				end)
-
-				task.spawn(function()
-					local tAcc = 0
-					while btnFrame:IsDescendantOf(game) do
-						local dt = RunService.RenderStepped:Wait()
-						tAcc = tAcc + dt
-						btnGradient.Rotation = (tAcc * 50) % 360
-					end
 				end)
 
 				local textRightOffset = -10
@@ -2728,24 +2747,63 @@ function EclipseUI:CreateWindow(options)
 			opts = opts or {}
 			targetParent = targetParent or page
 			local title = opts.Title or opts.Name or "ToggleKeybind"
+			local desc = opts.Desc
 			local defaultState = opts.Default or opts.DefaultState or false
 			local currentKey = opts.DefaultKey or opts.Key or Enum.KeyCode.E
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
 
-			local container, stroke = createContainer(targetParent, 38)
+			local baseHeight = desc and 52 or 38
+			local container, stroke = createContainer(targetParent, baseHeight)
+			if desc then
+				container.AutomaticSize = Enum.AutomaticSize.Y
+			end
+
+			local textContainer = Instance.new("Frame")
+			textContainer.Size = UDim2.new(1, -120, 1, 0)
+			textContainer.Position = UDim2.new(0, 14, 0, 0)
+			textContainer.BackgroundTransparency = 1
+			textContainer.ZIndex = 5
+			textContainer.Parent = container
+
+			local textLayout = Instance.new("UIListLayout")
+			textLayout.FillDirection = Enum.FillDirection.Vertical
+			textLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+			textLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			textLayout.Padding = UDim.new(0, 2)
+			textLayout.Parent = textContainer
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, -120, 1, 0)
-			label.Position = UDim2.new(0, 14, 0, 0)
+			label.Size = UDim2.new(1, 0, 0, desc and 16 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.LayoutOrder = 1
 			label.ZIndex = 5
-			label.Parent = container
+			label.Parent = textContainer
+
+			if desc then
+				local descLabel = Instance.new("TextLabel")
+				descLabel.Size = UDim2.new(1, 0, 0, 0)
+				descLabel.AutomaticSize = Enum.AutomaticSize.Y
+				descLabel.BackgroundTransparency = 1
+				descLabel.Text = desc
+				descLabel.TextColor3 = Window.Theme.TextMuted
+				descLabel.TextSize = 10
+				descLabel.Font = Enum.Font.Gotham
+				descLabel.TextXAlignment = Enum.TextXAlignment.Left
+				descLabel.TextWrapped = true
+				descLabel.LayoutOrder = 2
+				descLabel.ZIndex = 5
+				descLabel.Parent = textContainer
+
+				table.insert(Window.ThemeUpdaters, function(t)
+					descLabel.TextColor3 = t.TextMuted
+				end)
+			end
 
 			local keyBtn = Instance.new("TextButton")
 			keyBtn.AnchorPoint = Vector2.new(1, 0.5)
@@ -2943,24 +3001,63 @@ function EclipseUI:CreateWindow(options)
 			opts = opts or {}
 			targetParent = targetParent or page
 			local title = opts.Title or opts.Name or "Input"
+			local desc = opts.Desc
 			local default = opts.Default or ""
 			local placeholder = opts.Placeholder or "Enter text..."
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
 
-			local inputContainer, stroke = createContainer(targetParent, 38)
+			local baseHeight = desc and 52 or 38
+			local inputContainer, stroke = createContainer(targetParent, baseHeight)
+			if desc then
+				inputContainer.AutomaticSize = Enum.AutomaticSize.Y
+			end
+
+			local textContainer = Instance.new("Frame")
+			textContainer.Size = UDim2.new(1, -150, 1, 0)
+			textContainer.Position = UDim2.new(0, 14, 0, 0)
+			textContainer.BackgroundTransparency = 1
+			textContainer.ZIndex = 5
+			textContainer.Parent = inputContainer
+
+			local textLayout = Instance.new("UIListLayout")
+			textLayout.FillDirection = Enum.FillDirection.Vertical
+			textLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+			textLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			textLayout.Padding = UDim.new(0, 2)
+			textLayout.Parent = textContainer
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, -150, 1, 0)
-			label.Position = UDim2.new(0, 14, 0, 0)
+			label.Size = UDim2.new(1, 0, 0, desc and 16 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.LayoutOrder = 1
 			label.ZIndex = 5
-			label.Parent = inputContainer
+			label.Parent = textContainer
+
+			if desc then
+				local descLabel = Instance.new("TextLabel")
+				descLabel.Size = UDim2.new(1, 0, 0, 0)
+				descLabel.AutomaticSize = Enum.AutomaticSize.Y
+				descLabel.BackgroundTransparency = 1
+				descLabel.Text = desc
+				descLabel.TextColor3 = Window.Theme.TextMuted
+				descLabel.TextSize = 10
+				descLabel.Font = Enum.Font.Gotham
+				descLabel.TextXAlignment = Enum.TextXAlignment.Left
+				descLabel.TextWrapped = true
+				descLabel.LayoutOrder = 2
+				descLabel.ZIndex = 5
+				descLabel.Parent = textContainer
+
+				table.insert(Window.ThemeUpdaters, function(t)
+					descLabel.TextColor3 = t.TextMuted
+				end)
+			end
 
 			local textBox = Instance.new("TextBox")
 			textBox.AnchorPoint = Vector2.new(1, 0.5)
@@ -3028,23 +3125,62 @@ function EclipseUI:CreateWindow(options)
 			opts = opts or {}
 			targetParent = targetParent or page
 			local title = opts.Title or opts.Name or "Toggle"
+			local desc = opts.Desc
 			local state = opts.Default or false
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
 
-			local toggleContainer, stroke = createContainer(targetParent, 38)
+			local baseHeight = desc and 52 or 38
+			local toggleContainer, stroke = createContainer(targetParent, baseHeight)
+			if desc then
+				toggleContainer.AutomaticSize = Enum.AutomaticSize.Y
+			end
+
+			local textContainer = Instance.new("Frame")
+			textContainer.Size = UDim2.new(1, -70, 1, 0)
+			textContainer.Position = UDim2.new(0, 14, 0, 0)
+			textContainer.BackgroundTransparency = 1
+			textContainer.ZIndex = 5
+			textContainer.Parent = toggleContainer
+
+			local textLayout = Instance.new("UIListLayout")
+			textLayout.FillDirection = Enum.FillDirection.Vertical
+			textLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+			textLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			textLayout.Padding = UDim.new(0, 2)
+			textLayout.Parent = textContainer
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, -70, 1, 0)
-			label.Position = UDim2.new(0, 14, 0, 0)
+			label.Size = UDim2.new(1, 0, 0, desc and 16 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.LayoutOrder = 1
 			label.ZIndex = 5
-			label.Parent = toggleContainer
+			label.Parent = textContainer
+
+			if desc then
+				local descLabel = Instance.new("TextLabel")
+				descLabel.Size = UDim2.new(1, 0, 0, 0)
+				descLabel.AutomaticSize = Enum.AutomaticSize.Y
+				descLabel.BackgroundTransparency = 1
+				descLabel.Text = desc
+				descLabel.TextColor3 = Window.Theme.TextMuted
+				descLabel.TextSize = 10
+				descLabel.Font = Enum.Font.Gotham
+				descLabel.TextXAlignment = Enum.TextXAlignment.Left
+				descLabel.TextWrapped = true
+				descLabel.LayoutOrder = 2
+				descLabel.ZIndex = 5
+				descLabel.Parent = textContainer
+
+				table.insert(Window.ThemeUpdaters, function(t)
+					descLabel.TextColor3 = t.TextMuted
+				end)
+			end
 
 			local toggleFrame = Instance.new("Frame")
 			toggleFrame.Name = "ToggleFrame"
@@ -3169,23 +3305,62 @@ function EclipseUI:CreateWindow(options)
 			opts = opts or {}
 			targetParent = targetParent or page
 			local title = opts.Title or opts.Name or "Checkbox"
+			local desc = opts.Desc
 			local state = opts.Default or false
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
 
-			local checkboxContainer, stroke = createContainer(targetParent, 38)
+			local baseHeight = desc and 52 or 38
+			local checkboxContainer, stroke = createContainer(targetParent, baseHeight)
+			if desc then
+				checkboxContainer.AutomaticSize = Enum.AutomaticSize.Y
+			end
+
+			local textContainer = Instance.new("Frame")
+			textContainer.Size = UDim2.new(1, -50, 1, 0)
+			textContainer.Position = UDim2.new(0, 14, 0, 0)
+			textContainer.BackgroundTransparency = 1
+			textContainer.ZIndex = 5
+			textContainer.Parent = checkboxContainer
+
+			local textLayout = Instance.new("UIListLayout")
+			textLayout.FillDirection = Enum.FillDirection.Vertical
+			textLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+			textLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			textLayout.Padding = UDim.new(0, 2)
+			textLayout.Parent = textContainer
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, -50, 1, 0)
-			label.Position = UDim2.new(0, 14, 0, 0)
+			label.Size = UDim2.new(1, 0, 0, desc and 16 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.LayoutOrder = 1
 			label.ZIndex = 5
-			label.Parent = checkboxContainer
+			label.Parent = textContainer
+
+			if desc then
+				local descLabel = Instance.new("TextLabel")
+				descLabel.Size = UDim2.new(1, 0, 0, 0)
+				descLabel.AutomaticSize = Enum.AutomaticSize.Y
+				descLabel.BackgroundTransparency = 1
+				descLabel.Text = desc
+				descLabel.TextColor3 = Window.Theme.TextMuted
+				descLabel.TextSize = 10
+				descLabel.Font = Enum.Font.Gotham
+				descLabel.TextXAlignment = Enum.TextXAlignment.Left
+				descLabel.TextWrapped = true
+				descLabel.LayoutOrder = 2
+				descLabel.ZIndex = 5
+				descLabel.Parent = textContainer
+
+				table.insert(Window.ThemeUpdaters, function(t)
+					descLabel.TextColor3 = t.TextMuted
+				end)
+			end
 
 			local boxFrame = Instance.new("Frame")
 			boxFrame.Name = "CheckboxBox"
@@ -3232,7 +3407,6 @@ function EclipseUI:CreateWindow(options)
 				})
 			end)
 
-			-- RenderStepped loop matching the Main Window stroke & notification rotation animation
 			local checkTimeAcc = 0
 			local checkConn
 			checkConn = RunService.RenderStepped:Connect(function(dt)
@@ -3259,7 +3433,7 @@ function EclipseUI:CreateWindow(options)
 
 			local function updateCheckbox(newState, animate)
 				CheckboxObj.Value = newState
-				state = newState -- Keeps the rotation loop synced with the active state
+				state = newState
 				local targetOverlayTrans = newState and 0 or 1
 
 				local info = TweenInfo.new(0.2, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
@@ -3495,23 +3669,62 @@ function EclipseUI:CreateWindow(options)
 			opts = opts or {}
 			targetParent = targetParent or page
 			local title = opts.Title or opts.Name or "Keybind"
+			local desc = opts.Desc
 			local currentKey = opts.Default or Enum.KeyCode.E
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
 
-			local kbFrame, stroke = createContainer(targetParent, 38)
+			local baseHeight = desc and 52 or 38
+			local kbFrame, stroke = createContainer(targetParent, baseHeight)
+			if desc then
+				kbFrame.AutomaticSize = Enum.AutomaticSize.Y
+			end
+
+			local textContainer = Instance.new("Frame")
+			textContainer.Size = UDim2.new(1, -110, 1, 0)
+			textContainer.Position = UDim2.new(0, 14, 0, 0)
+			textContainer.BackgroundTransparency = 1
+			textContainer.ZIndex = 5
+			textContainer.Parent = kbFrame
+
+			local textLayout = Instance.new("UIListLayout")
+			textLayout.FillDirection = Enum.FillDirection.Vertical
+			textLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+			textLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			textLayout.Padding = UDim.new(0, 2)
+			textLayout.Parent = textContainer
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, -110, 1, 0)
-			label.Position = UDim2.new(0, 14, 0, 0)
+			label.Size = UDim2.new(1, 0, 0, desc and 16 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.LayoutOrder = 1
 			label.ZIndex = 5
-			label.Parent = kbFrame
+			label.Parent = textContainer
+
+			if desc then
+				local descLabel = Instance.new("TextLabel")
+				descLabel.Size = UDim2.new(1, 0, 0, 0)
+				descLabel.AutomaticSize = Enum.AutomaticSize.Y
+				descLabel.BackgroundTransparency = 1
+				descLabel.Text = desc
+				descLabel.TextColor3 = Window.Theme.TextMuted
+				descLabel.TextSize = 10
+				descLabel.Font = Enum.Font.Gotham
+				descLabel.TextXAlignment = Enum.TextXAlignment.Left
+				descLabel.TextWrapped = true
+				descLabel.LayoutOrder = 2
+				descLabel.ZIndex = 5
+				descLabel.Parent = textContainer
+
+				table.insert(Window.ThemeUpdaters, function(t)
+					descLabel.TextColor3 = t.TextMuted
+				end)
+			end
 
 			local keyBtn = Instance.new("TextButton")
 			keyBtn.AnchorPoint = Vector2.new(1, 0.5)
@@ -3603,25 +3816,64 @@ function EclipseUI:CreateWindow(options)
 			opts = opts or {}
 			targetParent = targetParent or page
 			local title = opts.Title or opts.Name or "Dropdown"
+			local desc = opts.Desc
 			local items = opts.Items or {}
 			local selected = (opts.Default ~= nil and opts.Default ~= "") and opts.Default or "--"
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
 
-			local ddFrame, stroke = createContainer(targetParent, 38)
+			local baseHeight = desc and 52 or 38
+			local ddFrame, stroke = createContainer(targetParent, baseHeight)
+			if desc then
+				ddFrame.AutomaticSize = Enum.AutomaticSize.Y
+			end
 			ddFrame.ClipsDescendants = false
 
+			local textContainer = Instance.new("Frame")
+			textContainer.Size = UDim2.new(1, -140, 1, 0)
+			textContainer.Position = UDim2.new(0, 14, 0, 0)
+			textContainer.BackgroundTransparency = 1
+			textContainer.ZIndex = 5
+			textContainer.Parent = ddFrame
+
+			local textLayout = Instance.new("UIListLayout")
+			textLayout.FillDirection = Enum.FillDirection.Vertical
+			textLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+			textLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			textLayout.Padding = UDim.new(0, 2)
+			textLayout.Parent = textContainer
+
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, -140, 1, 0)
-			label.Position = UDim2.new(0, 14, 0, 0)
+			label.Size = UDim2.new(1, 0, 0, desc and 16 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.LayoutOrder = 1
 			label.ZIndex = 5
-			label.Parent = ddFrame
+			label.Parent = textContainer
+
+			if desc then
+				local descLabel = Instance.new("TextLabel")
+				descLabel.Size = UDim2.new(1, 0, 0, 0)
+				descLabel.AutomaticSize = Enum.AutomaticSize.Y
+				descLabel.BackgroundTransparency = 1
+				descLabel.Text = desc
+				descLabel.TextColor3 = Window.Theme.TextMuted
+				descLabel.TextSize = 10
+				descLabel.Font = Enum.Font.Gotham
+				descLabel.TextXAlignment = Enum.TextXAlignment.Left
+				descLabel.TextWrapped = true
+				descLabel.LayoutOrder = 2
+				descLabel.ZIndex = 5
+				descLabel.Parent = textContainer
+
+				table.insert(Window.ThemeUpdaters, function(t)
+					descLabel.TextColor3 = t.TextMuted
+				end)
+			end
 
 			local selBox = Instance.new("TextButton")
 			selBox.AnchorPoint = Vector2.new(1, 0.5)
@@ -3893,6 +4145,7 @@ function EclipseUI:CreateWindow(options)
 			opts = opts or {}
 			targetParent = targetParent or page
 			local title = opts.Title or opts.Name or "MultiDropdown"
+			local desc = opts.Desc
 			local items = opts.Items or {}
 			local default = opts.Default or {}
 			local callback = opts.Callback or function() end
@@ -3905,20 +4158,58 @@ function EclipseUI:CreateWindow(options)
 				end
 			end
 
-			local ddFrame, stroke = createContainer(targetParent, 38)
+			local baseHeight = desc and 52 or 38
+			local ddFrame, stroke = createContainer(targetParent, baseHeight)
+			if desc then
+				ddFrame.AutomaticSize = Enum.AutomaticSize.Y
+			end
 			ddFrame.ClipsDescendants = false
 
+			local textContainer = Instance.new("Frame")
+			textContainer.Size = UDim2.new(1, -140, 1, 0)
+			textContainer.Position = UDim2.new(0, 14, 0, 0)
+			textContainer.BackgroundTransparency = 1
+			textContainer.ZIndex = 5
+			textContainer.Parent = ddFrame
+
+			local textLayout = Instance.new("UIListLayout")
+			textLayout.FillDirection = Enum.FillDirection.Vertical
+			textLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+			textLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			textLayout.Padding = UDim.new(0, 2)
+			textLayout.Parent = textContainer
+
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, -140, 1, 0)
-			label.Position = UDim2.new(0, 14, 0, 0)
+			label.Size = UDim2.new(1, 0, 0, desc and 16 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
 			label.Font = Enum.Font.GothamBold
 			label.TextXAlignment = Enum.TextXAlignment.Left
+			label.LayoutOrder = 1
 			label.ZIndex = 5
-			label.Parent = ddFrame
+			label.Parent = textContainer
+
+			if desc then
+				local descLabel = Instance.new("TextLabel")
+				descLabel.Size = UDim2.new(1, 0, 0, 0)
+				descLabel.AutomaticSize = Enum.AutomaticSize.Y
+				descLabel.BackgroundTransparency = 1
+				descLabel.Text = desc
+				descLabel.TextColor3 = Window.Theme.TextMuted
+				descLabel.TextSize = 10
+				descLabel.Font = Enum.Font.Gotham
+				descLabel.TextXAlignment = Enum.TextXAlignment.Left
+				descLabel.TextWrapped = true
+				descLabel.LayoutOrder = 2
+				descLabel.ZIndex = 5
+				descLabel.Parent = textContainer
+
+				table.insert(Window.ThemeUpdaters, function(t)
+					descLabel.TextColor3 = t.TextMuted
+				end)
+			end
 
 			local selBox = Instance.new("TextButton")
 			selBox.AnchorPoint = Vector2.new(1, 0.5)
