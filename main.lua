@@ -1899,7 +1899,7 @@ function EclipseUI:CreateWindow(options)
 
 			local rowFrame = Instance.new("Frame")
 			rowFrame.Name = "DividerRow"
-			rowFrame.Size = UDim2.new(1, 0, 0, 10) -- Tighter vertical height to close the gap
+			rowFrame.Size = UDim2.new(1, 0, 0, 8)
 			rowFrame.BackgroundTransparency = 1
 			rowFrame.ZIndex = 4
 			rowFrame.Parent = targetParent
@@ -1942,7 +1942,6 @@ function EclipseUI:CreateWindow(options)
 				textLbl.ZIndex = 4
 				textLbl.Parent = cellFrame
 
-				table.init = table.insert -- (just keeping standard updaters below)
 				table.insert(Window.ThemeUpdaters, function(t)
 					textLbl.TextColor3 = t.TextDim
 				end)
