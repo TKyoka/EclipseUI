@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.51 | October 19, 2026
+    Eclipse UI | Version: 1.1.52 | October 19, 2026
 
     Author: TKyoka - Zyxer
 	Discord: discord.gg/uyM5Jd8knb
@@ -1888,6 +1888,76 @@ function EclipseUI:CreateWindow(options)
 			line.Parent = dividerFrame
 
 			return dividerFrame
+		end
+
+		function TabObject:DividerRow(opts, targetParent)
+			opts = opts or {}
+			targetParent = targetParent or page
+			local dividersData = opts.Dividers or opts.Items or {}
+			local count = #dividersData
+			if count == 0 then return end
+
+			local rowFrame = Instance.new("Frame")
+			rowFrame.Name = "DividerRow"
+			rowFrame.Size = UDim2.new(1, 0, 0, 16)
+			rowFrame.BackgroundTransparency = 1
+			rowFrame.ZIndex = 4
+			rowFrame.Parent = targetParent
+
+			local gridLayout = Instance.new("UIGridLayout")
+			gridLayout.CellSize = UDim2.new(1 / count, -((count - 1) * 6 / count), 1, 0)
+			gridLayout.CellPadding = UDim2.new(0, 6, 0, 0)
+			gridLayout.SortOrder = Enum.SortOrder.LayoutOrder
+			gridLayout.Parent = rowFrame
+
+			for _, dData in ipairs(dividersData) do
+				local cellFrame = Instance.new("Frame")
+				cellFrame.Size = UDim2.new(1, 0, 1, 0)
+				cellFrame.BackgroundTransparency = 1
+				cellFrame.ZIndex = 4
+				cellFrame.Parent = rowFrame
+
+				local title = dData.Title or ""
+
+				local leftLine = Instance.new("Frame")
+				leftLine.Size = UDim2.new(0.5, -45, 0, 1)
+				leftLine.AnchorPoint = Vector2.new(0, 0.5)
+				leftLine.Position = UDim2.new(0, 0, 0.5, 0)
+				leftLine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+				leftLine.BackgroundTransparency = 0.88
+				leftLine.BorderSizePixel = 0
+				leftLine.ZIndex = 4
+				leftLine.Parent = cellFrame
+
+				local textLbl = Instance.new("TextLabel")
+				textLbl.Size = UDim2.new(0, 90, 1, 0)
+				textLbl.AnchorPoint = Vector2.new(0.5, 0.5)
+				textLbl.Position = UDim2.new(0.5, 0, 0.5, 0)
+				textLbl.BackgroundTransparency = 1
+				textLbl.Text = title
+				textLbl.TextColor3 = Window.Theme.TextDim
+				textLbl.TextSize = 10
+				textLbl.Font = Enum.Font.GothamBold
+				textLbl.TextXAlignment = Enum.TextXAlignment.Center
+				textLbl.ZIndex = 4
+				textLbl.Parent = cellFrame
+
+				table.insert(Window.ThemeUpdaters, function(t)
+					textLbl.TextColor3 = t.TextDim
+				end)
+
+				local rightLine = Instance.new("Frame")
+				rightLine.Size = UDim2.new(0.5, -45, 0, 1)
+				rightLine.AnchorPoint = Vector2.new(0, 0.5)
+				rightLine.Position = UDim2.new(0.5, 45, 0.5, 0)
+				rightLine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+				rightLine.BackgroundTransparency = 0.88
+				rightLine.BorderSizePixel = 0
+				rightLine.ZIndex = 4
+				rightLine.Parent = cellFrame
+			end
+
+			return rowFrame
 		end
 
 		function TabObject:Section(secOptions)
