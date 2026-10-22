@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.52 | October 19, 2026
+    Eclipse UI | Version: 1.1.52 | October 19, 2026 2
 
     Author: TKyoka - Zyxer
 	Discord: discord.gg/uyM5Jd8knb
@@ -1899,7 +1899,7 @@ function EclipseUI:CreateWindow(options)
 
 			local rowFrame = Instance.new("Frame")
 			rowFrame.Name = "DividerRow"
-			rowFrame.Size = UDim2.new(1, 0, 0, 8)
+			rowFrame.Size = UDim2.new(1, 0, 0, 4)
 			rowFrame.BackgroundTransparency = 1
 			rowFrame.ZIndex = 4
 			rowFrame.Parent = targetParent
