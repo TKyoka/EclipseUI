@@ -1918,9 +1918,17 @@ function EclipseUI:CreateWindow(options)
 				cellFrame.Parent = rowFrame
 
 				local title = dData.Title or ""
+				
+				-- Dynamically calculate text width roughly based on string length, or keep it compact
+				local textLabelTemp = Instance.new("TextLabel")
+				textLabelTemp.Text = title
+				textLabelTemp.TextSize = 10
+				textLabelTemp.Font = Enum.Font.GothamBold
+				local textWidth = textLabelTemp.TextBounds.X + 16
+				textLabelTemp:Destroy()
 
 				local leftLine = Instance.new("Frame")
-				leftLine.Size = UDim2.new(0.5, -45, 0, 1)
+				leftLine.Size = UDim2.new(0.5, -(textWidth / 2 + 4), 0, 1)
 				leftLine.AnchorPoint = Vector2.new(0, 0.5)
 				leftLine.Position = UDim2.new(0, 0, 0.5, 0)
 				leftLine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -1930,7 +1938,7 @@ function EclipseUI:CreateWindow(options)
 				leftLine.Parent = cellFrame
 
 				local textLbl = Instance.new("TextLabel")
-				textLbl.Size = UDim2.new(0, 90, 1, 0)
+				textLbl.Size = UDim2.new(0, textWidth, 1, 0)
 				textLbl.AnchorPoint = Vector2.new(0.5, 0.5)
 				textLbl.Position = UDim2.new(0.5, 0, 0.5, 0)
 				textLbl.BackgroundTransparency = 1
@@ -1947,9 +1955,9 @@ function EclipseUI:CreateWindow(options)
 				end)
 
 				local rightLine = Instance.new("Frame")
-				rightLine.Size = UDim2.new(0.5, -45, 0, 1)
+				rightLine.Size = UDim2.new(0.5, -(textWidth / 2 + 4), 0, 1)
 				rightLine.AnchorPoint = Vector2.new(0, 0.5)
-				rightLine.Position = UDim2.new(0.5, 45, 0.5, 0)
+				rightLine.Position = UDim2.new(0.5, textWidth / 2 + 4, 0.5, 0)
 				rightLine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 				rightLine.BackgroundTransparency = 0.88
 				rightLine.BorderSizePixel = 0
