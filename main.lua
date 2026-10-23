@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.52 | October 19, 2026 2
+    Eclipse UI | Version: 1.1.53 | October 19, 2026
 
     Author: TKyoka - Zyxer
 	Discord: discord.gg/uyM5Jd8knb
@@ -2467,6 +2467,7 @@ function EclipseUI:CreateWindow(options)
 			local desc = opts.Desc
 			local btnIcon = opts.Icon
 			local callback = opts.Callback or function() end
+			local isLocked = opts.Locked or false
 
 			local baseHeight = desc and 52 or 38
 			local btn, stroke = createContainer(targetParent, baseHeight)
@@ -2488,15 +2489,6 @@ function EclipseUI:CreateWindow(options)
 			btnGradient.Rotation = 0
 			btnGradient.Parent = btn
 
-			table.insert(Window.ThemeUpdaters, function(t)
-				btnGradient.Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, t.ButtonGradient[1]),
-					ColorSequenceKeypoint.new(0.5, t.ButtonGradient[2]),
-					ColorSequenceKeypoint.new(1, t.ButtonGradient[3])
-				})
-			end)
-
-			-- Restored rotation loop
 			task.spawn(function()
 				local tAcc = 0
 				while btn:IsDescendantOf(game) do
@@ -2555,8 +2547,9 @@ function EclipseUI:CreateWindow(options)
 			label.ZIndex = 5
 			label.Parent = textContainer
 
+			local descLabel
 			if desc then
-				local descLabel = Instance.new("TextLabel")
+				descLabel = Instance.new("TextLabel")
 				descLabel.Size = UDim2.new(1, 0, 0, 0)
 				descLabel.AutomaticSize = Enum.AutomaticSize.Y
 				descLabel.BackgroundTransparency = 1
@@ -2571,9 +2564,40 @@ function EclipseUI:CreateWindow(options)
 				descLabel.Parent = textContainer
 
 				table.insert(Window.ThemeUpdaters, function(t)
-					descLabel.TextColor3 = t.TextMuted
+					if not isLocked then
+						descLabel.TextColor3 = t.TextMuted
+					end
 				end)
 			end
+
+			-- Lock Icon
+			local lockIcon = Instance.new("ImageLabel")
+			lockIcon.Name = "LockIcon"
+			lockIcon.Size = UDim2.new(0, 14, 0, 14)
+			lockIcon.AnchorPoint = Vector2.new(1, 0.5)
+			lockIcon.Position = UDim2.new(1, btnIcon and -34 or -12, 0.5, 0)
+			lockIcon.BackgroundTransparency = 1
+			lockIcon.Image = getIconAsset("lock")
+			lockIcon.ImageColor3 = Window.Theme.TextDim
+			lockIcon.Visible = isLocked
+			lockIcon.ZIndex = 7
+			lockIcon.Parent = btn
+
+			local function updateLock(state)
+				isLocked = state
+				lockIcon.Visible = state
+				if state then
+					btn.BackgroundTransparency = 0.88
+					label.TextColor3 = Window.Theme.TextDim
+					if descLabel then descLabel.TextColor3 = Window.Theme.TextDim end
+				else
+					btn.BackgroundTransparency = 0.75
+					label.TextColor3 = Color3.fromRGB(255, 255, 255)
+					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
+				end
+			end
+
+			updateLock(isLocked)
 
 			local clickBtn = Instance.new("TextButton")
 			clickBtn.Size = UDim2.new(1, 0, 1, 0)
@@ -2583,28 +2607,48 @@ function EclipseUI:CreateWindow(options)
 			clickBtn.Parent = btn
 
 			clickBtn.MouseEnter:Connect(function()
+				if isLocked then return end
 				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.60 })
 				tween(stroke, fadeTweenInfo, { Transparency = 0.30 })
 			end)
 
 			clickBtn.MouseLeave:Connect(function()
+				if isLocked then return end
 				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.75 })
 				tween(stroke, fadeTweenInfo, { Transparency = 0.5 })
 			end)
 
 			clickBtn.MouseButton1Down:Connect(function()
+				if isLocked then return end
 				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.50 })
 			end)
 
 			clickBtn.MouseButton1Up:Connect(function()
+				if isLocked then return end
 				tween(btn, fadeTweenInfo, { BackgroundTransparency = 0.60 })
 			end)
 
 			clickBtn.MouseButton1Click:Connect(function()
+				if isLocked then return end
 				callback()
 			end)
 
-			return btn
+			table.insert(Window.ThemeUpdaters, function(t)
+				if isLocked then
+					label.TextColor3 = t.TextDim
+					if descLabel then descLabel.TextColor3 = t.TextDim end
+				end
+				lockIcon.ImageColor3 = t.TextDim
+			end)
+
+			local ButtonObj = {
+				Frame = btn,
+				SetLocked = function(_, state)
+					updateLock(state)
+				end
+			}
+
+			return ButtonObj
 		end
 
 		function TabObject:Row(opts, targetParent)
@@ -2632,7 +2676,6 @@ function EclipseUI:CreateWindow(options)
 			for _, eData in ipairs(elementsData) do
 				local eType = eData.Type
 				if eType and TabObject[eType] then
-					-- Calls the respective element method (e.g., TabObject:Toggle) and parenting it to the grid row
 					local obj = TabObject[eType](TabObject, eData, rowFrame)
 					table.insert(createdObjects, obj)
 				end
@@ -2679,11 +2722,12 @@ function EclipseUI:CreateWindow(options)
 			local currentKey = opts.DefaultKey or opts.Key or Enum.KeyCode.E
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
+			local isLocked = opts.Locked or false
 
 			local container, stroke = createContainer(targetParent, 38)
 
 			local textContainer = Instance.new("Frame")
-			textContainer.Size = UDim2.new(1, -120, 1, 0)
+			textContainer.Size = UDim2.new(1, -140, 1, 0)
 			textContainer.Position = UDim2.new(0, 14, 0, 0)
 			textContainer.BackgroundTransparency = 1
 			textContainer.ZIndex = 5
@@ -2708,8 +2752,9 @@ function EclipseUI:CreateWindow(options)
 			label.ZIndex = 5
 			label.Parent = textContainer
 
+			local descLabel
 			if desc then
-				local descLabel = Instance.new("TextLabel")
+				descLabel = Instance.new("TextLabel")
 				descLabel.Size = UDim2.new(1, 0, 0, 13)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
@@ -2723,9 +2768,21 @@ function EclipseUI:CreateWindow(options)
 				descLabel.Parent = textContainer
 
 				table.insert(Window.ThemeUpdaters, function(t)
-					descLabel.TextColor3 = t.TextMuted
+					if not isLocked then descLabel.TextColor3 = t.TextMuted end
 				end)
 			end
+
+			local lockIcon = Instance.new("ImageLabel")
+			lockIcon.Name = "LockIcon"
+			lockIcon.Size = UDim2.new(0, 14, 0, 14)
+			lockIcon.AnchorPoint = Vector2.new(1, 0.5)
+			lockIcon.Position = UDim2.new(1, -118, 0.5, 0)
+			lockIcon.BackgroundTransparency = 1
+			lockIcon.Image = getIconAsset("lock")
+			lockIcon.ImageColor3 = Window.Theme.TextDim
+			lockIcon.Visible = isLocked
+			lockIcon.ZIndex = 7
+			lockIcon.Parent = container
 
 			local keyBtn = Instance.new("TextButton")
 			keyBtn.AnchorPoint = Vector2.new(1, 0.5)
@@ -2742,7 +2799,7 @@ function EclipseUI:CreateWindow(options)
 			keyBtn.Parent = container
 
 			table.insert(Window.ThemeUpdaters, function(t)
-				keyBtn.BackgroundColor3 = t.ContainerBg
+				if not isLocked then keyBtn.BackgroundColor3 = t.ContainerBg end
 			end)
 
 			local keyCorner = Instance.new("UICorner")
@@ -2766,7 +2823,7 @@ function EclipseUI:CreateWindow(options)
 			toggleFrame.Parent = container
 
 			table.insert(Window.ThemeUpdaters, function(t)
-				toggleFrame.BackgroundColor3 = t.ContainerBg
+				if not isLocked then toggleFrame.BackgroundColor3 = t.ContainerBg end
 			end)
 
 			local tfCorner = Instance.new("UICorner")
@@ -2792,13 +2849,6 @@ function EclipseUI:CreateWindow(options)
 			})
 			toggleGradient.Rotation = 45
 			toggleGradient.Parent = gradientOverlay
-
-			table.insert(Window.ThemeUpdaters, function(t)
-				toggleGradient.Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, t.ToggleGradient[1]),
-					ColorSequenceKeypoint.new(1, t.ToggleGradient[2])
-				})
-			end)
 
 			local tfStroke = Instance.new("UIStroke")
 			tfStroke.Color = Color3.fromRGB(255, 255, 255)
@@ -2831,6 +2881,7 @@ function EclipseUI:CreateWindow(options)
 			local ToggleKeybindObj = { Value = defaultState, Key = currentKey }
 
 			local function updateToggle(newState, animate)
+				if isLocked then return end
 				ToggleKeybindObj.Value = newState
 				local targetPos = newState and UDim2.new(1, -22, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
 				local targetOverlayTrans = newState and 0 or 1
@@ -2850,25 +2901,37 @@ function EclipseUI:CreateWindow(options)
 				pcall(callback, newState, ToggleKeybindObj.Key)
 			end
 
+			local listening = false
+
+			local function updateLock(locked)
+				isLocked = locked
+				lockIcon.Visible = locked
+				if locked then
+					listening = false
+					container.BackgroundTransparency = 0.90
+					label.TextColor3 = Window.Theme.TextDim
+					if descLabel then descLabel.TextColor3 = Window.Theme.TextDim end
+					keyBtn.TextColor3 = Window.Theme.TextDim
+					keyBtn.Text = currentKey.Name
+					toggleFrame.BackgroundTransparency = 0.8
+				else
+					container.BackgroundTransparency = 0.95
+					label.TextColor3 = Color3.fromRGB(240, 245, 255)
+					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
+					keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
+					toggleFrame.BackgroundTransparency = 0.4
+				end
+			end
+
+			updateLock(isLocked)
+
 			hitBox.MouseButton1Click:Connect(function()
+				if isLocked then return end
 				updateToggle(not ToggleKeybindObj.Value, true)
 			end)
 
-			local listening = false
-
-			keyBtn.MouseEnter:Connect(function()
-				if not listening then
-					tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.4 })
-				end
-			end)
-
-			keyBtn.MouseLeave:Connect(function()
-				if not listening then
-					tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
-				end
-			end)
-
 			keyBtn.MouseButton1Click:Connect(function()
+				if isLocked then return end
 				listening = true
 				keyBtn.Text = "..."
 				keyBtn.TextColor3 = Color3.fromRGB(255, 220, 100)
@@ -2882,6 +2945,7 @@ function EclipseUI:CreateWindow(options)
 					return
 				end
 				if gpe then return end
+				if isLocked then return end
 				if listening then
 					if input.UserInputType == Enum.UserInputType.Keyboard then
 						listening = false
@@ -2898,9 +2962,7 @@ function EclipseUI:CreateWindow(options)
 			Window:Cleanup(keybindInputConn)
 
 			ToggleKeybindObj.Set = function(_, stateVal, keyVal)
-				if stateVal ~= nil then
-					updateToggle(stateVal, true)
-				end
+				if stateVal ~= nil then updateToggle(stateVal, true) end
 				if keyVal then
 					if typeof(keyVal) == "EnumItem" then
 						ToggleKeybindObj.Key = keyVal
@@ -2910,6 +2972,10 @@ function EclipseUI:CreateWindow(options)
 						keyBtn.Text = ToggleKeybindObj.Key.Name
 					end
 				end
+			end
+
+			ToggleKeybindObj.SetLocked = function(_, val)
+				updateLock(val)
 			end
 
 			if flag then
@@ -2928,11 +2994,12 @@ function EclipseUI:CreateWindow(options)
 			local placeholder = opts.Placeholder or "Enter text..."
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
+			local isLocked = opts.Locked or false
 
 			local inputContainer, stroke = createContainer(targetParent, 38)
 
 			local textContainer = Instance.new("Frame")
-			textContainer.Size = UDim2.new(1, -150, 1, 0)
+			textContainer.Size = UDim2.new(1, -170, 1, 0)
 			textContainer.Position = UDim2.new(0, 14, 0, 0)
 			textContainer.BackgroundTransparency = 1
 			textContainer.ZIndex = 5
@@ -2957,8 +3024,9 @@ function EclipseUI:CreateWindow(options)
 			label.ZIndex = 5
 			label.Parent = textContainer
 
+			local descLabel
 			if desc then
-				local descLabel = Instance.new("TextLabel")
+				descLabel = Instance.new("TextLabel")
 				descLabel.Size = UDim2.new(1, 0, 0, 13)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
@@ -2972,9 +3040,21 @@ function EclipseUI:CreateWindow(options)
 				descLabel.Parent = textContainer
 
 				table.insert(Window.ThemeUpdaters, function(t)
-					descLabel.TextColor3 = t.TextMuted
+					if not isLocked then descLabel.TextColor3 = t.TextMuted end
 				end)
 			end
+
+			local lockIcon = Instance.new("ImageLabel")
+			lockIcon.Name = "LockIcon"
+			lockIcon.Size = UDim2.new(0, 14, 0, 14)
+			lockIcon.AnchorPoint = Vector2.new(1, 0.5)
+			lockIcon.Position = UDim2.new(1, -148, 0.5, 0)
+			lockIcon.BackgroundTransparency = 1
+			lockIcon.Image = getIconAsset("lock")
+			lockIcon.ImageColor3 = Window.Theme.TextDim
+			lockIcon.Visible = isLocked
+			lockIcon.ZIndex = 7
+			lockIcon.Parent = inputContainer
 
 			local textBox = Instance.new("TextBox")
 			textBox.AnchorPoint = Vector2.new(1, 0.5)
@@ -2996,7 +3076,7 @@ function EclipseUI:CreateWindow(options)
 			textBox.Parent = inputContainer
 
 			table.insert(Window.ThemeUpdaters, function(t)
-				textBox.BackgroundColor3 = t.ContainerBg
+				if not isLocked then textBox.BackgroundColor3 = t.ContainerBg end
 			end)
 
 			local tbCorner = Instance.new("UICorner")
@@ -3014,11 +3094,32 @@ function EclipseUI:CreateWindow(options)
 			tbPadding.PaddingRight = UDim.new(0, 8)
 			tbPadding.Parent = textBox
 
+			local function updateLock(locked)
+				isLocked = locked
+				lockIcon.Visible = locked
+				textBox.TextEditable = not locked
+				if locked then
+					inputContainer.BackgroundTransparency = 0.90
+					label.TextColor3 = Window.Theme.TextDim
+					if descLabel then descLabel.TextColor3 = Window.Theme.TextDim end
+					textBox.TextColor3 = Window.Theme.TextDim
+				else
+					inputContainer.BackgroundTransparency = 0.95
+					label.TextColor3 = Color3.fromRGB(240, 245, 255)
+					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
+					textBox.TextColor3 = Color3.fromRGB(230, 238, 250)
+				end
+			end
+
+			updateLock(isLocked)
+
 			textBox.Focused:Connect(function()
+				if isLocked then return end
 				tween(tbStroke, TweenInfo.new(0.15), { Transparency = 0.2 })
 			end)
 
 			textBox.FocusLost:Connect(function(enterPressed)
+				if isLocked then return end
 				tween(tbStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
 				pcall(callback, textBox.Text)
 			end)
@@ -3028,6 +3129,9 @@ function EclipseUI:CreateWindow(options)
 				Set = function(_, val)
 					textBox.Text = tostring(val)
 					pcall(callback, textBox.Text)
+				end,
+				SetLocked = function(_, val)
+					updateLock(val)
 				end
 			}
 
@@ -3046,6 +3150,7 @@ function EclipseUI:CreateWindow(options)
 			local state = opts.Default or false
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
+			local isLocked = opts.Locked or false
 
 			local toggleContainer, stroke = createContainer(targetParent, 38)
 
@@ -3075,8 +3180,9 @@ function EclipseUI:CreateWindow(options)
 			label.ZIndex = 5
 			label.Parent = textContainer
 
+			local descLabel
 			if desc then
-				local descLabel = Instance.new("TextLabel")
+				descLabel = Instance.new("TextLabel")
 				descLabel.Size = UDim2.new(1, 0, 0, 13)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
@@ -3090,9 +3196,24 @@ function EclipseUI:CreateWindow(options)
 				descLabel.Parent = textContainer
 
 				table.insert(Window.ThemeUpdaters, function(t)
-					descLabel.TextColor3 = t.TextMuted
+					if not isLocked then
+						descLabel.TextColor3 = t.TextMuted
+					end
 				end)
 			end
+
+			-- Lock Icon (placed just to the left of the toggle switch)
+			local lockIcon = Instance.new("ImageLabel")
+			lockIcon.Name = "LockIcon"
+			lockIcon.Size = UDim2.new(0, 14, 0, 14)
+			lockIcon.AnchorPoint = Vector2.new(1, 0.5)
+			lockIcon.Position = UDim2.new(1, -62, 0.5, 0)
+			lockIcon.BackgroundTransparency = 1
+			lockIcon.Image = getIconAsset("lock")
+			lockIcon.ImageColor3 = Window.Theme.TextDim
+			lockIcon.Visible = isLocked
+			lockIcon.ZIndex = 7
+			lockIcon.Parent = toggleContainer
 
 			local toggleFrame = Instance.new("Frame")
 			toggleFrame.Name = "ToggleFrame"
@@ -3105,7 +3226,9 @@ function EclipseUI:CreateWindow(options)
 			toggleFrame.Parent = toggleContainer
 
 			table.insert(Window.ThemeUpdaters, function(t)
-				toggleFrame.BackgroundColor3 = t.ContainerBg
+				if not isLocked then
+					toggleFrame.BackgroundColor3 = t.ContainerBg
+				end
 			end)
 
 			local tfCorner = Instance.new("UICorner")
@@ -3131,13 +3254,6 @@ function EclipseUI:CreateWindow(options)
 			})
 			toggleGradient.Rotation = 45
 			toggleGradient.Parent = gradientOverlay
-
-			table.insert(Window.ThemeUpdaters, function(t)
-				toggleGradient.Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, t.ToggleGradient[1]),
-					ColorSequenceKeypoint.new(1, t.ToggleGradient[2])
-				})
-			end)
 
 			local tfStroke = Instance.new("UIStroke")
 			tfStroke.Color = Color3.fromRGB(255, 255, 255)
@@ -3169,6 +3285,7 @@ function EclipseUI:CreateWindow(options)
 			local ToggleObj = { Value = state }
 
 			local function updateToggle(newState, animate)
+				if isLocked then return end
 				ToggleObj.Value = newState
 				local targetPos = newState and UDim2.new(1, -22, 0.5, 0) or UDim2.new(0, 2, 0.5, 0)
 				local targetOverlayTrans = newState and 0 or 1
@@ -3188,22 +3305,47 @@ function EclipseUI:CreateWindow(options)
 				pcall(callback, newState)
 			end
 
+			local function updateLock(locked)
+				isLocked = locked
+				lockIcon.Visible = locked
+				if locked then
+					toggleContainer.BackgroundTransparency = 0.90
+					label.TextColor3 = Window.Theme.TextDim
+					if descLabel then descLabel.TextColor3 = Window.Theme.TextDim end
+					toggleFrame.BackgroundTransparency = 0.8
+				else
+					toggleContainer.BackgroundTransparency = 0.95
+					label.TextColor3 = Color3.fromRGB(240, 245, 255)
+					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
+					toggleFrame.BackgroundTransparency = 0.4
+				end
+			end
+
+			updateLock(isLocked)
+
 			hitBox.MouseEnter:Connect(function()
+				if isLocked then return end
 				tween(toggleContainer, fadeTweenInfo, { BackgroundTransparency = 0.90 })
 				tween(stroke, fadeTweenInfo, { Transparency = 0.85 })
 			end)
 
 			hitBox.MouseLeave:Connect(function()
+				if isLocked then return end
 				tween(toggleContainer, fadeTweenInfo, { BackgroundTransparency = 0.95 })
 				tween(stroke, fadeTweenInfo, { Transparency = 0.92 })
 			end)
 
 			hitBox.MouseButton1Click:Connect(function()
+				if isLocked then return end
 				updateToggle(not ToggleObj.Value, true)
 			end)
 
 			ToggleObj.Set = function(_, val)
 				updateToggle(val, true)
+			end
+
+			ToggleObj.SetLocked = function(_, val)
+				updateLock(val)
 			end
 
 			if flag then
@@ -3221,11 +3363,12 @@ function EclipseUI:CreateWindow(options)
 			local state = opts.Default or false
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
+			local isLocked = opts.Locked or false
 
 			local checkboxContainer, stroke = createContainer(targetParent, 38)
 
 			local textContainer = Instance.new("Frame")
-			textContainer.Size = UDim2.new(1, -50, 1, 0)
+			textContainer.Size = UDim2.new(1, -70, 1, 0)
 			textContainer.Position = UDim2.new(0, 14, 0, 0)
 			textContainer.BackgroundTransparency = 1
 			textContainer.ZIndex = 5
@@ -3250,8 +3393,9 @@ function EclipseUI:CreateWindow(options)
 			label.ZIndex = 5
 			label.Parent = textContainer
 
+			local descLabel
 			if desc then
-				local descLabel = Instance.new("TextLabel")
+				descLabel = Instance.new("TextLabel")
 				descLabel.Size = UDim2.new(1, 0, 0, 13)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
@@ -3265,9 +3409,21 @@ function EclipseUI:CreateWindow(options)
 				descLabel.Parent = textContainer
 
 				table.insert(Window.ThemeUpdaters, function(t)
-					descLabel.TextColor3 = t.TextMuted
+					if not isLocked then descLabel.TextColor3 = t.TextMuted end
 				end)
 			end
+
+			local lockIcon = Instance.new("ImageLabel")
+			lockIcon.Name = "LockIcon"
+			lockIcon.Size = UDim2.new(0, 14, 0, 14)
+			lockIcon.AnchorPoint = Vector2.new(1, 0.5)
+			lockIcon.Position = UDim2.new(1, -38, 0.5, 0)
+			lockIcon.BackgroundTransparency = 1
+			lockIcon.Image = getIconAsset("lock")
+			lockIcon.ImageColor3 = Window.Theme.TextDim
+			lockIcon.Visible = isLocked
+			lockIcon.ZIndex = 7
+			lockIcon.Parent = checkboxContainer
 
 			local boxFrame = Instance.new("Frame")
 			boxFrame.Name = "CheckboxBox"
@@ -3280,7 +3436,7 @@ function EclipseUI:CreateWindow(options)
 			boxFrame.Parent = checkboxContainer
 
 			table.insert(Window.ThemeUpdaters, function(t)
-				boxFrame.BackgroundColor3 = t.ContainerBg
+				if not isLocked then boxFrame.BackgroundColor3 = t.ContainerBg end
 			end)
 
 			local boxCorner = Instance.new("UICorner")
@@ -3307,13 +3463,6 @@ function EclipseUI:CreateWindow(options)
 			checkboxGradient.Rotation = 45
 			checkboxGradient.Parent = gradientOverlay
 
-			table.insert(Window.ThemeUpdaters, function(t)
-				checkboxGradient.Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, t.ToggleGradient[1]),
-					ColorSequenceKeypoint.new(1, t.ToggleGradient[2])
-				})
-			end)
-
 			local checkTimeAcc = 0
 			local checkConn
 			checkConn = RunService.RenderStepped:Connect(function(dt)
@@ -3321,7 +3470,7 @@ function EclipseUI:CreateWindow(options)
 					checkConn:Disconnect()
 					return
 				end
-				if state then
+				if state and not isLocked then
 					checkTimeAcc = checkTimeAcc + dt
 					checkboxGradient.Rotation = (checkTimeAcc * 60) % 360
 				end
@@ -3339,6 +3488,7 @@ function EclipseUI:CreateWindow(options)
 			local CheckboxObj = { Value = state }
 
 			local function updateCheckbox(newState, animate)
+				if isLocked then return end
 				CheckboxObj.Value = newState
 				state = newState
 				local targetOverlayTrans = newState and 0 or 1
@@ -3353,22 +3503,35 @@ function EclipseUI:CreateWindow(options)
 				pcall(callback, newState)
 			end
 
-			hitBox.MouseEnter:Connect(function()
-				tween(checkboxContainer, fadeTweenInfo, { BackgroundTransparency = 0.90 })
-				tween(stroke, fadeTweenInfo, { Transparency = 0.85 })
-			end)
+			local function updateLock(locked)
+				isLocked = locked
+				lockIcon.Visible = locked
+				if locked then
+					checkboxContainer.BackgroundTransparency = 0.90
+					label.TextColor3 = Window.Theme.TextDim
+					if descLabel then descLabel.TextColor3 = Window.Theme.TextDim end
+					boxFrame.BackgroundTransparency = 0.8
+				else
+					checkboxContainer.BackgroundTransparency = 0.95
+					label.TextColor3 = Color3.fromRGB(240, 245, 255)
+					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
+					boxFrame.BackgroundTransparency = 0.4
+				end
+			end
 
-			hitBox.MouseLeave:Connect(function()
-				tween(checkboxContainer, fadeTweenInfo, { BackgroundTransparency = 0.95 })
-				tween(stroke, fadeTweenInfo, { Transparency = 0.92 })
-			end)
+			updateLock(isLocked)
 
 			hitBox.MouseButton1Click:Connect(function()
+				if isLocked then return end
 				updateCheckbox(not CheckboxObj.Value, true)
 			end)
 
 			CheckboxObj.Set = function(_, val)
 				updateCheckbox(val, true)
+			end
+
+			CheckboxObj.SetLocked = function(_, val)
+				updateLock(val)
 			end
 
 			if flag then
@@ -3387,11 +3550,12 @@ function EclipseUI:CreateWindow(options)
 			local default = math.clamp(opts.Default or min, min, max)
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
+			local isLocked = opts.Locked or false
 
 			local sliderContainer, stroke = createContainer(targetParent, 56)
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, -84, 0, 18)
+			label.Size = UDim2.new(1, -104, 0, 18)
 			label.Position = UDim2.new(0, 14, 0, 10)
 			label.BackgroundTransparency = 1
 			label.Text = title
@@ -3401,6 +3565,18 @@ function EclipseUI:CreateWindow(options)
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.ZIndex = 5
 			label.Parent = sliderContainer
+
+			local lockIcon = Instance.new("ImageLabel")
+			lockIcon.Name = "LockIcon"
+			lockIcon.Size = UDim2.new(0, 14, 0, 14)
+			lockIcon.AnchorPoint = Vector2.new(1, 0)
+			lockIcon.Position = UDim2.new(1, -72, 0, 12)
+			lockIcon.BackgroundTransparency = 1
+			lockIcon.Image = getIconAsset("lock")
+			lockIcon.ImageColor3 = Window.Theme.TextDim
+			lockIcon.Visible = isLocked
+			lockIcon.ZIndex = 7
+			lockIcon.Parent = sliderContainer
 
 			local valBox = Instance.new("TextBox")
 			valBox.AnchorPoint = Vector2.new(1, 0)
@@ -3418,7 +3594,7 @@ function EclipseUI:CreateWindow(options)
 			valBox.Parent = sliderContainer
 
 			table.insert(Window.ThemeUpdaters, function(t)
-				valBox.BackgroundColor3 = t.ContainerBg
+				if not isLocked then valBox.BackgroundColor3 = t.ContainerBg end
 			end)
 
 			local valBoxCorner = Instance.new("UICorner")
@@ -3441,7 +3617,7 @@ function EclipseUI:CreateWindow(options)
 			track.Parent = sliderContainer
 
 			table.insert(Window.ThemeUpdaters, function(t)
-				track.BackgroundColor3 = t.ContainerBg
+				if not isLocked then track.BackgroundColor3 = t.ContainerBg end
 			end)
 
 			local trackCorner = Instance.new("UICorner")
@@ -3466,13 +3642,6 @@ function EclipseUI:CreateWindow(options)
 			})
 			fillGradient.Parent = fill
 
-			table.insert(Window.ThemeUpdaters, function(t)
-				fillGradient.Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, t.ToggleGradient[1]),
-					ColorSequenceKeypoint.new(1, t.ToggleGradient[2])
-				})
-			end)
-
 			local thumb = Instance.new("Frame")
 			thumb.AnchorPoint = Vector2.new(0.5, 0.5)
 			thumb.Position = UDim2.new(1, 0, 0.5, 0)
@@ -3495,6 +3664,7 @@ function EclipseUI:CreateWindow(options)
 			local connectionMove, connectionEnd
 
 			local function updateSliderVal(value)
+				if isLocked then return end
 				value = math.clamp(value, min, max)
 				local percentage = (value - min) / (max - min)
 				valBox.Text = tostring(value)
@@ -3502,6 +3672,7 @@ function EclipseUI:CreateWindow(options)
 			end
 
 			local function updateSlider(inputX)
+				if isLocked then return end
 				local absolutePos = track.AbsolutePosition.X
 				local absoluteSize = track.AbsoluteSize.X
 				local percentage = math.clamp((inputX - absolutePos) / absoluteSize, 0, 1)
@@ -3509,11 +3680,30 @@ function EclipseUI:CreateWindow(options)
 				updateSliderVal(value)
 			end
 
+			local function updateLock(locked)
+				isLocked = locked
+				lockIcon.Visible = locked
+				valBox.TextEditable = not locked
+				if locked then
+					sliderContainer.BackgroundTransparency = 0.90
+					label.TextColor3 = Window.Theme.TextDim
+					valBox.TextColor3 = Window.Theme.TextDim
+				else
+					sliderContainer.BackgroundTransparency = 0.95
+					label.TextColor3 = Color3.fromRGB(240, 245, 255)
+					valBox.TextColor3 = Color3.fromRGB(230, 238, 250)
+				end
+			end
+
+			updateLock(isLocked)
+
 			valBox.Focused:Connect(function()
+				if isLocked then return end
 				tween(valBoxStroke, TweenInfo.new(0.15), { Transparency = 0.2 })
 			end)
 
 			valBox.FocusLost:Connect(function()
+				if isLocked then return end
 				tween(valBoxStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
 				local num = tonumber(valBox.Text)
 				if num then
@@ -3525,6 +3715,7 @@ function EclipseUI:CreateWindow(options)
 			end)
 
 			thumb.InputBegan:Connect(function(input)
+				if isLocked then return end
 				if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
 				if isDragging then return end
 
@@ -3551,6 +3742,7 @@ function EclipseUI:CreateWindow(options)
 			end)
 
 			track.InputBegan:Connect(function(input)
+				if isLocked then return end
 				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 					updateSlider(input.Position.X)
 					pcall(callback, tonumber(valBox.Text) or default)
@@ -3562,7 +3754,10 @@ function EclipseUI:CreateWindow(options)
 					updateSliderVal(val)
 					pcall(callback, tonumber(valBox.Text) or default)
 				end,
-				Get = function() return tonumber(valBox.Text) or default end
+				Get = function() return tonumber(valBox.Text) or default end,
+				SetLocked = function(_, val)
+					updateLock(val)
+				end
 			}
 
 			if flag then
@@ -3580,11 +3775,12 @@ function EclipseUI:CreateWindow(options)
 			local currentKey = opts.Default or Enum.KeyCode.E
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
+			local isLocked = opts.Locked or false
 
 			local kbFrame, stroke = createContainer(targetParent, 38)
 
 			local textContainer = Instance.new("Frame")
-			textContainer.Size = UDim2.new(1, -110, 1, 0)
+			textContainer.Size = UDim2.new(1, -130, 1, 0)
 			textContainer.Position = UDim2.new(0, 14, 0, 0)
 			textContainer.BackgroundTransparency = 1
 			textContainer.ZIndex = 5
@@ -3609,8 +3805,9 @@ function EclipseUI:CreateWindow(options)
 			label.ZIndex = 5
 			label.Parent = textContainer
 
+			local descLabel
 			if desc then
-				local descLabel = Instance.new("TextLabel")
+				descLabel = Instance.new("TextLabel")
 				descLabel.Size = UDim2.new(1, 0, 0, 13)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
@@ -3624,9 +3821,21 @@ function EclipseUI:CreateWindow(options)
 				descLabel.Parent = textContainer
 
 				table.insert(Window.ThemeUpdaters, function(t)
-					descLabel.TextColor3 = t.TextMuted
+					if not isLocked then descLabel.TextColor3 = t.TextMuted end
 				end)
 			end
+
+			local lockIcon = Instance.new("ImageLabel")
+			lockIcon.Name = "LockIcon"
+			lockIcon.Size = UDim2.new(0, 14, 0, 14)
+			lockIcon.AnchorPoint = Vector2.new(1, 0.5)
+			lockIcon.Position = UDim2.new(1, -110, 0.5, 0)
+			lockIcon.BackgroundTransparency = 1
+			lockIcon.Image = getIconAsset("lock")
+			lockIcon.ImageColor3 = Window.Theme.TextDim
+			lockIcon.Visible = isLocked
+			lockIcon.ZIndex = 7
+			lockIcon.Parent = kbFrame
 
 			local keyBtn = Instance.new("TextButton")
 			keyBtn.AnchorPoint = Vector2.new(1, 0.5)
@@ -3643,7 +3852,7 @@ function EclipseUI:CreateWindow(options)
 			keyBtn.Parent = kbFrame
 
 			table.insert(Window.ThemeUpdaters, function(t)
-				keyBtn.BackgroundColor3 = t.ContainerBg
+				if not isLocked then keyBtn.BackgroundColor3 = t.ContainerBg end
 			end)
 
 			local keyCorner = Instance.new("UICorner")
@@ -3658,19 +3867,38 @@ function EclipseUI:CreateWindow(options)
 
 			local listening = false
 
-			keyBtn.MouseEnter:Connect(function()
-				if not listening then
-					tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.4 })
+			local function updateLock(locked)
+				isLocked = locked
+				lockIcon.Visible = locked
+				if locked then
+					listening = false
+					kbFrame.BackgroundTransparency = 0.90
+					label.TextColor3 = Window.Theme.TextDim
+					if descLabel then descLabel.TextColor3 = Window.Theme.TextDim end
+					keyBtn.TextColor3 = Window.Theme.TextDim
+					keyBtn.Text = currentKey.Name
+				else
+					kbFrame.BackgroundTransparency = 0.95
+					label.TextColor3 = Color3.fromRGB(240, 245, 255)
+					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
+					keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
 				end
+			end
+
+			updateLock(isLocked)
+
+			keyBtn.MouseEnter:Connect(function()
+				if isLocked or listening then return end
+				tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.4 })
 			end)
 
 			keyBtn.MouseLeave:Connect(function()
-				if not listening then
-					tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
-				end
+				if isLocked or listening then return end
+				tween(keyStroke, TweenInfo.new(0.15), { Transparency = 0.75 })
 			end)
 
 			keyBtn.MouseButton1Click:Connect(function()
+				if isLocked then return end
 				listening = true
 				keyBtn.Text = "..."
 				keyBtn.TextColor3 = Color3.fromRGB(255, 220, 100)
@@ -3684,6 +3912,7 @@ function EclipseUI:CreateWindow(options)
 					return
 				end
 				if gpe then return end
+				if isLocked then return end
 				if input.UserInputType == Enum.UserInputType.Keyboard and listening then
 					listening = false
 					currentKey = input.KeyCode
@@ -3704,6 +3933,9 @@ function EclipseUI:CreateWindow(options)
 						currentKey = Enum.KeyCode[newKey]
 						keyBtn.Text = currentKey.Name
 					end
+				end,
+				SetLocked = function(_, val)
+					updateLock(val)
 				end
 			}
 
@@ -3723,6 +3955,7 @@ function EclipseUI:CreateWindow(options)
 			local selected = (opts.Default ~= nil and opts.Default ~= "") and opts.Default or "--"
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
+			local isLocked = opts.Locked or false
 
 			local ddFrame, stroke = createContainer(targetParent, 38)
 			ddFrame.ClipsDescendants = false
@@ -3753,8 +3986,9 @@ function EclipseUI:CreateWindow(options)
 			label.ZIndex = 5
 			label.Parent = textContainer
 
+			local descLabel
 			if desc then
-				local descLabel = Instance.new("TextLabel")
+				descLabel = Instance.new("TextLabel")
 				descLabel.Size = UDim2.new(1, 0, 0, 13)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
@@ -3768,9 +4002,21 @@ function EclipseUI:CreateWindow(options)
 				descLabel.Parent = textContainer
 
 				table.insert(Window.ThemeUpdaters, function(t)
-					descLabel.TextColor3 = t.TextMuted
+					if not isLocked then descLabel.TextColor3 = t.TextMuted end
 				end)
 			end
+
+			local lockIcon = Instance.new("ImageLabel")
+			lockIcon.Name = "LockIcon"
+			lockIcon.Size = UDim2.new(0, 14, 0, 14)
+			lockIcon.AnchorPoint = Vector2.new(1, 0.5)
+			lockIcon.Position = UDim2.new(1, -138, 0.5, 0)
+			lockIcon.BackgroundTransparency = 1
+			lockIcon.Image = getIconAsset("lock")
+			lockIcon.ImageColor3 = Window.Theme.TextDim
+			lockIcon.Visible = isLocked
+			lockIcon.ZIndex = 7
+			lockIcon.Parent = ddFrame
 
 			local selBox = Instance.new("TextButton")
 			selBox.AnchorPoint = Vector2.new(1, 0.5)
@@ -3784,7 +4030,7 @@ function EclipseUI:CreateWindow(options)
 			selBox.Parent = ddFrame
 
 			table.insert(Window.ThemeUpdaters, function(t)
-				selBox.BackgroundColor3 = t.ContainerBg
+				if not isLocked then selBox.BackgroundColor3 = t.ContainerBg end
 			end)
 
 			local selBoxCorner = Instance.new("UICorner")
@@ -3971,6 +4217,7 @@ function EclipseUI:CreateWindow(options)
 					table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText, SheenGradient = sheenGradient })
 
 					itemBtn.MouseButton1Click:Connect(function()
+						if isLocked then return end
 						selected = item
 						selLabel.Text = tostring(selected)
 						refreshSelectionStates()
@@ -3988,7 +4235,29 @@ function EclipseUI:CreateWindow(options)
 
 			populateItems()
 
+			local function updateLock(locked)
+				isLocked = locked
+				lockIcon.Visible = locked
+				if locked then
+					if popupHolder.Visible then
+						popupHolder.Visible = false
+					end
+					ddFrame.BackgroundTransparency = 0.90
+					label.TextColor3 = Window.Theme.TextDim
+					if descLabel then descLabel.TextColor3 = Window.Theme.TextDim end
+					selLabel.TextColor3 = Window.Theme.TextDim
+				else
+					ddFrame.BackgroundTransparency = 0.95
+					label.TextColor3 = Color3.fromRGB(240, 245, 255)
+					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
+					selLabel.TextColor3 = Color3.fromRGB(230, 238, 250)
+				end
+			end
+
+			updateLock(isLocked)
+
 			selBox.MouseButton1Click:Connect(function()
+				if isLocked then return end
 				if popupHolder.Visible then
 					tween(dropListFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
 					task.delay(0.18, function() popupHolder.Visible = false end)
@@ -4010,6 +4279,7 @@ function EclipseUI:CreateWindow(options)
 			end)
 
 			backdrop.MouseButton1Click:Connect(function()
+				if isLocked then return end
 				tween(dropListFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
 				task.delay(0.18, function() popupHolder.Visible = false end)
 
@@ -4028,6 +4298,9 @@ function EclipseUI:CreateWindow(options)
 				SetItems = function(_, newItems)
 					items = newItems or {}
 					populateItems()
+				end,
+				SetLocked = function(_, val)
+					updateLock(val)
 				end
 			}
 
@@ -4047,6 +4320,7 @@ function EclipseUI:CreateWindow(options)
 			local default = opts.Default or {}
 			local callback = opts.Callback or function() end
 			local flag = opts.Flag
+			local isLocked = opts.Locked or false
 
 			local selectedMap = {}
 			if typeof(default) == "table" then
@@ -4084,8 +4358,9 @@ function EclipseUI:CreateWindow(options)
 			label.ZIndex = 5
 			label.Parent = textContainer
 
+			local descLabel
 			if desc then
-				local descLabel = Instance.new("TextLabel")
+				descLabel = Instance.new("TextLabel")
 				descLabel.Size = UDim2.new(1, 0, 0, 13)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
@@ -4099,9 +4374,21 @@ function EclipseUI:CreateWindow(options)
 				descLabel.Parent = textContainer
 
 				table.insert(Window.ThemeUpdaters, function(t)
-					descLabel.TextColor3 = t.TextMuted
+					if not isLocked then descLabel.TextColor3 = t.TextMuted end
 				end)
 			end
+
+			local lockIcon = Instance.new("ImageLabel")
+			lockIcon.Name = "LockIcon"
+			lockIcon.Size = UDim2.new(0, 14, 0, 14)
+			lockIcon.AnchorPoint = Vector2.new(1, 0.5)
+			lockIcon.Position = UDim2.new(1, -138, 0.5, 0)
+			lockIcon.BackgroundTransparency = 1
+			lockIcon.Image = getIconAsset("lock")
+			lockIcon.ImageColor3 = Window.Theme.TextDim
+			lockIcon.Visible = isLocked
+			lockIcon.ZIndex = 7
+			lockIcon.Parent = ddFrame
 
 			local selBox = Instance.new("TextButton")
 			selBox.AnchorPoint = Vector2.new(1, 0.5)
@@ -4115,7 +4402,7 @@ function EclipseUI:CreateWindow(options)
 			selBox.Parent = ddFrame
 
 			table.insert(Window.ThemeUpdaters, function(t)
-				selBox.BackgroundColor3 = t.ContainerBg
+				if not isLocked then selBox.BackgroundColor3 = t.ContainerBg end
 			end)
 
 			local selBoxCorner = Instance.new("UICorner")
@@ -4319,6 +4606,7 @@ function EclipseUI:CreateWindow(options)
 					table.insert(itemButtons, { Item = item, Btn = itemBtn, Text = itemText, SheenGradient = sheenGradient })
 
 					itemBtn.MouseButton1Click:Connect(function()
+						if isLocked then return end
 						selectedMap[item] = not selectedMap[item]
 						refreshSelectionStates()
 						pcall(callback, getSelectedList())
@@ -4329,7 +4617,29 @@ function EclipseUI:CreateWindow(options)
 
 			populateItems()
 
+			local function updateLock(locked)
+				isLocked = locked
+				lockIcon.Visible = locked
+				if locked then
+					if popupHolder.Visible then
+						popupHolder.Visible = false
+					end
+					ddFrame.BackgroundTransparency = 0.90
+					label.TextColor3 = Window.Theme.TextDim
+					if descLabel then descLabel.TextColor3 = Window.Theme.TextDim end
+					selLabel.TextColor3 = Window.Theme.TextDim
+				else
+					ddFrame.BackgroundTransparency = 0.95
+					label.TextColor3 = Color3.fromRGB(240, 245, 255)
+					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
+					selLabel.TextColor3 = Color3.fromRGB(230, 238, 250)
+				end
+			end
+
+			updateLock(isLocked)
+
 			selBox.MouseButton1Click:Connect(function()
+				if isLocked then return end
 				if popupHolder.Visible then
 					tween(dropListFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
 					task.delay(0.18, function() popupHolder.Visible = false end)
@@ -4351,6 +4661,7 @@ function EclipseUI:CreateWindow(options)
 			end)
 
 			backdrop.MouseButton1Click:Connect(function()
+				if isLocked then return end
 				tween(dropListFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Size = UDim2.new(0, 120, 0, 0), GroupTransparency = 1 })
 				task.delay(0.18, function() popupHolder.Visible = false end)
 
@@ -4373,6 +4684,9 @@ function EclipseUI:CreateWindow(options)
 				SetItems = function(_, newItems)
 					items = newItems or {}
 					populateItems()
+				end,
+				SetLocked = function(_, val)
+					updateLock(val)
 				end
 			}
 
