@@ -2299,14 +2299,13 @@ function EclipseUI:CreateWindow(options)
 			elseif getexecutorname then
 				executorName = getexecutorname()
 			end
-
-			-- Using CanvasGroup ensures any inner elements or gradients clip properly to the UICorner
-			local cardFrame = Instance.new("CanvasGroup")
+	
+			local cardFrame = Instance.new("Frame")
 			cardFrame.Name = "ProfileCard"
 			cardFrame.Size = UDim2.new(1, 0, 0, 85)
 			cardFrame.BackgroundColor3 = Window.Theme.ContainerBg
 			cardFrame.BackgroundTransparency = 0.5
-			cardFrame.GroupTransparency = 0
+			cardFrame.ClipsDescendants = true
 			cardFrame.BorderSizePixel = 0
 			cardFrame.ZIndex = 4
 			cardFrame.Parent = targetParent
@@ -2321,7 +2320,6 @@ function EclipseUI:CreateWindow(options)
 			cardStroke.Transparency = 0.88
 			cardStroke.Parent = cardFrame
 
-			-- Glow Overlay using a UIGradient instead of an Image Label
 			local glowOverlay = Instance.new("Frame")
 			glowOverlay.Name = "GlowOverlay"
 			glowOverlay.Size = UDim2.new(0, 180, 1, 0)
@@ -2346,7 +2344,6 @@ function EclipseUI:CreateWindow(options)
 			glowGradient.Rotation = 45
 			glowGradient.Parent = glowOverlay
 
-			-- Avatar Headshot Image
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
 			avatarImg.Size = UDim2.new(0, 85, 0, 85)
@@ -2366,7 +2363,6 @@ function EclipseUI:CreateWindow(options)
 				end
 			end)
 
-			-- Left Side Content
 			local contentArea = Instance.new("Frame")
 			contentArea.Name = "ContentArea"
 			contentArea.Size = UDim2.new(1, -115, 1, 0)
