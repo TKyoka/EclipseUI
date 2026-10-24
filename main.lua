@@ -2300,39 +2300,57 @@ function EclipseUI:CreateWindow(options)
 				executorName = getexecutorname()
 			end
 
-			local cardFrame, cardStroke = createContainer(targetParent, 85)
+			-- Using CanvasGroup ensures any inner elements or gradients clip properly to the UICorner
+			local cardFrame = Instance.new("CanvasGroup")
 			cardFrame.Name = "ProfileCard"
-			cardFrame.ClipsDescendants = true
+			cardFrame.Size = UDim2.new(1, 0, 0, 85)
+			cardFrame.BackgroundColor3 = Window.Theme.ContainerBg
+			cardFrame.BackgroundTransparency = 0.5
+			cardFrame.GroupTransparency = 0
+			cardFrame.BorderSizePixel = 0
+			cardFrame.ZIndex = 4
+			cardFrame.Parent = targetParent
 
-			local auraHolder = Instance.new("Frame")
-			auraHolder.Name = "AuraHolder"
-			auraHolder.Size = UDim2.new(0, 130, 0, 130)
-			auraHolder.Position = UDim2.new(1, -127, 0.5, -65)
-			auraHolder.BackgroundTransparency = 1
-			auraHolder.ClipsDescendants = true
-			auraHolder.ZIndex = 4
-			auraHolder.Parent = cardFrame
+			local cardCorner = Instance.new("UICorner")
+			cardCorner.CornerRadius = UDim.new(0, 8)
+			cardCorner.Parent = cardFrame
 
-			local holderCorner = Instance.new("UICorner")
-			holderCorner.CornerRadius = UDim.new(0, 8)
-			holderCorner.Parent = auraHolder
+			local cardStroke = Instance.new("UIStroke")
+			cardStroke.Color = Color3.fromRGB(255, 255, 255)
+			cardStroke.Thickness = 1
+			cardStroke.Transparency = 0.88
+			cardStroke.Parent = cardFrame
 
-			local avatarAura = Instance.new("ImageLabel")
-			avatarAura.Name = "AvatarAura"
-			avatarAura.Size = UDim2.new(1, 0, 1, 0)
-			avatarAura.Position = UDim2.new(0, 0, 0, 0)
-			avatarAura.BackgroundTransparency = 1
-			avatarAura.Image = "rbxassetid://14391650987"
-			avatarAura.Rotation = 180
-			avatarAura.ImageColor3 = Window.Theme.Accent or Color3.fromRGB(0, 170, 255)
-			avatarAura.ImageTransparency = 0.5
-			avatarAura.ZIndex = 4
-			avatarAura.Parent = auraHolder
+			-- Glow Overlay using a UIGradient instead of an Image Label
+			local glowOverlay = Instance.new("Frame")
+			glowOverlay.Name = "GlowOverlay"
+			glowOverlay.Size = UDim2.new(0, 180, 1, 0)
+			glowOverlay.Position = UDim2.new(1, -180, 0, 0)
+			glowOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			glowOverlay.BackgroundTransparency = 0
+			glowOverlay.BorderSizePixel = 0
+			glowOverlay.ZIndex = 4
+			glowOverlay.Parent = cardFrame
 
+			local glowGradient = Instance.new("UIGradient")
+			glowGradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Window.Theme.ContainerBg),
+				ColorSequenceKeypoint.new(0.5, Window.Theme.PillGradient and Window.Theme.PillGradient[1] or Color3.fromRGB(65, 85, 140)),
+				ColorSequenceKeypoint.new(1, Window.Theme.PillGradient and Window.Theme.PillGradient[2] or Color3.fromRGB(35, 42, 60))
+			})
+			glowGradient.Transparency = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 1),
+				NumberSequenceKeypoint.new(0.4, 0.7),
+				NumberSequenceKeypoint.new(1, 0.3)
+			})
+			glowGradient.Rotation = 45
+			glowGradient.Parent = glowOverlay
+
+			-- Avatar Headshot Image
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
 			avatarImg.Size = UDim2.new(0, 85, 0, 85)
-			avatarImg.Position = UDim2.new(1, -105, 0.5, -42)
+			avatarImg.Position = UDim2.new(1, -95, 0.5, -42)
 			avatarImg.BackgroundTransparency = 1
 			avatarImg.ZIndex = 5
 			avatarImg.Parent = cardFrame
@@ -2348,6 +2366,7 @@ function EclipseUI:CreateWindow(options)
 				end
 			end)
 
+			-- Left Side Content
 			local contentArea = Instance.new("Frame")
 			contentArea.Name = "ContentArea"
 			contentArea.Size = UDim2.new(1, -115, 1, 0)
@@ -2452,7 +2471,12 @@ function EclipseUI:CreateWindow(options)
 			end
 
 			table.insert(Window.ThemeUpdaters, function(t)
-				avatarAura.ImageColor3 = t.Accent or Color3.fromRGB(0, 170, 255)
+				cardFrame.BackgroundColor3 = t.ContainerBg
+				glowGradient.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, t.ContainerBg),
+					ColorSequenceKeypoint.new(0.5, t.PillGradient and t.PillGradient[1] or Color3.fromRGB(65, 85, 140)),
+					ColorSequenceKeypoint.new(1, t.PillGradient and t.PillGradient[2] or Color3.fromRGB(35, 42, 60))
+				})
 				execText.TextColor3 = t.TextMuted or Color3.fromRGB(180, 180, 180)
 			end)
 
