@@ -2299,13 +2299,13 @@ function EclipseUI:CreateWindow(options)
 			elseif getexecutorname then
 				executorName = getexecutorname()
 			end
-	
+
+			-- Built the exact same way as Button: Main frame with corner and direct gradient
 			local cardFrame = Instance.new("Frame")
 			cardFrame.Name = "ProfileCard"
 			cardFrame.Size = UDim2.new(1, 0, 0, 85)
-			cardFrame.BackgroundColor3 = Window.Theme.ContainerBg
+			cardFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 			cardFrame.BackgroundTransparency = 0.5
-			cardFrame.ClipsDescendants = true
 			cardFrame.BorderSizePixel = 0
 			cardFrame.ZIndex = 4
 			cardFrame.Parent = targetParent
@@ -2320,30 +2320,17 @@ function EclipseUI:CreateWindow(options)
 			cardStroke.Transparency = 0.88
 			cardStroke.Parent = cardFrame
 
-			local glowOverlay = Instance.new("Frame")
-			glowOverlay.Name = "GlowOverlay"
-			glowOverlay.Size = UDim2.new(0, 180, 1, 0)
-			glowOverlay.Position = UDim2.new(1, -180, 0, 0)
-			glowOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-			glowOverlay.BackgroundTransparency = 0
-			glowOverlay.BorderSizePixel = 0
-			glowOverlay.ZIndex = 4
-			glowOverlay.Parent = cardFrame
-
-			local glowGradient = Instance.new("UIGradient")
-			glowGradient.Color = ColorSequence.new({
+			-- Direct UIGradient on the main frame (just like Button) so it clips the corners automatically
+			local cardGradient = Instance.new("UIGradient")
+			cardGradient.Color = ColorSequence.new({
 				ColorSequenceKeypoint.new(0, Window.Theme.ContainerBg),
-				ColorSequenceKeypoint.new(0.5, Window.Theme.PillGradient and Window.Theme.PillGradient[1] or Color3.fromRGB(65, 85, 140)),
-				ColorSequenceKeypoint.new(1, Window.Theme.PillGradient and Window.Theme.PillGradient[2] or Color3.fromRGB(35, 42, 60))
+				ColorSequenceKeypoint.new(0.6, Window.Theme.ContainerBg),
+				ColorSequenceKeypoint.new(1, Window.Theme.PillGradient and Window.Theme.PillGradient[1] or Color3.fromRGB(65, 85, 140))
 			})
-			glowGradient.Transparency = NumberSequence.new({
-				NumberSequenceKeypoint.new(0, 1),
-				NumberSequenceKeypoint.new(0.4, 0.7),
-				NumberSequenceKeypoint.new(1, 0.3)
-			})
-			glowGradient.Rotation = 45
-			glowGradient.Parent = glowOverlay
+			cardGradient.Rotation = 0
+			cardGradient.Parent = cardFrame
 
+			-- Avatar Headshot Image
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
 			avatarImg.Size = UDim2.new(0, 85, 0, 85)
@@ -2363,6 +2350,7 @@ function EclipseUI:CreateWindow(options)
 				end
 			end)
 
+			-- Left Side Content
 			local contentArea = Instance.new("Frame")
 			contentArea.Name = "ContentArea"
 			contentArea.Size = UDim2.new(1, -115, 1, 0)
@@ -2466,12 +2454,12 @@ function EclipseUI:CreateWindow(options)
 				verText.Parent = verBadge
 			end
 
+			-- Dynamic Theme Subscription
 			table.insert(Window.ThemeUpdaters, function(t)
-				cardFrame.BackgroundColor3 = t.ContainerBg
-				glowGradient.Color = ColorSequence.new({
+				cardGradient.Color = ColorSequence.new({
 					ColorSequenceKeypoint.new(0, t.ContainerBg),
-					ColorSequenceKeypoint.new(0.5, t.PillGradient and t.PillGradient[1] or Color3.fromRGB(65, 85, 140)),
-					ColorSequenceKeypoint.new(1, t.PillGradient and t.PillGradient[2] or Color3.fromRGB(35, 42, 60))
+					ColorSequenceKeypoint.new(0.6, t.ContainerBg),
+					ColorSequenceKeypoint.new(1, t.PillGradient and t.PillGradient[1] or Color3.fromRGB(65, 85, 140))
 				})
 				execText.TextColor3 = t.TextMuted or Color3.fromRGB(180, 180, 180)
 			end)
