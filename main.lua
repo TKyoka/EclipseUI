@@ -1,5 +1,6 @@
 --[[
-    Eclipse UI | Version: 1.1.54 | October 23, 2026
+    Eclipse UI | Version: 1.1.52 | October 19, 2026 2
+
     Author: TKyoka - Zyxer
 	Discord: discord.gg/uyM5Jd8knb
     License: MIT
@@ -1761,7 +1762,7 @@ function EclipseUI:CreateWindow(options)
 		local pagePadding = Instance.new("UIPadding")
 		pagePadding.PaddingLeft = UDim.new(0, 12)
 		pagePadding.PaddingRight = UDim.new(0, 12)
-		pagePadding.PaddingTop = UDim.new(0, 12)
+		pagePadding.PaddingTop = UDim.new(0, 8)
 		pagePadding.PaddingBottom = UDim.new(0, 12)
 		pagePadding.Parent = page
 
@@ -2497,16 +2498,6 @@ function EclipseUI:CreateWindow(options)
 				end
 			end)
 
-			table.insert(Window.ThemeUpdaters, function(t)
-				if not isLocked then
-					btnGradient.Color = ColorSequence.new({
-						ColorSequenceKeypoint.new(0, t.ButtonGradient[1]),
-						ColorSequenceKeypoint.new(0.5, t.ButtonGradient[2]),
-						ColorSequenceKeypoint.new(1, t.ButtonGradient[3])
-					})
-				end
-			end)
-
 			local textRightOffset = -14
 			if btnIcon then
 				local iconImg = Instance.new("ImageLabel")
@@ -2579,6 +2570,7 @@ function EclipseUI:CreateWindow(options)
 				end)
 			end
 
+			-- Lock Icon
 			local lockIcon = Instance.new("ImageLabel")
 			lockIcon.Name = "LockIcon"
 			lockIcon.Size = UDim2.new(0, 14, 0, 14)
@@ -2857,13 +2849,6 @@ function EclipseUI:CreateWindow(options)
 			})
 			toggleGradient.Rotation = 45
 			toggleGradient.Parent = gradientOverlay
-
-			table.insert(Window.ThemeUpdaters, function(t)
-				toggleGradient.Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, t.ToggleGradient[1]),
-					ColorSequenceKeypoint.new(1, t.ToggleGradient[2])
-				})
-			end)
 
 			local tfStroke = Instance.new("UIStroke")
 			tfStroke.Color = Color3.fromRGB(255, 255, 255)
@@ -3217,6 +3202,7 @@ function EclipseUI:CreateWindow(options)
 				end)
 			end
 
+			-- Lock Icon (placed just to the left of the toggle switch)
 			local lockIcon = Instance.new("ImageLabel")
 			lockIcon.Name = "LockIcon"
 			lockIcon.Size = UDim2.new(0, 14, 0, 14)
@@ -3268,13 +3254,6 @@ function EclipseUI:CreateWindow(options)
 			})
 			toggleGradient.Rotation = 45
 			toggleGradient.Parent = gradientOverlay
-
-			table.insert(Window.ThemeUpdaters, function(t)
-				toggleGradient.Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, t.ToggleGradient[1]),
-					ColorSequenceKeypoint.new(1, t.ToggleGradient[2])
-				})
-			end)
 
 			local tfStroke = Instance.new("UIStroke")
 			tfStroke.Color = Color3.fromRGB(255, 255, 255)
@@ -3484,13 +3463,6 @@ function EclipseUI:CreateWindow(options)
 			checkboxGradient.Rotation = 45
 			checkboxGradient.Parent = gradientOverlay
 
-			table.insert(Window.ThemeUpdaters, function(t)
-				checkboxGradient.Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, t.ToggleGradient[1]),
-					ColorSequenceKeypoint.new(1, t.ToggleGradient[2])
-				})
-			end)
-
 			local checkTimeAcc = 0
 			local checkConn
 			checkConn = RunService.RenderStepped:Connect(function(dt)
@@ -3669,13 +3641,6 @@ function EclipseUI:CreateWindow(options)
 				ColorSequenceKeypoint.new(1, Window.Theme.ToggleGradient[2])
 			})
 			fillGradient.Parent = fill
-
-			table.insert(Window.ThemeUpdaters, function(t)
-				fillGradient.Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, t.ToggleGradient[1]),
-					ColorSequenceKeypoint.new(1, t.ToggleGradient[2])
-				})
-			end)
 
 			local thumb = Instance.new("Frame")
 			thumb.AnchorPoint = Vector2.new(0.5, 0.5)
@@ -4512,10 +4477,6 @@ function EclipseUI:CreateWindow(options)
 			dropListFrame.ClipsDescendants = true
 			dropListFrame.ZIndex = 1000
 			dropListFrame.Parent = popupHolder
-
-			table.insert(Window.ThemeUpdaters, function(t)
-				dropListFrame.BackgroundColor3 = t.ContainerBg
-			end)
 
 			local dropCorner = Instance.new("UICorner")
 			dropCorner.CornerRadius = UDim.new(0, 6)
