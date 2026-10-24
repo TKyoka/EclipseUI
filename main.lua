@@ -2300,12 +2300,11 @@ function EclipseUI:CreateWindow(options)
 				executorName = getexecutorname()
 			end
 
-			-- Built the exact same way as Button: Main frame with corner and direct gradient
 			local cardFrame = Instance.new("Frame")
 			cardFrame.Name = "ProfileCard"
 			cardFrame.Size = UDim2.new(1, 0, 0, 85)
 			cardFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-			cardFrame.BackgroundTransparency = 0.5
+			cardFrame.BackgroundTransparency = 0.4
 			cardFrame.BorderSizePixel = 0
 			cardFrame.ZIndex = 4
 			cardFrame.Parent = targetParent
@@ -2317,18 +2316,35 @@ function EclipseUI:CreateWindow(options)
 			local cardStroke = Instance.new("UIStroke")
 			cardStroke.Color = Color3.fromRGB(255, 255, 255)
 			cardStroke.Thickness = 1
-			cardStroke.Transparency = 0.88
+			cardStroke.Transparency = 0.82
 			cardStroke.Parent = cardFrame
 
-			-- Direct UIGradient on the main frame (just like Button) so it clips the corners automatically
+			-- Richer, angled multi-stop gradient matching your UI's pill/button style
 			local cardGradient = Instance.new("UIGradient")
 			cardGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Window.Theme.ContainerBg),
-				ColorSequenceKeypoint.new(0.6, Window.Theme.ContainerBg),
-				ColorSequenceKeypoint.new(1, Window.Theme.PillGradient and Window.Theme.PillGradient[1] or Color3.fromRGB(65, 85, 140))
+				ColorSequenceKeypoint.new(0, Window.Theme.PillGradient and Window.Theme.PillGradient[1] or Color3.fromRGB(65, 85, 140)),
+				ColorSequenceKeypoint.new(0.5, Window.Theme.ContainerBg),
+				ColorSequenceKeypoint.new(1, Window.Theme.ContainerBg)
 			})
-			cardGradient.Rotation = 0
+			cardGradient.Rotation = 135
 			cardGradient.Parent = cardFrame
+
+			-- Subtle decorative accent line on the left edge for extra style
+			local accentBar = Instance.new("Frame")
+			accentBar.Size = UDim2.new(0, 3, 1, 0)
+			accentBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			accentBar.BackgroundTransparency = 0.2
+			accentBar.BorderSizePixel = 0
+			accentBar.ZIndex = 5
+			accentBar.Parent = cardFrame
+
+			local accentGradient = Instance.new("UIGradient")
+			accentGradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Window.Theme.PillGradient and Window.Theme.PillGradient[1] or Color3.fromRGB(100, 150, 255)),
+				ColorSequenceKeypoint.new(1, Window.Theme.ContainerBg)
+			})
+			accentGradient.Rotation = 90
+			accentGradient.Parent = accentBar
 
 			-- Avatar Headshot Image
 			local avatarImg = Instance.new("ImageLabel")
@@ -2354,7 +2370,7 @@ function EclipseUI:CreateWindow(options)
 			local contentArea = Instance.new("Frame")
 			contentArea.Name = "ContentArea"
 			contentArea.Size = UDim2.new(1, -115, 1, 0)
-			contentArea.Position = UDim2.new(0, 0, 0, 0)
+			contentArea.Position = UDim2.new(0, 6, 0, 0)
 			contentArea.BackgroundTransparency = 1
 			contentArea.ZIndex = 5
 			contentArea.Parent = cardFrame
@@ -2457,9 +2473,13 @@ function EclipseUI:CreateWindow(options)
 			-- Dynamic Theme Subscription
 			table.insert(Window.ThemeUpdaters, function(t)
 				cardGradient.Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, t.ContainerBg),
-					ColorSequenceKeypoint.new(0.6, t.ContainerBg),
-					ColorSequenceKeypoint.new(1, t.PillGradient and t.PillGradient[1] or Color3.fromRGB(65, 85, 140))
+					ColorSequenceKeypoint.new(0, t.PillGradient and t.PillGradient[1] or Color3.fromRGB(65, 85, 140)),
+					ColorSequenceKeypoint.new(0.5, t.ContainerBg),
+					ColorSequenceKeypoint.new(1, t.ContainerBg)
+				})
+				accentGradient.Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, t.PillGradient and t.PillGradient[1] or Color3.fromRGB(100, 150, 255)),
+					ColorSequenceKeypoint.new(1, t.ContainerBg)
 				})
 				execText.TextColor3 = t.TextMuted or Color3.fromRGB(180, 180, 180)
 			end)
