@@ -1761,7 +1761,7 @@ function EclipseUI:CreateWindow(options)
 		local pagePadding = Instance.new("UIPadding")
 		pagePadding.PaddingLeft = UDim.new(0, 12)
 		pagePadding.PaddingRight = UDim.new(0, 12)
-		pagePadding.PaddingTop = UDim.new(0, 8)
+		pagePadding.PaddingTop = UDim.new(0, 4)
 		pagePadding.PaddingBottom = UDim.new(0, 12)
 		pagePadding.Parent = page
 
