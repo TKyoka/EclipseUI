@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.53 | October 24, 2026
+    Eclipse UI | Version: 1.1.53 | October 23, 2026
     Author: TKyoka - Zyxer
 	Discord: discord.gg/uyM5Jd8knb
     License: MIT
