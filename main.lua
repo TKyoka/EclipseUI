@@ -2300,26 +2300,35 @@ function EclipseUI:CreateWindow(options)
 				executorName = getexecutorname()
 			end
 	
-			-- Use createContainer so it matches the exact background style of all other elements
 			local cardFrame, cardStroke = createContainer(targetParent, 85)
 			cardFrame.Name = "ProfileCard"
-			cardFrame.ClipsDescendants = true
 			cardStroke.Transparency = 0.88
 
-			-- Slick, premium gradient parented directly to the container for clean corner clipping
+			local clipWrapper = Instance.new("Frame")
+			clipWrapper.Name = "ClipWrapper"
+			clipWrapper.Size = UDim2.new(1, 0, 1, 0)
+			clipWrapper.BackgroundTransparency = 1
+			clipWrapper.ClipsDescendants = true
+			clipWrapper.ZIndex = 4
+			clipWrapper.Parent = cardFrame
+
+			local wrapperCorner = Instance.new("UICorner")
+			wrapperCorner.CornerRadius = UDim.new(0, 8)
+			wrapperCorner.Parent = clipWrapper
+
 			local cardGradient = Instance.new("UIGradient")
 			cardGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Window.Theme.ContainerBg),
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
 				ColorSequenceKeypoint.new(0.5, Window.Theme.PillGradient and Window.Theme.PillGradient[2] or Color3.fromRGB(35, 42, 60)),
 				ColorSequenceKeypoint.new(1, Window.Theme.PillGradient and Window.Theme.PillGradient[1] or Color3.fromRGB(65, 85, 140))
 			})
 			cardGradient.Transparency = NumberSequence.new({
 				NumberSequenceKeypoint.new(0, 1),
-				NumberSequenceKeypoint.new(0.5, 0.8),
-				NumberSequenceKeypoint.new(1, 0.15)
+				NumberSequenceKeypoint.new(0.45, 0.9),
+				NumberSequenceKeypoint.new(1, 0.25)
 			})
 			cardGradient.Rotation = 0
-			cardGradient.Parent = cardFrame
+			cardGradient.Parent = clipWrapper
 
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
@@ -2327,7 +2336,7 @@ function EclipseUI:CreateWindow(options)
 			avatarImg.Position = UDim2.new(1, -85, 0.5, -42)
 			avatarImg.BackgroundTransparency = 1
 			avatarImg.ZIndex = 5
-			avatarImg.Parent = cardFrame
+			avatarImg.Parent = clipWrapper
 
 			task.spawn(function()
 				local content, isReady = Players:GetUserThumbnailAsync(
@@ -2346,7 +2355,7 @@ function EclipseUI:CreateWindow(options)
 			contentArea.Position = UDim2.new(0, 0, 0, 0)
 			contentArea.BackgroundTransparency = 1
 			contentArea.ZIndex = 5
-			contentArea.Parent = cardFrame
+			contentArea.Parent = clipWrapper
 
 			local contentPadding = Instance.new("UIPadding")
 			contentPadding.PaddingLeft = UDim.new(0, 14)
@@ -2445,7 +2454,7 @@ function EclipseUI:CreateWindow(options)
 
 			table.insert(Window.ThemeUpdaters, function(t)
 				cardGradient.Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, t.ContainerBg),
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
 					ColorSequenceKeypoint.new(0.5, t.PillGradient and t.PillGradient[2] or Color3.fromRGB(35, 42, 60)),
 					ColorSequenceKeypoint.new(1, t.PillGradient and t.PillGradient[1] or Color3.fromRGB(65, 85, 140))
 				})
