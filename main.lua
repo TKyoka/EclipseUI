@@ -2300,36 +2300,13 @@ function EclipseUI:CreateWindow(options)
 				executorName = getexecutorname()
 			end
 	
-			local cardFrame = Instance.new("Frame")
+			-- Use createContainer so it matches the exact background style of all other elements
+			local cardFrame, cardStroke = createContainer(targetParent, 85)
 			cardFrame.Name = "ProfileCard"
-			cardFrame.Size = UDim2.new(1, 0, 0, 85)
-			cardFrame.BackgroundColor3 = Window.Theme.ContainerBg
-			cardFrame.BackgroundTransparency = 0.95 -- Matches standard elements background
 			cardFrame.ClipsDescendants = true
-			cardFrame.BorderSizePixel = 0
-			cardFrame.ZIndex = 4
-			cardFrame.Parent = targetParent
-
-			local cardCorner = Instance.new("UICorner")
-			cardCorner.CornerRadius = UDim.new(0, 8)
-			cardCorner.Parent = cardFrame
-
-			local cardStroke = Instance.new("UIStroke")
-			cardStroke.Color = Color3.fromRGB(255, 255, 255)
-			cardStroke.Thickness = 1
 			cardStroke.Transparency = 0.88
-			cardStroke.Parent = cardFrame
 
-			-- Premium gradient background overlay clipped cleanly inside the card
-			local gradientOverlay = Instance.new("Frame")
-			gradientOverlay.Name = "GradientOverlay"
-			gradientOverlay.Size = UDim2.new(1, 0, 1, 0)
-			gradientOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-			gradientOverlay.BackgroundTransparency = 0.15
-			gradientOverlay.BorderSizePixel = 0
-			gradientOverlay.ZIndex = 4
-			gradientOverlay.Parent = cardFrame
-
+			-- Slick, premium gradient parented directly to the container for clean corner clipping
 			local cardGradient = Instance.new("UIGradient")
 			cardGradient.Color = ColorSequence.new({
 				ColorSequenceKeypoint.new(0, Window.Theme.ContainerBg),
@@ -2338,21 +2315,11 @@ function EclipseUI:CreateWindow(options)
 			})
 			cardGradient.Transparency = NumberSequence.new({
 				NumberSequenceKeypoint.new(0, 1),
-				NumberSequenceKeypoint.new(0.5, 0.75),
-				NumberSequenceKeypoint.new(1, 0.25)
+				NumberSequenceKeypoint.new(0.5, 0.8),
+				NumberSequenceKeypoint.new(1, 0.15)
 			})
-			cardGradient.Rotation = 45
-			cardGradient.Parent = gradientOverlay
-
-			-- Optional slick ambient shift loop to make it feel alive and premium
-			task.spawn(function()
-				local tAcc = 0
-				while cardFrame:IsDescendantOf(game) do
-					local dt = RunService.RenderStepped:Wait()
-					tAcc = tAcc + dt
-					cardGradient.Rotation = 45 + (math.sin(tAcc * 0.5) * 15)
-				end
-			end)
+			cardGradient.Rotation = 0
+			cardGradient.Parent = cardFrame
 
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
@@ -2477,7 +2444,6 @@ function EclipseUI:CreateWindow(options)
 			end
 
 			table.insert(Window.ThemeUpdaters, function(t)
-				cardFrame.BackgroundColor3 = t.ContainerBg
 				cardGradient.Color = ColorSequence.new({
 					ColorSequenceKeypoint.new(0, t.ContainerBg),
 					ColorSequenceKeypoint.new(0.5, t.PillGradient and t.PillGradient[2] or Color3.fromRGB(35, 42, 60)),
