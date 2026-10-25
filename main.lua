@@ -2299,12 +2299,13 @@ function EclipseUI:CreateWindow(options)
 			elseif getexecutorname then
 				executorName = getexecutorname()
 			end
-
+	
 			local cardFrame = Instance.new("Frame")
 			cardFrame.Name = "ProfileCard"
 			cardFrame.Size = UDim2.new(1, 0, 0, 85)
 			cardFrame.BackgroundColor3 = Window.Theme.ContainerBg
-			cardFrame.BackgroundTransparency = 0.35
+			cardFrame.BackgroundTransparency = 0.5
+			cardFrame.ClipsDescendants = true
 			cardFrame.BorderSizePixel = 0
 			cardFrame.ZIndex = 4
 			cardFrame.Parent = targetParent
@@ -2316,25 +2317,33 @@ function EclipseUI:CreateWindow(options)
 			local cardStroke = Instance.new("UIStroke")
 			cardStroke.Color = Color3.fromRGB(255, 255, 255)
 			cardStroke.Thickness = 1
-			cardStroke.Transparency = 0.82
+			cardStroke.Transparency = 0.88
 			cardStroke.Parent = cardFrame
 
-			-- Smooth gradient with a transparency fade so it's not too bright or blocky
-			local cardGradient = Instance.new("UIGradient")
-			cardGradient.Color = ColorSequence.new({
-				ColorSequenceKeypoint.new(0, Window.Theme.ContainerBg),
-				ColorSequenceKeypoint.new(0.5, Window.Theme.ContainerBg),
-				ColorSequenceKeypoint.new(1, Window.Theme.PillGradient and Window.Theme.PillGradient[1] or Color3.fromRGB(65, 85, 140))
-			})
-			cardGradient.Transparency = NumberSequence.new({
-				NumberSequenceKeypoint.new(0, 1),
-				NumberSequenceKeypoint.new(0.4, 0.8),
-				NumberSequenceKeypoint.new(1, 0.2)
-			})
-			cardGradient.Rotation = 45
-			cardGradient.Parent = cardFrame
+			local glowOverlay = Instance.new("Frame")
+			glowOverlay.Name = "GlowOverlay"
+			glowOverlay.Size = UDim2.new(0, 180, 1, 0)
+			glowOverlay.Position = UDim2.new(1, -180, 0, 0)
+			glowOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			glowOverlay.BackgroundTransparency = 0
+			glowOverlay.BorderSizePixel = 0
+			glowOverlay.ZIndex = 4
+			glowOverlay.Parent = cardFrame
 
-			-- Avatar Headshot Image
+			local glowGradient = Instance.new("UIGradient")
+			glowGradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Window.Theme.ContainerBg),
+				ColorSequenceKeypoint.new(0.5, Window.Theme.PillGradient and Window.Theme.PillGradient[1] or Color3.fromRGB(65, 85, 140)),
+				ColorSequenceKeypoint.new(1, Window.Theme.PillGradient and Window.Theme.PillGradient[2] or Color3.fromRGB(35, 42, 60))
+			})
+			glowGradient.Transparency = NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 1),
+				NumberSequenceKeypoint.new(0.4, 0.7),
+				NumberSequenceKeypoint.new(1, 0.3)
+			})
+			glowGradient.Rotation = 45
+			glowGradient.Parent = glowOverlay
+
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
 			avatarImg.Size = UDim2.new(0, 85, 0, 85)
@@ -2354,7 +2363,6 @@ function EclipseUI:CreateWindow(options)
 				end
 			end)
 
-			-- Left Side Content
 			local contentArea = Instance.new("Frame")
 			contentArea.Name = "ContentArea"
 			contentArea.Size = UDim2.new(1, -115, 1, 0)
@@ -2458,13 +2466,12 @@ function EclipseUI:CreateWindow(options)
 				verText.Parent = verBadge
 			end
 
-			-- Dynamic Theme Subscription
 			table.insert(Window.ThemeUpdaters, function(t)
 				cardFrame.BackgroundColor3 = t.ContainerBg
-				cardGradient.Color = ColorSequence.new({
+				glowGradient.Color = ColorSequence.new({
 					ColorSequenceKeypoint.new(0, t.ContainerBg),
-					ColorSequenceKeypoint.new(0.5, t.ContainerBg),
-					ColorSequenceKeypoint.new(1, t.PillGradient and t.PillGradient[1] or Color3.fromRGB(65, 85, 140))
+					ColorSequenceKeypoint.new(0.5, t.PillGradient and t.PillGradient[1] or Color3.fromRGB(65, 85, 140)),
+					ColorSequenceKeypoint.new(1, t.PillGradient and t.PillGradient[2] or Color3.fromRGB(35, 42, 60))
 				})
 				execText.TextColor3 = t.TextMuted or Color3.fromRGB(180, 180, 180)
 			end)
@@ -2935,35 +2942,21 @@ function EclipseUI:CreateWindow(options)
 				isLocked = locked
 				lockIcon.Visible = locked
 				if locked then
-					toggleContainer.BackgroundColor3 = Window.Theme.ContainerBg
-					toggleContainer.BackgroundTransparency = 0.90
+					listening = false
+					container.BackgroundTransparency = 0.90
 					label.TextColor3 = Window.Theme.TextDim
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextDim end
-					lockIcon.ImageColor3 = Window.Theme.TextDim
+					keyBtn.TextColor3 = Window.Theme.TextDim
+					keyBtn.Text = currentKey.Name
 					toggleFrame.BackgroundTransparency = 0.8
 				else
-					toggleContainer.BackgroundColor3 = Window.Theme.ContainerBg
-					toggleContainer.BackgroundTransparency = 0.95
+					container.BackgroundTransparency = 0.95
 					label.TextColor3 = Color3.fromRGB(240, 245, 255)
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
+					keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
 					toggleFrame.BackgroundTransparency = 0.4
 				end
 			end
-
-			updateLock(isLocked)
-
-			table.insert(Window.ThemeUpdaters, function(t)
-				lockIcon.ImageColor3 = t.TextDim
-				if isLocked then
-					toggleContainer.BackgroundColor3 = t.ContainerBg
-					label.TextColor3 = t.TextDim
-					if descLabel then descLabel.TextColor3 = t.TextDim end
-				else
-					toggleContainer.BackgroundColor3 = t.ContainerBg
-					label.TextColor3 = Color3.fromRGB(240, 245, 255)
-					if descLabel then descLabel.TextColor3 = t.TextMuted end
-				end
-			end)
 
 			updateLock(isLocked)
 
@@ -3139,37 +3132,21 @@ function EclipseUI:CreateWindow(options)
 			local function updateLock(locked)
 				isLocked = locked
 				lockIcon.Visible = locked
+				textBox.TextEditable = not locked
 				if locked then
-					toggleContainer.BackgroundColor3 = Window.Theme.ContainerBg
-					toggleContainer.BackgroundTransparency = 0.90
+					inputContainer.BackgroundTransparency = 0.90
 					label.TextColor3 = Window.Theme.TextDim
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextDim end
-					lockIcon.ImageColor3 = Window.Theme.TextDim
-					toggleFrame.BackgroundTransparency = 0.8
+					textBox.TextColor3 = Window.Theme.TextDim
 				else
-					toggleContainer.BackgroundColor3 = Window.Theme.ContainerBg
-					toggleContainer.BackgroundTransparency = 0.95
+					inputContainer.BackgroundTransparency = 0.95
 					label.TextColor3 = Color3.fromRGB(240, 245, 255)
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
-					toggleFrame.BackgroundTransparency = 0.4
+					textBox.TextColor3 = Color3.fromRGB(230, 238, 250)
 				end
 			end
 
 			updateLock(isLocked)
-
-			-- Dynamic theme listener that responds whether it's locked or unlocked
-			table.insert(Window.ThemeUpdaters, function(t)
-				lockIcon.ImageColor3 = t.TextDim
-				if isLocked then
-					toggleContainer.BackgroundColor3 = t.ContainerBg
-					label.TextColor3 = t.TextDim
-					if descLabel then descLabel.TextColor3 = t.TextDim end
-				else
-					toggleContainer.BackgroundColor3 = t.ContainerBg
-					label.TextColor3 = Color3.fromRGB(240, 245, 255)
-					if descLabel then descLabel.TextColor3 = t.TextMuted end
-				end
-			end)
 
 			textBox.Focused:Connect(function()
 				if isLocked then return end
@@ -3373,14 +3350,11 @@ function EclipseUI:CreateWindow(options)
 				isLocked = locked
 				lockIcon.Visible = locked
 				if locked then
-					toggleContainer.BackgroundColor3 = Window.Theme.ContainerBg
 					toggleContainer.BackgroundTransparency = 0.90
 					label.TextColor3 = Window.Theme.TextDim
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextDim end
-					lockIcon.ImageColor3 = Window.Theme.TextDim
 					toggleFrame.BackgroundTransparency = 0.8
 				else
-					toggleContainer.BackgroundColor3 = Window.Theme.ContainerBg
 					toggleContainer.BackgroundTransparency = 0.95
 					label.TextColor3 = Color3.fromRGB(240, 245, 255)
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
@@ -3389,20 +3363,6 @@ function EclipseUI:CreateWindow(options)
 			end
 
 			updateLock(isLocked)
-
-			-- Dynamic theme listener that responds whether it's locked or unlocked
-			table.insert(Window.ThemeUpdaters, function(t)
-				lockIcon.ImageColor3 = t.TextDim
-				if isLocked then
-					toggleContainer.BackgroundColor3 = t.ContainerBg
-					label.TextColor3 = t.TextDim
-					if descLabel then descLabel.TextColor3 = t.TextDim end
-				else
-					toggleContainer.BackgroundColor3 = t.ContainerBg
-					label.TextColor3 = Color3.fromRGB(240, 245, 255)
-					if descLabel then descLabel.TextColor3 = t.TextMuted end
-				end
-			end)
 
 			hitBox.MouseEnter:Connect(function()
 				if isLocked then return end
