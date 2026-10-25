@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.53 | October 23, 2026
+    Eclipse UI | Version: 1.1.54 | October 24, 2026
     Author: TKyoka - Zyxer
 	Discord: discord.gg/uyM5Jd8knb
     License: MIT
@@ -47,7 +47,7 @@ local function getIconAsset(iconInput)
 	return LucideIcons[iconName] or ""
 end
 
---// Built-in Themes Repository
+--// Built-in Themes Repository[cite: 7]
 local Themes = {
 	Eclipse = {
 		MainBg = Color3.fromRGB(15, 16, 20),
@@ -2319,7 +2319,6 @@ function EclipseUI:CreateWindow(options)
 			cardStroke.Transparency = 0.82
 			cardStroke.Parent = cardFrame
 
-			-- Smooth gradient with a transparency fade so it's not too bright or blocky
 			local cardGradient = Instance.new("UIGradient")
 			cardGradient.Color = ColorSequence.new({
 				ColorSequenceKeypoint.new(0, Window.Theme.ContainerBg),
@@ -2334,7 +2333,6 @@ function EclipseUI:CreateWindow(options)
 			cardGradient.Rotation = 45
 			cardGradient.Parent = cardFrame
 
-			-- Avatar Headshot Image
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
 			avatarImg.Size = UDim2.new(0, 85, 0, 85)
@@ -2354,7 +2352,6 @@ function EclipseUI:CreateWindow(options)
 				end
 			end)
 
-			-- Left Side Content
 			local contentArea = Instance.new("Frame")
 			contentArea.Name = "ContentArea"
 			contentArea.Size = UDim2.new(1, -115, 1, 0)
@@ -2458,7 +2455,6 @@ function EclipseUI:CreateWindow(options)
 				verText.Parent = verBadge
 			end
 
-			-- Dynamic Theme Subscription
 			table.insert(Window.ThemeUpdaters, function(t)
 				cardFrame.BackgroundColor3 = t.ContainerBg
 				cardGradient.Color = ColorSequence.new({
@@ -2608,10 +2604,12 @@ function EclipseUI:CreateWindow(options)
 				isLocked = state
 				lockIcon.Visible = state
 				if state then
-					btn.BackgroundTransparency = 0.88
+					btn.BackgroundColor3 = Window.Theme.ContainerBg
+					btn.BackgroundTransparency = 0.90
 					label.TextColor3 = Window.Theme.TextDim
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextDim end
 				else
+					btn.BackgroundColor3 = Window.Theme.ContainerBg
 					btn.BackgroundTransparency = 0.75
 					label.TextColor3 = Color3.fromRGB(255, 255, 255)
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
@@ -2655,11 +2653,12 @@ function EclipseUI:CreateWindow(options)
 			end)
 
 			table.insert(Window.ThemeUpdaters, function(t)
+				lockIcon.ImageColor3 = t.TextDim
 				if isLocked then
+					btn.BackgroundColor3 = t.ContainerBg
 					label.TextColor3 = t.TextDim
 					if descLabel then descLabel.TextColor3 = t.TextDim end
 				end
-				lockIcon.ImageColor3 = t.TextDim
 			end)
 
 			local ButtonObj = {
@@ -2935,23 +2934,45 @@ function EclipseUI:CreateWindow(options)
 				isLocked = locked
 				lockIcon.Visible = locked
 				if locked then
-					listening = false
+					container.BackgroundColor3 = Window.Theme.ContainerBg
 					container.BackgroundTransparency = 0.90
 					label.TextColor3 = Window.Theme.TextDim
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextDim end
+					keyBtn.BackgroundColor3 = Window.Theme.ContainerBg
 					keyBtn.TextColor3 = Window.Theme.TextDim
-					keyBtn.Text = currentKey.Name
+					toggleFrame.BackgroundColor3 = Window.Theme.ContainerBg
 					toggleFrame.BackgroundTransparency = 0.8
 				else
+					container.BackgroundColor3 = Window.Theme.ContainerBg
 					container.BackgroundTransparency = 0.95
 					label.TextColor3 = Color3.fromRGB(240, 245, 255)
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
+					keyBtn.BackgroundColor3 = Window.Theme.ContainerBg
 					keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
+					toggleFrame.BackgroundColor3 = Window.Theme.ContainerBg
 					toggleFrame.BackgroundTransparency = 0.4
 				end
 			end
 
 			updateLock(isLocked)
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				lockIcon.ImageColor3 = t.TextDim
+				if isLocked then
+					container.BackgroundColor3 = t.ContainerBg
+					label.TextColor3 = t.TextDim
+					if descLabel then descLabel.TextColor3 = t.TextDim end
+					keyBtn.BackgroundColor3 = t.ContainerBg
+					keyBtn.TextColor3 = t.TextDim
+					toggleFrame.BackgroundColor3 = t.ContainerBg
+				else
+					container.BackgroundColor3 = t.ContainerBg
+					label.TextColor3 = Color3.fromRGB(240, 245, 255)
+					if descLabel then descLabel.TextColor3 = t.TextMuted end
+					keyBtn.BackgroundColor3 = t.ContainerBg
+					toggleFrame.BackgroundColor3 = t.ContainerBg
+				end
+			end)
 
 			hitBox.MouseButton1Click:Connect(function()
 				if isLocked then return end
@@ -3125,21 +3146,40 @@ function EclipseUI:CreateWindow(options)
 			local function updateLock(locked)
 				isLocked = locked
 				lockIcon.Visible = locked
-				textBox.TextEditable = not locked
 				if locked then
+					inputContainer.BackgroundColor3 = Window.Theme.ContainerBg
 					inputContainer.BackgroundTransparency = 0.90
 					label.TextColor3 = Window.Theme.TextDim
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextDim end
+					textBox.BackgroundColor3 = Window.Theme.ContainerBg
 					textBox.TextColor3 = Window.Theme.TextDim
 				else
+					inputContainer.BackgroundColor3 = Window.Theme.ContainerBg
 					inputContainer.BackgroundTransparency = 0.95
 					label.TextColor3 = Color3.fromRGB(240, 245, 255)
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
+					textBox.BackgroundColor3 = Window.Theme.ContainerBg
 					textBox.TextColor3 = Color3.fromRGB(230, 238, 250)
 				end
 			end
 
 			updateLock(isLocked)
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				lockIcon.ImageColor3 = t.TextDim
+				if isLocked then
+					inputContainer.BackgroundColor3 = t.ContainerBg
+					label.TextColor3 = t.TextDim
+					if descLabel then descLabel.TextColor3 = t.TextDim end
+					textBox.BackgroundColor3 = t.ContainerBg
+					textBox.TextColor3 = t.TextDim
+				else
+					inputContainer.BackgroundColor3 = t.ContainerBg
+					label.TextColor3 = Color3.fromRGB(240, 245, 255)
+					if descLabel then descLabel.TextColor3 = t.TextMuted end
+					textBox.BackgroundColor3 = t.ContainerBg
+				end
+			end)
 
 			textBox.Focused:Connect(function()
 				if isLocked then return end
@@ -3343,19 +3383,38 @@ function EclipseUI:CreateWindow(options)
 				isLocked = locked
 				lockIcon.Visible = locked
 				if locked then
+					toggleContainer.BackgroundColor3 = Window.Theme.ContainerBg
 					toggleContainer.BackgroundTransparency = 0.90
 					label.TextColor3 = Window.Theme.TextDim
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextDim end
+					toggleFrame.BackgroundColor3 = Window.Theme.ContainerBg
 					toggleFrame.BackgroundTransparency = 0.8
 				else
+					toggleContainer.BackgroundColor3 = Window.Theme.ContainerBg
 					toggleContainer.BackgroundTransparency = 0.95
 					label.TextColor3 = Color3.fromRGB(240, 245, 255)
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
+					toggleFrame.BackgroundColor3 = Window.Theme.ContainerBg
 					toggleFrame.BackgroundTransparency = 0.4
 				end
 			end
 
 			updateLock(isLocked)
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				lockIcon.ImageColor3 = t.TextDim
+				if isLocked then
+					toggleContainer.BackgroundColor3 = t.ContainerBg
+					label.TextColor3 = t.TextDim
+					if descLabel then descLabel.TextColor3 = t.TextDim end
+					toggleFrame.BackgroundColor3 = t.ContainerBg
+				else
+					toggleContainer.BackgroundColor3 = t.ContainerBg
+					label.TextColor3 = Color3.fromRGB(240, 245, 255)
+					if descLabel then descLabel.TextColor3 = t.TextMuted end
+					toggleFrame.BackgroundColor3 = t.ContainerBg
+				end
+			end)
 
 			hitBox.MouseEnter:Connect(function()
 				if isLocked then return end
@@ -3548,19 +3607,38 @@ function EclipseUI:CreateWindow(options)
 				isLocked = locked
 				lockIcon.Visible = locked
 				if locked then
+					checkboxContainer.BackgroundColor3 = Window.Theme.ContainerBg
 					checkboxContainer.BackgroundTransparency = 0.90
 					label.TextColor3 = Window.Theme.TextDim
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextDim end
+					boxFrame.BackgroundColor3 = Window.Theme.ContainerBg
 					boxFrame.BackgroundTransparency = 0.8
 				else
+					checkboxContainer.BackgroundColor3 = Window.Theme.ContainerBg
 					checkboxContainer.BackgroundTransparency = 0.95
 					label.TextColor3 = Color3.fromRGB(240, 245, 255)
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
+					boxFrame.BackgroundColor3 = Window.Theme.ContainerBg
 					boxFrame.BackgroundTransparency = 0.4
 				end
 			end
 
 			updateLock(isLocked)
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				lockIcon.ImageColor3 = t.TextDim
+				if isLocked then
+					checkboxContainer.BackgroundColor3 = t.ContainerBg
+					label.TextColor3 = t.TextDim
+					if descLabel then descLabel.TextColor3 = t.TextDim end
+					boxFrame.BackgroundColor3 = t.ContainerBg
+				else
+					checkboxContainer.BackgroundColor3 = t.ContainerBg
+					label.TextColor3 = Color3.fromRGB(240, 245, 255)
+					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
+					boxFrame.BackgroundColor3 = t.ContainerBg
+				end
+			end)
 
 			hitBox.MouseButton1Click:Connect(function()
 				if isLocked then return end
@@ -3733,17 +3811,39 @@ function EclipseUI:CreateWindow(options)
 				lockIcon.Visible = locked
 				valBox.TextEditable = not locked
 				if locked then
+					sliderContainer.BackgroundColor3 = Window.Theme.ContainerBg
 					sliderContainer.BackgroundTransparency = 0.90
 					label.TextColor3 = Window.Theme.TextDim
+					valBox.BackgroundColor3 = Window.Theme.ContainerBg
 					valBox.TextColor3 = Window.Theme.TextDim
+					track.BackgroundColor3 = Window.Theme.ContainerBg
 				else
+					sliderContainer.BackgroundColor3 = Window.Theme.ContainerBg
 					sliderContainer.BackgroundTransparency = 0.95
 					label.TextColor3 = Color3.fromRGB(240, 245, 255)
+					valBox.BackgroundColor3 = Window.Theme.ContainerBg
 					valBox.TextColor3 = Color3.fromRGB(230, 238, 250)
+					track.BackgroundColor3 = Window.Theme.ContainerBg
 				end
 			end
 
 			updateLock(isLocked)
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				lockIcon.ImageColor3 = t.TextDim
+				if isLocked then
+					sliderContainer.BackgroundColor3 = t.ContainerBg
+					label.TextColor3 = t.TextDim
+					valBox.BackgroundColor3 = t.ContainerBg
+					valBox.TextColor3 = t.TextDim
+					track.BackgroundColor3 = t.ContainerBg
+				else
+					sliderContainer.BackgroundColor3 = t.ContainerBg
+					label.TextColor3 = Color3.fromRGB(240, 245, 255)
+					valBox.BackgroundColor3 = t.ContainerBg
+					track.BackgroundColor3 = t.ContainerBg
+				end
+			end)
 
 			valBox.Focused:Connect(function()
 				if isLocked then return end
@@ -3920,20 +4020,40 @@ function EclipseUI:CreateWindow(options)
 				lockIcon.Visible = locked
 				if locked then
 					listening = false
+					kbFrame.BackgroundColor3 = Window.Theme.ContainerBg
 					kbFrame.BackgroundTransparency = 0.90
 					label.TextColor3 = Window.Theme.TextDim
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextDim end
+					keyBtn.BackgroundColor3 = Window.Theme.ContainerBg
 					keyBtn.TextColor3 = Window.Theme.TextDim
 					keyBtn.Text = currentKey.Name
 				else
+					kbFrame.BackgroundColor3 = Window.Theme.ContainerBg
 					kbFrame.BackgroundTransparency = 0.95
 					label.TextColor3 = Color3.fromRGB(240, 245, 255)
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
+					keyBtn.BackgroundColor3 = Window.Theme.ContainerBg
 					keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
 				end
 			end
 
 			updateLock(isLocked)
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				lockIcon.ImageColor3 = t.TextDim
+				if isLocked then
+					kbFrame.BackgroundColor3 = t.ContainerBg
+					label.TextColor3 = t.TextDim
+					if descLabel then descLabel.TextColor3 = t.TextDim end
+					keyBtn.BackgroundColor3 = t.ContainerBg
+					keyBtn.TextColor3 = t.TextDim
+				else
+					kbFrame.BackgroundColor3 = t.ContainerBg
+					label.TextColor3 = Color3.fromRGB(240, 245, 255)
+					if descLabel then descLabel.TextColor3 = t.TextMuted end
+					keyBtn.BackgroundColor3 = t.ContainerBg
+				end
+			end)
 
 			keyBtn.MouseEnter:Connect(function()
 				if isLocked or listening then return end
@@ -4290,19 +4410,39 @@ function EclipseUI:CreateWindow(options)
 					if popupHolder.Visible then
 						popupHolder.Visible = false
 					end
+					ddFrame.BackgroundColor3 = Window.Theme.ContainerBg
 					ddFrame.BackgroundTransparency = 0.90
 					label.TextColor3 = Window.Theme.TextDim
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextDim end
+					selBox.BackgroundColor3 = Window.Theme.ContainerBg
 					selLabel.TextColor3 = Window.Theme.TextDim
 				else
+					ddFrame.BackgroundColor3 = Window.Theme.ContainerBg
 					ddFrame.BackgroundTransparency = 0.95
 					label.TextColor3 = Color3.fromRGB(240, 245, 255)
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
+					selBox.BackgroundColor3 = Window.Theme.ContainerBg
 					selLabel.TextColor3 = Color3.fromRGB(230, 238, 250)
 				end
 			end
 
 			updateLock(isLocked)
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				lockIcon.ImageColor3 = t.TextDim
+				if isLocked then
+					ddFrame.BackgroundColor3 = t.ContainerBg
+					label.TextColor3 = t.TextDim
+					if descLabel then descLabel.TextColor3 = t.TextDim end
+					selBox.BackgroundColor3 = t.ContainerBg
+					selLabel.TextColor3 = t.TextDim
+				else
+					ddFrame.BackgroundColor3 = t.ContainerBg
+					label.TextColor3 = Color3.fromRGB(240, 245, 255)
+					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
+					selBox.BackgroundColor3 = t.ContainerBg
+				end
+			end)
 
 			selBox.MouseButton1Click:Connect(function()
 				if isLocked then return end
@@ -4676,19 +4816,39 @@ function EclipseUI:CreateWindow(options)
 					if popupHolder.Visible then
 						popupHolder.Visible = false
 					end
+					ddFrame.BackgroundColor3 = Window.Theme.ContainerBg
 					ddFrame.BackgroundTransparency = 0.90
 					label.TextColor3 = Window.Theme.TextDim
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextDim end
+					selBox.BackgroundColor3 = Window.Theme.ContainerBg
 					selLabel.TextColor3 = Window.Theme.TextDim
 				else
+					ddFrame.BackgroundColor3 = Window.Theme.ContainerBg
 					ddFrame.BackgroundTransparency = 0.95
 					label.TextColor3 = Color3.fromRGB(240, 245, 255)
 					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
+					selBox.BackgroundColor3 = Window.Theme.ContainerBg
 					selLabel.TextColor3 = Color3.fromRGB(230, 238, 250)
 				end
 			end
 
 			updateLock(isLocked)
+
+			table.insert(Window.ThemeUpdaters, function(t)
+				lockIcon.ImageColor3 = t.TextDim
+				if isLocked then
+					ddFrame.BackgroundColor3 = t.ContainerBg
+					label.TextColor3 = t.TextDim
+					if descLabel then descLabel.TextColor3 = t.TextDim end
+					selBox.BackgroundColor3 = t.ContainerBg
+					selLabel.TextColor3 = t.TextDim
+				else
+					ddFrame.BackgroundColor3 = t.ContainerBg
+					label.TextColor3 = Color3.fromRGB(240, 245, 255)
+					if descLabel then descLabel.TextColor3 = Window.Theme.TextMuted end
+					selBox.BackgroundColor3 = t.ContainerBg
+				end
+			end)
 
 			selBox.MouseButton1Click:Connect(function()
 				if isLocked then return end
