@@ -2320,34 +2320,24 @@ function EclipseUI:CreateWindow(options)
 			cardStroke.Transparency = 0.88
 			cardStroke.Parent = cardFrame
 
-			local glowOverlay = Instance.new("Frame")
-			glowOverlay.Name = "GlowOverlay"
-			glowOverlay.Size = UDim2.new(0, 180, 1, 0)
-			glowOverlay.Position = UDim2.new(1, -180, 0, 0)
-			glowOverlay.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-			glowOverlay.BackgroundTransparency = 0
-			glowOverlay.BorderSizePixel = 0
-			glowOverlay.ZIndex = 4
-			glowOverlay.Parent = cardFrame
-
-			local glowGradient = Instance.new("UIGradient")
-			glowGradient.Color = ColorSequence.new({
+			local cardGradient = Instance.new("UIGradient")
+			cardGradient.Color = ColorSequence.new({
 				ColorSequenceKeypoint.new(0, Window.Theme.ContainerBg),
 				ColorSequenceKeypoint.new(0.5, Window.Theme.PillGradient and Window.Theme.PillGradient[1] or Color3.fromRGB(65, 85, 140)),
 				ColorSequenceKeypoint.new(1, Window.Theme.PillGradient and Window.Theme.PillGradient[2] or Color3.fromRGB(35, 42, 60))
 			})
-			glowGradient.Transparency = NumberSequence.new({
+			cardGradient.Transparency = NumberSequence.new({
 				NumberSequenceKeypoint.new(0, 1),
 				NumberSequenceKeypoint.new(0.4, 0.7),
-				NumberSequenceKeypoint.new(1, 0.3)
+				NumberSequenceKeypoint.new(1, 0.2)
 			})
-			glowGradient.Rotation = 45
-			glowGradient.Parent = glowOverlay
+			cardGradient.Rotation = 0
+			cardGradient.Parent = cardFrame
 
 			local avatarImg = Instance.new("ImageLabel")
 			avatarImg.Name = "Avatar"
 			avatarImg.Size = UDim2.new(0, 85, 0, 85)
-			avatarImg.Position = UDim2.new(1, -95, 0.5, -42)
+			avatarImg.Position = UDim2.new(1, -85, 0.5, -42)
 			avatarImg.BackgroundTransparency = 1
 			avatarImg.ZIndex = 5
 			avatarImg.Parent = cardFrame
@@ -2365,7 +2355,7 @@ function EclipseUI:CreateWindow(options)
 
 			local contentArea = Instance.new("Frame")
 			contentArea.Name = "ContentArea"
-			contentArea.Size = UDim2.new(1, -115, 1, 0)
+			contentArea.Size = UDim2.new(1, -105, 1, 0)
 			contentArea.Position = UDim2.new(0, 0, 0, 0)
 			contentArea.BackgroundTransparency = 1
 			contentArea.ZIndex = 5
@@ -2468,7 +2458,7 @@ function EclipseUI:CreateWindow(options)
 
 			table.insert(Window.ThemeUpdaters, function(t)
 				cardFrame.BackgroundColor3 = t.ContainerBg
-				glowGradient.Color = ColorSequence.new({
+				cardGradient.Color = ColorSequence.new({
 					ColorSequenceKeypoint.new(0, t.ContainerBg),
 					ColorSequenceKeypoint.new(0.5, t.PillGradient and t.PillGradient[1] or Color3.fromRGB(65, 85, 140)),
 					ColorSequenceKeypoint.new(1, t.PillGradient and t.PillGradient[2] or Color3.fromRGB(35, 42, 60))
