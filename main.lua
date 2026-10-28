@@ -1,5 +1,5 @@
 --[[
-    Eclipse UI | Version: 1.1.53 | October 23, 2026
+    Eclipse UI | Version: 1.1.54 | October 23, 2026
     Author: TKyoka - Zyxer
 	Discord: discord.gg/uyM5Jd8knb
     License: MIT
@@ -11,8 +11,10 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
 local HttpService = game:GetService("HttpService")
+local CoreGui = game:GetService("CoreGui")
 
 local LocalPlayer = Players.LocalPlayer
+local parentContainer = (gethui and gethui()) or CoreGui
 
 local LucideIcons = {}
 local iconsLoaded = false
@@ -197,8 +199,7 @@ function EclipseUI:Notify(opts)
 	local themeName = opts.Theme or EclipseUI.CurrentTheme or "Eclipse"
 	local Theme = Themes[themeName] or Themes["Eclipse"]
 
-	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
-	local notifGui = playerGui:FindFirstChild("EclipseNotifications")
+	local notifGui = parentContainer:FindFirstChild("EclipseNotifications")
 	if not notifGui then
 		notifGui = Instance.new("ScreenGui")
 		notifGui.Name = "EclipseNotifications"
@@ -206,7 +207,7 @@ function EclipseUI:Notify(opts)
 		notifGui.ResetOnSpawn = false
 		notifGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 		notifGui.DisplayOrder = 1000000
-		notifGui.Parent = playerGui
+		notifGui.Parent = parentContainer
 	end
 
 	local holder = notifGui:FindFirstChild("Holder")
@@ -300,7 +301,7 @@ function EclipseUI:Notify(opts)
 	titleLabel.BackgroundTransparency = 1
 	titleLabel.Text = title
 	titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-	titleLabel.TextSize = 12
+	titleLabel.TextSize = 14
 	titleLabel.FontFace = getFont(Enum.FontWeight.Bold)
 	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 	titleLabel.ZIndex = 101
@@ -368,9 +369,6 @@ function EclipseUI:CreateWindow(options)
 	local userOptions = options.User
 	local initialThemeName;
 	initialThemeName, EclipseUI.CurrentTheme = options.Theme and Themes[options.Theme] and options.Theme or "Eclipse", options.Theme and Themes[options.Theme] and options.Theme or "Eclipse"
-
-	local CoreGui = game:GetService("CoreGui")
-	local parentContainer = (gethui and gethui()) or CoreGui
 
 	local screenGui = Instance.new("ScreenGui")
 	screenGui.Name = "EclipseUI"
@@ -607,7 +605,7 @@ function EclipseUI:CreateWindow(options)
 		loaderGui.Name = "EclipseLoaderGui"
 		loaderGui.IgnoreGuiInset = true
 		loaderGui.ResetOnSpawn = false
-		loaderGui.Parent = playerGui
+		loaderGui.Parent = parentContainer
 		loaderGuiRef = loaderGui
 
 		local overlay = Instance.new("Frame")
@@ -736,9 +734,6 @@ function EclipseUI:CreateWindow(options)
 	end
 
 	if openButtonEnabled then
-		local CoreGui = game:GetService("CoreGui")
-		local parentContainer = (gethui and gethui()) or CoreGui
-
 		local openBtnGui = Instance.new("ScreenGui")
 		openBtnGui.Name = "EclipseOpenButtonGui"
 		openBtnGui.ResetOnSpawn = false
@@ -1267,7 +1262,7 @@ function EclipseUI:CreateWindow(options)
 
 		task.delay(0.25, function()
 			screenGui:Destroy()
-			local notifGui = playerGui:FindFirstChild("EclipseNotifications")
+			local notifGui = parentContainer:FindFirstChild("EclipseNotifications")
 			if notifGui then
 				notifGui:Destroy()
 			end
@@ -1440,12 +1435,12 @@ function EclipseUI:CreateWindow(options)
 
 		local displayNameLabel = Instance.new("TextLabel")
 		displayNameLabel.Name = "DisplayName"
-		displayNameLabel.Size = UDim2.new(1, -48, 0, 15)
+		displayNameLabel.Size = UDim2.new(1, -48, 0, 16)
 		displayNameLabel.Position = UDim2.new(0, 44, 0, 8)
 		displayNameLabel.BackgroundTransparency = 1
 		displayNameLabel.Text = userAnon and anonName or LocalPlayer.DisplayName
 		displayNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-		displayNameLabel.TextSize = 12
+		displayNameLabel.TextSize = 14
 		displayNameLabel.FontFace = getFont(Enum.FontWeight.Bold)
 		displayNameLabel.TextXAlignment = Enum.TextXAlignment.Left
 		displayNameLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -1454,12 +1449,12 @@ function EclipseUI:CreateWindow(options)
 
 		local usernameLabel = Instance.new("TextLabel")
 		usernameLabel.Name = "Username"
-		usernameLabel.Size = UDim2.new(1, -48, 0, 13)
-		usernameLabel.Position = UDim2.new(0, 44, 0, 23)
+		usernameLabel.Size = UDim2.new(1, -48, 0, 14)
+		usernameLabel.Position = UDim2.new(0, 44, 0, 25)
 		usernameLabel.BackgroundTransparency = 1
 		usernameLabel.Text = userAnon and anonUsername or ("@" .. LocalPlayer.Name)
 		usernameLabel.TextColor3 = Window.Theme.TextMuted
-		usernameLabel.TextSize = 10
+		usernameLabel.TextSize = 12
 		usernameLabel.FontFace = getFont(Enum.FontWeight.Bold)
 		usernameLabel.TextXAlignment = Enum.TextXAlignment.Left
 		usernameLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -1733,7 +1728,7 @@ function EclipseUI:CreateWindow(options)
 		tabText.BackgroundTransparency = 1
 		tabText.Text = tabTitle
 		tabText.TextColor3 = Window.Theme.TextDim
-		tabText.TextSize = 12
+		tabText.TextSize = 13
 		tabText.FontFace = getFont(Enum.FontWeight.Bold)
 		tabText.TextXAlignment = Enum.TextXAlignment.Left
 		tabText.ZIndex = 5
@@ -1948,7 +1943,7 @@ function EclipseUI:CreateWindow(options)
 				textLbl.BackgroundTransparency = 1
 				textLbl.Text = title
 				textLbl.TextColor3 = Window.Theme.TextDim
-				textLbl.TextSize = 10
+				textLbl.TextSize = 11
 				textLbl.FontFace = getFont(Enum.FontWeight.Bold)
 				textLbl.TextXAlignment = Enum.TextXAlignment.Center
 				textLbl.ZIndex = 4
@@ -2028,7 +2023,7 @@ function EclipseUI:CreateWindow(options)
 			secHeader.BackgroundTransparency = 1
 			secHeader.Text = string.upper(secTitle)
 			secHeader.TextColor3 = Window.Theme.TextDim
-			secHeader.TextSize = 10
+			secHeader.TextSize = 11
 			secHeader.FontFace = getFont(Enum.FontWeight.Bold)
 			secHeader.TextXAlignment = Enum.TextXAlignment.Left
 			secHeader.ZIndex = 4
@@ -2133,7 +2128,7 @@ function EclipseUI:CreateWindow(options)
 			titleLabel.BackgroundTransparency = 1
 			titleLabel.Text = boxTitle
 			titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-			titleLabel.TextSize = 12
+			titleLabel.TextSize = 14
 			titleLabel.FontFace = getFont(Enum.FontWeight.Bold)
 			titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 			titleLabel.ZIndex = 5
@@ -2279,11 +2274,11 @@ function EclipseUI:CreateWindow(options)
 			padding.Parent = pFrame
 
 			local pTitle = Instance.new("TextLabel")
-			pTitle.Size = UDim2.new(1, 0, 0, 15)
+			pTitle.Size = UDim2.new(1, 0, 0, 18)
 			pTitle.BackgroundTransparency = 1
 			pTitle.Text = title
 			pTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-			pTitle.TextSize = 12
+			pTitle.TextSize = 14
 			pTitle.FontFace = getFont(Enum.FontWeight.Bold)
 			pTitle.TextXAlignment = Enum.TextXAlignment.Left
 			pTitle.ZIndex = 5
@@ -2442,7 +2437,7 @@ function EclipseUI:CreateWindow(options)
 			execText.BackgroundTransparency = 1
 			execText.Text = executorName
 			execText.TextColor3 = Window.Theme.TextMuted or Color3.fromRGB(180, 180, 180)
-			execText.TextSize = 10
+			execText.TextSize = 11
 			execText.FontFace = getFont(Enum.FontWeight.Medium)
 			execText.ZIndex = 7
 			execText.Parent = execBadge
@@ -2471,7 +2466,7 @@ function EclipseUI:CreateWindow(options)
 				verText.BackgroundTransparency = 1
 				verText.Text = opts.Version
 				verText.TextColor3 = Window.Theme.TextMuted or Color3.fromRGB(180, 180, 180)
-				verText.TextSize = 10
+				verText.TextSize = 11
 				verText.FontFace = getFont(Enum.FontWeight.Medium)
 				verText.ZIndex = 7
 				verText.Parent = verBadge
@@ -2575,11 +2570,11 @@ function EclipseUI:CreateWindow(options)
 			textLayout.Parent = textContainer
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, 0, 0, desc and 16 or 38)
+			label.Size = UDim2.new(1, 0, 0, desc and 18 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = btnName
 			label.TextColor3 = Color3.fromRGB(255, 255, 255)
-			label.TextSize = 12
+			label.TextSize = 14
 			label.FontFace = getFont(Enum.FontWeight.Bold)
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.LayoutOrder = 1
@@ -2594,7 +2589,7 @@ function EclipseUI:CreateWindow(options)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
-				descLabel.TextSize = 10
+				descLabel.TextSize = 11
 				descLabel.FontFace = getFont(Enum.FontWeight.Medium)
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
 				descLabel.TextWrapped = true
@@ -2779,11 +2774,11 @@ function EclipseUI:CreateWindow(options)
 			textLayout.Parent = textContainer
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, 0, 0, desc and 15 or 38)
+			label.Size = UDim2.new(1, 0, 0, desc and 18 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
-			label.TextSize = 12
+			label.TextSize = 14
 			label.FontFace = getFont(Enum.FontWeight.Bold)
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.LayoutOrder = 1
@@ -2793,11 +2788,11 @@ function EclipseUI:CreateWindow(options)
 			local descLabel
 			if desc then
 				descLabel = Instance.new("TextLabel")
-				descLabel.Size = UDim2.new(1, 0, 0, 13)
+				descLabel.Size = UDim2.new(1, 0, 0, 14)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
-				descLabel.TextSize = 10
+				descLabel.TextSize = 11
 				descLabel.FontFace = getFont(Enum.FontWeight.Medium)
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
 				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -3058,11 +3053,11 @@ function EclipseUI:CreateWindow(options)
 			textLayout.Parent = textContainer
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, 0, 0, desc and 15 or 38)
+			label.Size = UDim2.new(1, 0, 0, desc and 18 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
-			label.TextSize = 12
+			label.TextSize = 14
 			label.FontFace = getFont(Enum.FontWeight.Bold)
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.LayoutOrder = 1
@@ -3072,11 +3067,11 @@ function EclipseUI:CreateWindow(options)
 			local descLabel
 			if desc then
 				descLabel = Instance.new("TextLabel")
-				descLabel.Size = UDim2.new(1, 0, 0, 13)
+				descLabel.Size = UDim2.new(1, 0, 0, 14)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
-				descLabel.TextSize = 10
+				descLabel.TextSize = 11
 				descLabel.FontFace = getFont(Enum.FontWeight.Medium)
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
 				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -3214,11 +3209,11 @@ function EclipseUI:CreateWindow(options)
 			textLayout.Parent = textContainer
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, 0, 0, desc and 15 or 38)
+			label.Size = UDim2.new(1, 0, 0, desc and 18 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
-			label.TextSize = 12
+			label.TextSize = 14
 			label.FontFace = getFont(Enum.FontWeight.Bold)
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.LayoutOrder = 1
@@ -3228,11 +3223,11 @@ function EclipseUI:CreateWindow(options)
 			local descLabel
 			if desc then
 				descLabel = Instance.new("TextLabel")
-				descLabel.Size = UDim2.new(1, 0, 0, 13)
+				descLabel.Size = UDim2.new(1, 0, 0, 14)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
-				descLabel.TextSize = 10
+				descLabel.TextSize = 11
 				descLabel.FontFace = getFont(Enum.FontWeight.Medium)
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
 				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -3433,11 +3428,11 @@ function EclipseUI:CreateWindow(options)
 			textLayout.Parent = textContainer
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, 0, 0, desc and 15 or 38)
+			label.Size = UDim2.new(1, 0, 0, desc and 18 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
-			label.TextSize = 12
+			label.TextSize = 14
 			label.FontFace = getFont(Enum.FontWeight.Bold)
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.LayoutOrder = 1
@@ -3447,11 +3442,11 @@ function EclipseUI:CreateWindow(options)
 			local descLabel
 			if desc then
 				descLabel = Instance.new("TextLabel")
-				descLabel.Size = UDim2.new(1, 0, 0, 13)
+				descLabel.Size = UDim2.new(1, 0, 0, 14)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
-				descLabel.TextSize = 10
+				descLabel.TextSize = 11
 				descLabel.FontFace = getFont(Enum.FontWeight.Medium)
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
 				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -3618,7 +3613,7 @@ function EclipseUI:CreateWindow(options)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
-			label.TextSize = 12
+			label.TextSize = 14
 			label.FontFace = getFont(Enum.FontWeight.Bold)
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.ZIndex = 5
@@ -3859,11 +3854,11 @@ function EclipseUI:CreateWindow(options)
 			textLayout.Parent = textContainer
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, 0, 0, desc and 15 or 38)
+			label.Size = UDim2.new(1, 0, 0, desc and 18 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
-			label.TextSize = 12
+			label.TextSize = 14
 			label.FontFace = getFont(Enum.FontWeight.Bold)
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.LayoutOrder = 1
@@ -3873,11 +3868,11 @@ function EclipseUI:CreateWindow(options)
 			local descLabel
 			if desc then
 				descLabel = Instance.new("TextLabel")
-				descLabel.Size = UDim2.new(1, 0, 0, 13)
+				descLabel.Size = UDim2.new(1, 0, 0, 14)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
-				descLabel.TextSize = 10
+				descLabel.TextSize = 11
 				descLabel.FontFace = getFont(Enum.FontWeight.Medium)
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
 				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -4040,11 +4035,11 @@ function EclipseUI:CreateWindow(options)
 			textLayout.Parent = textContainer
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, 0, 0, desc and 15 or 38)
+			label.Size = UDim2.new(1, 0, 0, desc and 18 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
-			label.TextSize = 12
+			label.TextSize = 14
 			label.FontFace = getFont(Enum.FontWeight.Bold)
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.LayoutOrder = 1
@@ -4054,11 +4049,11 @@ function EclipseUI:CreateWindow(options)
 			local descLabel
 			if desc then
 				descLabel = Instance.new("TextLabel")
-				descLabel.Size = UDim2.new(1, 0, 0, 13)
+				descLabel.Size = UDim2.new(1, 0, 0, 14)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
-				descLabel.TextSize = 10
+				descLabel.TextSize = 11
 				descLabel.FontFace = getFont(Enum.FontWeight.Medium)
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
 				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -4412,11 +4407,11 @@ function EclipseUI:CreateWindow(options)
 			textLayout.Parent = textContainer
 
 			local label = Instance.new("TextLabel")
-			label.Size = UDim2.new(1, 0, 0, desc and 15 or 38)
+			label.Size = UDim2.new(1, 0, 0, desc and 18 or 38)
 			label.BackgroundTransparency = 1
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
-			label.TextSize = 12
+			label.TextSize = 14
 			label.FontFace = getFont(Enum.FontWeight.Bold)
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.LayoutOrder = 1
@@ -4426,11 +4421,11 @@ function EclipseUI:CreateWindow(options)
 			local descLabel
 			if desc then
 				descLabel = Instance.new("TextLabel")
-				descLabel.Size = UDim2.new(1, 0, 0, 13)
+				descLabel.Size = UDim2.new(1, 0, 0, 14)
 				descLabel.BackgroundTransparency = 1
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
-				descLabel.TextSize = 10
+				descLabel.TextSize = 11
 				descLabel.FontFace = getFont(Enum.FontWeight.Medium)
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
 				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
