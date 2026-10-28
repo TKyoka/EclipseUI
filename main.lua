@@ -369,14 +369,15 @@ function EclipseUI:CreateWindow(options)
 	local initialThemeName;
 	initialThemeName, EclipseUI.CurrentTheme = options.Theme and Themes[options.Theme] and options.Theme or "Eclipse", options.Theme and Themes[options.Theme] and options.Theme or "Eclipse"
 
-	local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+	local CoreGui = game:GetService("CoreGui")
+	local parentContainer = (gethui and gethui()) or CoreGui
 
 	local screenGui = Instance.new("ScreenGui")
 	screenGui.Name = "EclipseUI"
 	screenGui.ResetOnSpawn = false
 	screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 	screenGui.DisplayOrder = 999999
-	screenGui.Parent = playerGui
+	screenGui.Parent = parentContainer
 
 	local defaultSize = UDim2.new(0, 480, 0, 320)
 	local defaultPos = UDim2.new(0.5, 0, 0.5, 0)
@@ -735,12 +736,15 @@ function EclipseUI:CreateWindow(options)
 	end
 
 	if openButtonEnabled then
+		local CoreGui = game:GetService("CoreGui")
+		local parentContainer = (gethui and gethui()) or CoreGui
+
 		local openBtnGui = Instance.new("ScreenGui")
 		openBtnGui.Name = "EclipseOpenButtonGui"
 		openBtnGui.ResetOnSpawn = false
 		openBtnGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 		openBtnGui.DisplayOrder = 999999
-		openBtnGui.Parent = playerGui
+		openBtnGui.Parent = parentContainer
 
 		local openBtn = Instance.new("ImageButton")
 		openBtn.Size = UDim2.new(0, 44, 0, 44)
