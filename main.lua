@@ -2038,14 +2038,15 @@ function EclipseUI:CreateWindow(options)
 			return SectionObj
 		end
 
-		function TabObject:GroupBox(opts, targetParent)
+		function TabObject:Group(opts, targetParent)
 			opts = opts or {}
 			targetParent = targetParent or page
-			local boxTitle = opts.Title or "Group"
+			local boxTitle = opts.Title or opts.Name or "Group"
 			local boxIcon = opts.Icon
 			local isFoldable = opts.Foldable or false
 			local isFolded = (opts.Default == false)
 
+			-- Main Outer Box Frame
 			local boxFrame = Instance.new("Frame")
 			boxFrame.Size = UDim2.new(1, 0, 0, 0)
 			boxFrame.AutomaticSize = Enum.AutomaticSize.Y
@@ -2069,17 +2070,79 @@ function EclipseUI:CreateWindow(options)
 			boxStroke.Transparency = 0.88
 			boxStroke.Parent = boxFrame
 
+			-- Inner Layout for Header + Content Body
 			local boxMainLayout = Instance.new("UIListLayout")
-			boxMainLayout.Padding = UDim.new(0, 4)
+			boxMainLayout.Padding = UDim.new(0, 0)
 			boxMainLayout.SortOrder = Enum.SortOrder.LayoutOrder
 			boxMainLayout.Parent = boxFrame
 
-			local boxPadding = Instance.new("UIPadding")
-			boxPadding.PaddingLeft = UDim.new(0, 12)
-			boxPadding.PaddingRight = UDim.new(0, 12)
-			boxPadding.PaddingTop = UDim.new(0, 8)
-			boxPadding.PaddingBottom = UDim.new(0, 8)
-			boxPadding.Parent = boxFrame
+			-- 1. Header Container (Top Bar)
+			local headerContainer = Instance.new("Frame")
+			headerContainer.Size = UDim2.new(1, 0, 0, 36)
+			headerContainer.BackgroundTransparency = 1
+			headerContainer.ZIndex = 5
+			headerContainer.LayoutOrder = 0
+			headerContainer.Parent = boxFrame
+
+			local headerPadding = Instance.new("UIPadding")
+			headerPadding.PaddingLeft = UDim.new(0, 14)
+			headerPadding.PaddingRight = UDim.new(0, 14)
+			headerPadding.Parent = headerContainer
+
+			local textOffsetX = 0
+			if boxIcon then
+				local iconImg = Instance.new("ImageLabel")
+				iconImg.Size = UDim2.new(0, 16, 0, 16)
+				iconImg.Position = UDim2.new(0, 0, 0.5, -8)
+				iconImg.BackgroundTransparency = 1
+				iconImg.Image = getIconAsset(boxIcon)
+				iconImg.ImageColor3 = Window.Theme.TextMuted
+				iconImg.ZIndex = 5
+				iconImg.Parent = headerContainer
+
+				table.insert(Window.ThemeUpdaters, function(t)
+					iconImg.ImageColor3 = t.TextMuted
+				end)
+				textOffsetX = 22
+			end
+
+			local titleLabel = Instance.new("TextLabel")
+			titleLabel.Size = UDim2.new(1, -textOffsetX - (isFoldable and 20 or 0), 1, 0)
+			titleLabel.Position = UDim2.new(0, textOffsetX, 0, 0)
+			titleLabel.BackgroundTransparency = 1
+			titleLabel.Text = boxTitle
+			titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+			titleLabel.TextSize = 12
+			titleLabel.Font = Enum.Font.GothamBold
+			titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+			titleLabel.ZIndex = 5
+			titleLabel.Parent = headerContainer
+
+			-- 2. Thin Horizontal Divider Line between Header and Body
+			local separatorLine = Instance.new("Frame")
+			separatorLine.Size = UDim2.new(1, 0, 0, 1)
+			separatorLine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+			separatorLine.BackgroundTransparency = 0.88
+			separatorLine.BorderSizePixel = 0
+			separatorLine.LayoutOrder = 1
+			separatorLine.ZIndex = 5
+			separatorLine.Parent = boxFrame
+
+			-- 3. Content Body Container
+			local bodyWrapper = Instance.new("Frame")
+			bodyWrapper.Size = UDim2.new(1, 0, 0, 0)
+			bodyWrapper.AutomaticSize = Enum.AutomaticSize.Y
+			bodyWrapper.BackgroundTransparency = 1
+			bodyWrapper.LayoutOrder = 2
+			bodyWrapper.ZIndex = 4
+			bodyWrapper.Parent = boxFrame
+
+			local bodyPadding = Instance.new("UIPadding")
+			bodyPadding.PaddingLeft = UDim.new(0, 12)
+			bodyPadding.PaddingRight = UDim.new(0, 12)
+			bodyPadding.PaddingTop = UDim.new(0, 10)
+			bodyPadding.PaddingBottom = UDim.new(0, 10)
+			bodyPadding.Parent = bodyWrapper
 
 			local contentContainer = Instance.new("Frame")
 			contentContainer.Name = "ContentContainer"
@@ -2089,140 +2152,64 @@ function EclipseUI:CreateWindow(options)
 			contentContainer.ClipsDescendants = true
 			contentContainer.Visible = not isFolded
 			contentContainer.ZIndex = 4
-			contentContainer.LayoutOrder = 1
-			contentContainer.Parent = boxFrame
+			contentContainer.Parent = bodyWrapper
 
 			local contentLayout = Instance.new("UIListLayout")
 			contentLayout.Padding = UDim.new(0, 6)
 			contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
 			contentLayout.Parent = contentContainer
 
-			if boxTitle ~= "" or boxIcon or isFoldable then
-				local headerContainer = Instance.new("Frame")
-				headerContainer.Size = UDim2.new(1, 0, 0, 16)
-				headerContainer.BackgroundTransparency = 1
-				headerContainer.ZIndex = 5
-				headerContainer.LayoutOrder = 0
-				headerContainer.Parent = boxFrame
+			-- Foldable Arrow handling (if enabled)
+			if isFoldable then
+				local arrowIcon = Instance.new("ImageLabel")
+				arrowIcon.AnchorPoint = Vector2.new(1, 0.5)
+				arrowIcon.Position = UDim2.new(1, 0, 0.5, 0)
+				arrowIcon.Size = UDim2.new(0, 14, 0, 14)
+				arrowIcon.BackgroundTransparency = 1
+				arrowIcon.Image = getIconAsset("chevron-down")
+				arrowIcon.ImageColor3 = Window.Theme.TextMuted
+				arrowIcon.Rotation = isFolded and 180 or 0
+				arrowIcon.ZIndex = 5
+				arrowIcon.Parent = headerContainer
 
-				local textOffsetX = 0
-				if boxIcon then
-					local iconImg = Instance.new("ImageLabel")
-					iconImg.Size = UDim2.new(0, 14, 0, 14)
-					iconImg.Position = UDim2.new(0, 0, 0.5, -7)
-					iconImg.BackgroundTransparency = 1
-					iconImg.Image = getIconAsset(boxIcon)
-					iconImg.ImageColor3 = Window.Theme.TextMuted
-					iconImg.ZIndex = 5
-					iconImg.Parent = headerContainer
+				local clickBtn = Instance.new("TextButton")
+				clickBtn.Size = UDim2.new(1, 0, 1, 0)
+				clickBtn.BackgroundTransparency = 1
+				clickBtn.Text = ""
+				clickBtn.ZIndex = 6
+				clickBtn.Parent = headerContainer
 
-					table.insert(Window.ThemeUpdaters, function(t)
-						iconImg.ImageColor3 = t.TextMuted
-					end)
+				local isAnimating = false
+				clickBtn.MouseButton1Click:Connect(function()
+					if isAnimating then return end
+					isAnimating = true
+					isFolded = not isFolded
 
-					if not iconsLoaded and not string.find(tostring(boxIcon), "rbxassetid://") then
-						task.spawn(function()
-							repeat task.wait() until iconsLoaded or not iconImg:IsDescendantOf(game)
-							if iconImg:IsDescendantOf(game) then
-								iconImg.Image = getIconAsset(boxIcon)
-							end
-						end)
+					tween(arrowIcon, fadeTweenInfo, { Rotation = isFolded and 180 or 0 })
+					local fullHeight = contentLayout.AbsoluteContentSize.Y + 6
+
+					if isFolded then
+						contentContainer.AutomaticSize = Enum.AutomaticSize.None
+						contentContainer.Size = UDim2.new(1, 0, 0, fullHeight)
+						local foldTween = TweenService:Create(contentContainer, TweenInfo.new(0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { Size = UDim2.new(1, 0, 0, 0) })
+						foldTween:Play()
+						foldTween.Completed:Wait()
+						contentContainer.Visible = false
+					else
+						contentContainer.Visible = true
+						contentContainer.Size = UDim2.new(1, 0, 0, 0)
+						local unfoldTween = TweenService:Create(contentContainer, TweenInfo.new(0.22, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), { Size = UDim2.new(1, 0, 0, fullHeight) })
+						unfoldTween:Play()
+						unfoldTween.Completed:Wait()
+						contentContainer.AutomaticSize = Enum.AutomaticSize.Y
 					end
-
-					textOffsetX = 18
-				end
-
-				local titleLabel = Instance.new("TextLabel")
-				titleLabel.Size = UDim2.new(1, -textOffsetX - (isFoldable and 20 or 0), 1, 0)
-				titleLabel.Position = UDim2.new(0, textOffsetX, 0, 0)
-				titleLabel.BackgroundTransparency = 1
-				titleLabel.Text = string.upper(boxTitle)
-				titleLabel.TextColor3 = Window.Theme.TextMuted
-				titleLabel.TextSize = 10
-				titleLabel.Font = Enum.Font.GothamBold
-				titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-				titleLabel.ZIndex = 5
-				titleLabel.Parent = headerContainer
-
-				table.insert(Window.ThemeUpdaters, function(t)
-					titleLabel.TextColor3 = t.TextMuted
+					isAnimating = false
 				end)
-
-				if isFoldable then
-					local arrowIcon = Instance.new("ImageLabel")
-					arrowIcon.AnchorPoint = Vector2.new(1, 0.5)
-					arrowIcon.Position = UDim2.new(1, 0, 0.5, 0)
-					arrowIcon.Size = UDim2.new(0, 14, 0, 14)
-					arrowIcon.BackgroundTransparency = 1
-					arrowIcon.Image = getIconAsset("chevron-down")
-					arrowIcon.ImageColor3 = Window.Theme.TextMuted
-					arrowIcon.Rotation = isFolded and 180 or 0
-					arrowIcon.ZIndex = 5
-					arrowIcon.Parent = headerContainer
-
-					table.insert(Window.ThemeUpdaters, function(t)
-						arrowIcon.ImageColor3 = t.TextMuted
-					end)
-
-					if not iconsLoaded then
-						task.spawn(function()
-							repeat task.wait() until iconsLoaded or not arrowIcon:IsDescendantOf(game)
-							if arrowIcon:IsDescendantOf(game) then
-								arrowIcon.Image = getIconAsset("chevron-down")
-							end
-						end)
-					end
-
-					local clickBtn = Instance.new("TextButton")
-					clickBtn.Size = UDim2.new(1, 0, 1, 0)
-					clickBtn.BackgroundTransparency = 1
-					clickBtn.Text = ""
-					clickBtn.ZIndex = 6
-					clickBtn.Parent = headerContainer
-
-					local isAnimating = false
-					clickBtn.MouseButton1Click:Connect(function()
-						if isAnimating then return end
-						isAnimating = true
-						isFolded = not isFolded
-
-						tween(arrowIcon, fadeTweenInfo, { Rotation = isFolded and 180 or 0 })
-
-						local fullHeight = contentLayout.AbsoluteContentSize.Y + 6
-
-						if isFolded then
-							contentContainer.AutomaticSize = Enum.AutomaticSize.None
-							contentContainer.Size = UDim2.new(1, 0, 0, fullHeight)
-							
-							local foldTween = TweenService:Create(contentContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-								Size = UDim2.new(1, 0, 0, 0)
-							})
-							foldTween:Play()
-							foldTween.Completed:Wait()
-							
-							contentContainer.Visible = false
-							isAnimating = false
-						else
-							contentContainer.Visible = true
-							contentContainer.Size = UDim2.new(1, 0, 0, 0)
-							contentContainer.AutomaticSize = Enum.AutomaticSize.None
-
-							local unfoldTween = TweenService:Create(contentContainer, TweenInfo.new(0.25, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
-								Size = UDim2.new(1, 0, 0, fullHeight)
-							})
-							unfoldTween:Play()
-							unfoldTween.Completed:Wait()
-
-							contentContainer.AutomaticSize = Enum.AutomaticSize.Y
-							isAnimating = false
-						end
-					end)
-				end
 			end
 
 			local GroupObj = {}
 			for k, v in pairs(TabObject) do
-				if typeof(v) == "function" and k ~= "GroupBox" then
+				if typeof(v) == "function" and k ~= "Group" then
 					GroupObj[k] = function(self, elementOpts)
 						return v(TabObject, elementOpts, contentContainer)
 					end
