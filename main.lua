@@ -2045,6 +2045,7 @@ function EclipseUI:CreateWindow(options)
 			local boxIcon = opts.Icon
 			local isFoldable = opts.Foldable or false
 			local isFolded = (opts.Default == false)
+			local elementsData = opts.Elements or opts.Items or {}
 
 			-- Main Outer Box Frame
 			local boxFrame = Instance.new("Frame")
@@ -2118,7 +2119,7 @@ function EclipseUI:CreateWindow(options)
 			titleLabel.ZIndex = 5
 			titleLabel.Parent = headerContainer
 
-			-- 2. Thin Horizontal Divider Line between Header and Body
+			-- 2. Thin Horizontal Divider Line
 			local separatorLine = Instance.new("Frame")
 			separatorLine.Size = UDim2.new(1, 0, 0, 1)
 			separatorLine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -2159,7 +2160,15 @@ function EclipseUI:CreateWindow(options)
 			contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
 			contentLayout.Parent = contentContainer
 
-			-- Foldable Arrow handling (if enabled)
+			-- Automatically parse elements if provided in a table (Row-style)
+			for _, eData in ipairs(elementsData) do
+				local eType = eData.Type
+				if eType and TabObject[eType] then
+					TabObject[eType](TabObject, eData, contentContainer)
+				end
+			end
+
+			-- Foldable Arrow handling
 			if isFoldable then
 				local arrowIcon = Instance.new("ImageLabel")
 				arrowIcon.AnchorPoint = Vector2.new(1, 0.5)
