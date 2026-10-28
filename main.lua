@@ -17,6 +17,15 @@ local LocalPlayer = Players.LocalPlayer
 local LucideIcons = {}
 local iconsLoaded = false
 
+--// Modern Font Helper for Builder Sans
+local function getFont(weight, style)
+	return Font.new(
+		"rbxasset://fonts/families/BuilderSans.json", 
+		weight or Enum.FontWeight.Medium, 
+		style or Enum.FontStyle.Normal
+	)
+end
+
 task.spawn(function()
 	local success, result = pcall(function()
 		return game:HttpGet("https://raw.githubusercontent.com/TKyoka/EclipseUI/refs/heads/main/lucideicons.lua")
@@ -292,7 +301,7 @@ function EclipseUI:Notify(opts)
 	titleLabel.Text = title
 	titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 	titleLabel.TextSize = 12
-	titleLabel.Font = Enum.Font.GothamBold
+	titleLabel.FontFace = getFont(Enum.FontWeight.Bold)
 	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 	titleLabel.ZIndex = 101
 	titleLabel.Parent = textContainer
@@ -304,7 +313,7 @@ function EclipseUI:Notify(opts)
 	contentLabel.Text = content
 	contentLabel.TextColor3 = Theme.TextMuted
 	contentLabel.TextSize = 11
-	contentLabel.Font = Enum.Font.Gotham
+	contentLabel.FontFace = getFont(Enum.FontWeight.Medium)
 	contentLabel.TextXAlignment = Enum.TextXAlignment.Left
 	contentLabel.TextTruncate = Enum.TextTruncate.AtEnd
 	contentLabel.ZIndex = 101
@@ -623,7 +632,7 @@ function EclipseUI:CreateWindow(options)
 		label.TextColor3 = Color3.fromRGB(255, 255, 255)
 		label.TextTransparency = 1
 		label.TextSize = 16
-		label.Font = Enum.Font.GothamBold
+		label.FontFace = getFont(Enum.FontWeight.Bold)
 		label.TextXAlignment = Enum.TextXAlignment.Center
 		label.Parent = container
 
@@ -980,7 +989,7 @@ function EclipseUI:CreateWindow(options)
 	titleLabel.Text = windowName
 	titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 	titleLabel.TextSize = 14
-	titleLabel.Font = Enum.Font.GothamBold
+	titleLabel.FontFace = getFont(Enum.FontWeight.Bold)
 	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 	titleLabel.LayoutOrder = 1
 	titleLabel.ZIndex = 4
@@ -995,7 +1004,7 @@ function EclipseUI:CreateWindow(options)
 		subtitleLabel.Text = windowSubtitle
 		subtitleLabel.TextColor3 = Window.Theme.TextMuted
 		subtitleLabel.TextSize = 11
-		subtitleLabel.Font = Enum.Font.Gotham
+		subtitleLabel.FontFace = getFont(Enum.FontWeight.Medium)
 		subtitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 		subtitleLabel.LayoutOrder = 2
 		subtitleLabel.ZIndex = 4
@@ -1074,7 +1083,7 @@ function EclipseUI:CreateWindow(options)
 			tagText.Text = tostring(tagName)
 			tagText.TextColor3 = Color3.fromRGB(220, 240, 235)
 			tagText.TextSize = 11
-			tagText.Font = Enum.Font.GothamBold
+			tagText.FontFace = getFont(Enum.FontWeight.Bold)
 			tagText.TextXAlignment = Enum.TextXAlignment.Left
 			tagText.ZIndex = 4
 			tagText.Parent = tagPill
@@ -1433,7 +1442,7 @@ function EclipseUI:CreateWindow(options)
 		displayNameLabel.Text = userAnon and anonName or LocalPlayer.DisplayName
 		displayNameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 		displayNameLabel.TextSize = 12
-		displayNameLabel.Font = Enum.Font.GothamBold
+		displayNameLabel.FontFace = getFont(Enum.FontWeight.Bold)
 		displayNameLabel.TextXAlignment = Enum.TextXAlignment.Left
 		displayNameLabel.TextTruncate = Enum.TextTruncate.AtEnd
 		displayNameLabel.ZIndex = 4
@@ -1447,7 +1456,7 @@ function EclipseUI:CreateWindow(options)
 		usernameLabel.Text = userAnon and anonUsername or ("@" .. LocalPlayer.Name)
 		usernameLabel.TextColor3 = Window.Theme.TextMuted
 		usernameLabel.TextSize = 10
-		usernameLabel.Font = Enum.Font.GothamBold
+		usernameLabel.FontFace = getFont(Enum.FontWeight.Bold)
 		usernameLabel.TextXAlignment = Enum.TextXAlignment.Left
 		usernameLabel.TextTruncate = Enum.TextTruncate.AtEnd
 		usernameLabel.ZIndex = 4
@@ -1515,7 +1524,7 @@ function EclipseUI:CreateWindow(options)
 		bgWatermark.TextColor3 = Color3.fromRGB(255, 255, 255)
 		bgWatermark.TextTransparency = 1
 		bgWatermark.TextSize = 28
-		bgWatermark.FontFace = Font.new("rbxassetid://12187375194", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+		bgWatermark.FontFace = getFont(Enum.FontWeight.Bold, Enum.FontStyle.Normal)
 		bgWatermark.TextXAlignment = Enum.TextXAlignment.Center
 		bgWatermark.ZIndex = 1
 		bgWatermark.Parent = mainGroup
@@ -1721,7 +1730,7 @@ function EclipseUI:CreateWindow(options)
 		tabText.Text = tabTitle
 		tabText.TextColor3 = Window.Theme.TextDim
 		tabText.TextSize = 12
-		tabText.Font = Enum.Font.GothamBold
+		tabText.FontFace = getFont(Enum.FontWeight.Bold)
 		tabText.TextXAlignment = Enum.TextXAlignment.Left
 		tabText.ZIndex = 5
 		tabText.Parent = tabFrame
@@ -1936,7 +1945,7 @@ function EclipseUI:CreateWindow(options)
 				textLbl.Text = title
 				textLbl.TextColor3 = Window.Theme.TextDim
 				textLbl.TextSize = 10
-				textLbl.Font = Enum.Font.GothamBold
+				textLbl.FontFace = getFont(Enum.FontWeight.Bold)
 				textLbl.TextXAlignment = Enum.TextXAlignment.Center
 				textLbl.ZIndex = 4
 				textLbl.Parent = cellFrame
@@ -2016,7 +2025,7 @@ function EclipseUI:CreateWindow(options)
 			secHeader.Text = string.upper(secTitle)
 			secHeader.TextColor3 = Window.Theme.TextDim
 			secHeader.TextSize = 10
-			secHeader.Font = Enum.Font.GothamBold
+			secHeader.FontFace = getFont(Enum.FontWeight.Bold)
 			secHeader.TextXAlignment = Enum.TextXAlignment.Left
 			secHeader.ZIndex = 4
 			secHeader.Parent = secHeaderContainer
@@ -2047,7 +2056,6 @@ function EclipseUI:CreateWindow(options)
 			local isFolded = (opts.Default == false)
 			local elementsData = opts.Elements or opts.Items or {}
 
-			-- Main Outer Box Frame
 			local boxFrame = Instance.new("Frame")
 			boxFrame.Size = UDim2.new(1, 0, 0, 0)
 			boxFrame.AutomaticSize = Enum.AutomaticSize.Y
@@ -2071,13 +2079,11 @@ function EclipseUI:CreateWindow(options)
 			boxStroke.Transparency = 0.88
 			boxStroke.Parent = boxFrame
 
-			-- Inner Layout for Header + Content Body
 			local boxMainLayout = Instance.new("UIListLayout")
 			boxMainLayout.Padding = UDim.new(0, 0)
 			boxMainLayout.SortOrder = Enum.SortOrder.LayoutOrder
 			boxMainLayout.Parent = boxFrame
 
-			-- 1. Header Container (Top Bar)
 			local headerContainer = Instance.new("Frame")
 			headerContainer.Size = UDim2.new(1, 0, 0, 36)
 			headerContainer.BackgroundTransparency = 1
@@ -2104,6 +2110,16 @@ function EclipseUI:CreateWindow(options)
 				table.insert(Window.ThemeUpdaters, function(t)
 					iconImg.ImageColor3 = t.TextMuted
 				end)
+
+				if not iconsLoaded and not string.find(tostring(boxIcon), "rbxassetid://") then
+					task.spawn(function()
+						repeat task.wait() until iconsLoaded or not iconImg:IsDescendantOf(game)
+						if iconImg:IsDescendantOf(game) then
+							iconImg.Image = getIconAsset(boxIcon)
+						end
+					end)
+				end
+
 				textOffsetX = 22
 			end
 
@@ -2114,12 +2130,11 @@ function EclipseUI:CreateWindow(options)
 			titleLabel.Text = boxTitle
 			titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 			titleLabel.TextSize = 12
-			titleLabel.Font = Enum.Font.GothamBold
+			titleLabel.FontFace = getFont(Enum.FontWeight.Bold)
 			titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 			titleLabel.ZIndex = 5
 			titleLabel.Parent = headerContainer
 
-			-- 2. Thin Horizontal Divider Line
 			local separatorLine = Instance.new("Frame")
 			separatorLine.Size = UDim2.new(1, 0, 0, 1)
 			separatorLine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -2129,7 +2144,6 @@ function EclipseUI:CreateWindow(options)
 			separatorLine.ZIndex = 5
 			separatorLine.Parent = boxFrame
 
-			-- 3. Content Body Container
 			local bodyWrapper = Instance.new("Frame")
 			bodyWrapper.Size = UDim2.new(1, 0, 0, 0)
 			bodyWrapper.AutomaticSize = Enum.AutomaticSize.Y
@@ -2160,7 +2174,6 @@ function EclipseUI:CreateWindow(options)
 			contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
 			contentLayout.Parent = contentContainer
 
-			-- Automatically parse elements if provided in a table (Row-style)
 			for _, eData in ipairs(elementsData) do
 				local eType = eData.Type
 				if eType and TabObject[eType] then
@@ -2168,7 +2181,6 @@ function EclipseUI:CreateWindow(options)
 				end
 			end
 
-			-- Foldable Arrow handling
 			if isFoldable then
 				local arrowIcon = Instance.new("ImageLabel")
 				arrowIcon.AnchorPoint = Vector2.new(1, 0.5)
@@ -2180,6 +2192,19 @@ function EclipseUI:CreateWindow(options)
 				arrowIcon.Rotation = isFolded and 180 or 0
 				arrowIcon.ZIndex = 5
 				arrowIcon.Parent = headerContainer
+
+				table.insert(Window.ThemeUpdaters, function(t)
+					arrowIcon.ImageColor3 = t.TextMuted
+				end)
+
+				if not iconsLoaded then
+					task.spawn(function()
+						repeat task.wait() until iconsLoaded or not arrowIcon:IsDescendantOf(game)
+						if arrowIcon:IsDescendantOf(game) then
+							arrowIcon.Image = getIconAsset("chevron-down")
+						end
+					end)
+				end
 
 				local clickBtn = Instance.new("TextButton")
 				clickBtn.Size = UDim2.new(1, 0, 1, 0)
@@ -2255,7 +2280,7 @@ function EclipseUI:CreateWindow(options)
 			pTitle.Text = title
 			pTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
 			pTitle.TextSize = 12
-			pTitle.Font = Enum.Font.GothamBold
+			pTitle.FontFace = getFont(Enum.FontWeight.Bold)
 			pTitle.TextXAlignment = Enum.TextXAlignment.Left
 			pTitle.ZIndex = 5
 			pTitle.Parent = pFrame
@@ -2267,7 +2292,7 @@ function EclipseUI:CreateWindow(options)
 			pText.Text = content
 			pText.TextColor3 = Window.Theme.TextMuted
 			pText.TextSize = 11
-			pText.Font = Enum.Font.Gotham
+			pText.FontFace = getFont(Enum.FontWeight.Medium)
 			pText.TextXAlignment = Enum.TextXAlignment.Left
 			pText.TextWrapped = true
 			pText.ZIndex = 5
@@ -2369,7 +2394,7 @@ function EclipseUI:CreateWindow(options)
 			headerLabel.Text = welcomeText
 			headerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 			headerLabel.TextSize = 14
-			headerLabel.Font = Enum.Font.GothamBold
+			headerLabel.FontFace = getFont(Enum.FontWeight.Bold)
 			headerLabel.TextXAlignment = Enum.TextXAlignment.Left
 			headerLabel.LayoutOrder = 1
 			headerLabel.ZIndex = 6
@@ -2414,7 +2439,7 @@ function EclipseUI:CreateWindow(options)
 			execText.Text = executorName
 			execText.TextColor3 = Window.Theme.TextMuted or Color3.fromRGB(180, 180, 180)
 			execText.TextSize = 10
-			execText.Font = Enum.Font.GothamMedium
+			execText.FontFace = getFont(Enum.FontWeight.Medium)
 			execText.ZIndex = 7
 			execText.Parent = execBadge
 
@@ -2443,7 +2468,7 @@ function EclipseUI:CreateWindow(options)
 				verText.Text = opts.Version
 				verText.TextColor3 = Window.Theme.TextMuted or Color3.fromRGB(180, 180, 180)
 				verText.TextSize = 10
-				verText.Font = Enum.Font.GothamMedium
+				verText.FontFace = getFont(Enum.FontWeight.Medium)
 				verText.ZIndex = 7
 				verText.Parent = verBadge
 			end
@@ -2551,7 +2576,7 @@ function EclipseUI:CreateWindow(options)
 			label.Text = btnName
 			label.TextColor3 = Color3.fromRGB(255, 255, 255)
 			label.TextSize = 12
-			label.Font = Enum.Font.GothamBold
+			label.FontFace = getFont(Enum.FontWeight.Bold)
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.LayoutOrder = 1
 			label.ZIndex = 5
@@ -2566,7 +2591,7 @@ function EclipseUI:CreateWindow(options)
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
 				descLabel.TextSize = 10
-				descLabel.Font = Enum.Font.Gotham
+				descLabel.FontFace = getFont(Enum.FontWeight.Medium)
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
 				descLabel.TextWrapped = true
 				descLabel.LayoutOrder = 2
@@ -2755,7 +2780,7 @@ function EclipseUI:CreateWindow(options)
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
-			label.Font = Enum.Font.GothamBold
+			label.FontFace = getFont(Enum.FontWeight.Bold)
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.LayoutOrder = 1
 			label.ZIndex = 5
@@ -2769,7 +2794,7 @@ function EclipseUI:CreateWindow(options)
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
 				descLabel.TextSize = 10
-				descLabel.Font = Enum.Font.Gotham
+				descLabel.FontFace = getFont(Enum.FontWeight.Medium)
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
 				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
 				descLabel.LayoutOrder = 2
@@ -2802,7 +2827,7 @@ function EclipseUI:CreateWindow(options)
 			keyBtn.Text = currentKey.Name
 			keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
 			keyBtn.TextSize = 11
-			keyBtn.Font = Enum.Font.GothamMedium
+			keyBtn.FontFace = getFont(Enum.FontWeight.Medium)
 			keyBtn.TextYAlignment = Enum.TextYAlignment.Center
 			keyBtn.ZIndex = 6
 			keyBtn.Parent = container
@@ -3034,7 +3059,7 @@ function EclipseUI:CreateWindow(options)
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
-			label.Font = Enum.Font.GothamBold
+			label.FontFace = getFont(Enum.FontWeight.Bold)
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.LayoutOrder = 1
 			label.ZIndex = 5
@@ -3048,7 +3073,7 @@ function EclipseUI:CreateWindow(options)
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
 				descLabel.TextSize = 10
-				descLabel.Font = Enum.Font.Gotham
+				descLabel.FontFace = getFont(Enum.FontWeight.Medium)
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
 				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
 				descLabel.LayoutOrder = 2
@@ -3083,7 +3108,7 @@ function EclipseUI:CreateWindow(options)
 			textBox.PlaceholderColor3 = Color3.fromRGB(110, 120, 140)
 			textBox.TextColor3 = Color3.fromRGB(230, 238, 250)
 			textBox.TextSize = 11
-			textBox.Font = Enum.Font.GothamMedium
+			textBox.FontFace = getFont(Enum.FontWeight.Medium)
 			textBox.TextYAlignment = Enum.TextYAlignment.Center
 			textBox.ClearTextOnFocus = false
 			textBox.ClipsDescendants = true
@@ -3190,7 +3215,7 @@ function EclipseUI:CreateWindow(options)
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
-			label.Font = Enum.Font.GothamBold
+			label.FontFace = getFont(Enum.FontWeight.Bold)
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.LayoutOrder = 1
 			label.ZIndex = 5
@@ -3204,7 +3229,7 @@ function EclipseUI:CreateWindow(options)
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
 				descLabel.TextSize = 10
-				descLabel.Font = Enum.Font.Gotham
+				descLabel.FontFace = getFont(Enum.FontWeight.Medium)
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
 				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
 				descLabel.LayoutOrder = 2
@@ -3409,7 +3434,7 @@ function EclipseUI:CreateWindow(options)
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
-			label.Font = Enum.Font.GothamBold
+			label.FontFace = getFont(Enum.FontWeight.Bold)
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.LayoutOrder = 1
 			label.ZIndex = 5
@@ -3423,7 +3448,7 @@ function EclipseUI:CreateWindow(options)
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
 				descLabel.TextSize = 10
-				descLabel.Font = Enum.Font.Gotham
+				descLabel.FontFace = getFont(Enum.FontWeight.Medium)
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
 				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
 				descLabel.LayoutOrder = 2
@@ -3590,7 +3615,7 @@ function EclipseUI:CreateWindow(options)
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
-			label.Font = Enum.Font.GothamBold
+			label.FontFace = getFont(Enum.FontWeight.Bold)
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.ZIndex = 5
 			label.Parent = sliderContainer
@@ -3616,7 +3641,7 @@ function EclipseUI:CreateWindow(options)
 			valBox.Text = tostring(default)
 			valBox.TextColor3 = Color3.fromRGB(230, 238, 250)
 			valBox.TextSize = 11
-			valBox.Font = Enum.Font.GothamMedium
+			valBox.FontFace = getFont(Enum.FontWeight.Medium)
 			valBox.TextYAlignment = Enum.TextYAlignment.Center
 			valBox.ClearTextOnFocus = false
 			valBox.ZIndex = 6
@@ -3835,7 +3860,7 @@ function EclipseUI:CreateWindow(options)
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
-			label.Font = Enum.Font.GothamBold
+			label.FontFace = getFont(Enum.FontWeight.Bold)
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.LayoutOrder = 1
 			label.ZIndex = 5
@@ -3849,7 +3874,7 @@ function EclipseUI:CreateWindow(options)
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
 				descLabel.TextSize = 10
-				descLabel.Font = Enum.Font.Gotham
+				descLabel.FontFace = getFont(Enum.FontWeight.Medium)
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
 				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
 				descLabel.LayoutOrder = 2
@@ -3882,7 +3907,7 @@ function EclipseUI:CreateWindow(options)
 			keyBtn.Text = currentKey.Name
 			keyBtn.TextColor3 = Color3.fromRGB(230, 238, 250)
 			keyBtn.TextSize = 11
-			keyBtn.Font = Enum.Font.GothamMedium
+			keyBtn.FontFace = getFont(Enum.FontWeight.Medium)
 			keyBtn.TextYAlignment = Enum.TextYAlignment.Center
 			keyBtn.ZIndex = 6
 			keyBtn.Parent = kbFrame
@@ -4016,7 +4041,7 @@ function EclipseUI:CreateWindow(options)
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
-			label.Font = Enum.Font.GothamBold
+			label.FontFace = getFont(Enum.FontWeight.Bold)
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.LayoutOrder = 1
 			label.ZIndex = 5
@@ -4030,7 +4055,7 @@ function EclipseUI:CreateWindow(options)
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
 				descLabel.TextSize = 10
-				descLabel.Font = Enum.Font.Gotham
+				descLabel.FontFace = getFont(Enum.FontWeight.Medium)
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
 				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
 				descLabel.LayoutOrder = 2
@@ -4086,7 +4111,7 @@ function EclipseUI:CreateWindow(options)
 			selLabel.Text = tostring(selected)
 			selLabel.TextColor3 = Color3.fromRGB(230, 238, 250)
 			selLabel.TextSize = 11
-			selLabel.Font = Enum.Font.GothamMedium
+			selLabel.FontFace = getFont(Enum.FontWeight.Medium)
 			selLabel.TextYAlignment = Enum.TextYAlignment.Center
 			selLabel.TextXAlignment = Enum.TextXAlignment.Left
 			selLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -4185,7 +4210,7 @@ function EclipseUI:CreateWindow(options)
 						BackgroundTransparency = isSel and 0.35 or 0.92
 					})
 					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Window.Theme.TextMuted
-					data.Text.Font = isSel and Enum.Font.GothamBold or Enum.Font.Gotham
+					data.Text.FontFace = getFont(isSel and Enum.FontWeight.Bold or Enum.FontWeight.Medium)
 				end
 			end
 
@@ -4244,7 +4269,7 @@ function EclipseUI:CreateWindow(options)
 					itemText.Text = tostring(item)
 					itemText.TextColor3 = Window.Theme.TextMuted
 					itemText.TextSize = 11
-					itemText.Font = Enum.Font.Gotham
+					itemText.FontFace = getFont(Enum.FontWeight.Medium)
 					itemText.TextYAlignment = Enum.TextYAlignment.Center
 					itemText.TextXAlignment = Enum.TextXAlignment.Left
 					itemText.ZIndex = 1002
@@ -4388,7 +4413,7 @@ function EclipseUI:CreateWindow(options)
 			label.Text = title
 			label.TextColor3 = Color3.fromRGB(240, 245, 255)
 			label.TextSize = 12
-			label.Font = Enum.Font.GothamBold
+			label.FontFace = getFont(Enum.FontWeight.Bold)
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.LayoutOrder = 1
 			label.ZIndex = 5
@@ -4402,7 +4427,7 @@ function EclipseUI:CreateWindow(options)
 				descLabel.Text = desc
 				descLabel.TextColor3 = Window.Theme.TextMuted
 				descLabel.TextSize = 10
-				descLabel.Font = Enum.Font.Gotham
+				descLabel.FontFace = getFont(Enum.FontWeight.Medium)
 				descLabel.TextXAlignment = Enum.TextXAlignment.Left
 				descLabel.TextTruncate = Enum.TextTruncate.AtEnd
 				descLabel.LayoutOrder = 2
@@ -4457,7 +4482,7 @@ function EclipseUI:CreateWindow(options)
 			selLabel.BackgroundTransparency = 1
 			selLabel.TextColor3 = Color3.fromRGB(230, 238, 250)
 			selLabel.TextSize = 11
-			selLabel.Font = Enum.Font.GothamMedium
+			selLabel.FontFace = getFont(Enum.FontWeight.Medium)
 			selLabel.TextYAlignment = Enum.TextYAlignment.Center
 			selLabel.TextXAlignment = Enum.TextXAlignment.Left
 			selLabel.TextTruncate = Enum.TextTruncate.AtEnd
@@ -4577,7 +4602,7 @@ function EclipseUI:CreateWindow(options)
 						BackgroundTransparency = isSel and 0.35 or 0.92
 					})
 					data.Text.TextColor3 = isSel and Color3.fromRGB(255, 255, 255) or Window.Theme.TextMuted
-					data.Text.Font = isSel and Enum.Font.GothamBold or Enum.Font.Gotham
+					data.Text.FontFace = getFont(isSel and Enum.FontWeight.Bold or Enum.FontWeight.Medium)
 				end
 				updateDisplay()
 			end
@@ -4637,7 +4662,7 @@ function EclipseUI:CreateWindow(options)
 					itemText.Text = tostring(item)
 					itemText.TextColor3 = Window.Theme.TextMuted
 					itemText.TextSize = 11
-					itemText.Font = Enum.Font.Gotham
+					itemText.FontFace = getFont(Enum.FontWeight.Medium)
 					itemText.TextYAlignment = Enum.TextYAlignment.Center
 					itemText.TextXAlignment = Enum.TextXAlignment.Left
 					itemText.ZIndex = 1002
